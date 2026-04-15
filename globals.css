@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --surface2: #161616;
+  --border: #1f1f1f;
+  --border2: #2a2a2a;
+  --accent: #e8ff47;
+  --accent-dim: #b8cc38;
+  --muted: #525252;
+  --text: #e8e8e8;
+  --text-dim: #a0a0a0;
+  --danger: #ff4444;
+  --warning: #ffaa00;
+  --success: #44ff88;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+input, select, button {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+input:focus, select:focus {
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up {
+  animation: fadeUp 0.4s ease forwards;
+}
+
+@keyframes pulse-bar {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.7; }
+}
