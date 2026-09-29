@@ -59,6 +59,7 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   13-10-2026; después, registrar otra passkey exige la clave (`accion:'nuevo'` + x-app-key).
 - Respaldo: "Usar una clave" en el candado, o el link `#k=CLAVE`. **La clave nunca va en el repo.**
 - Los scripts sin clave (el Apps Script BCI ya instalado) pueden insertar en `gastos` si fuente es bci_auto | transferencia | atajo.
+  `importar_correos.gs` funciona sin clave para compras y transferencias; `APP_KEY` solo hace falta para los sueldos Toku (`ingresos`).
   La política `scripts_upsert` deja pasar SELECT solo durante POST (para el upsert `on_conflict`): un GET sin clave nunca ve filas.
   `gastos_auto` y `anotar_atajo` son SECURITY DEFINER.
 - Para cambiar la clave: recalcular el hash en `privado.autorizado()` y actualizar `secretos.app_key`.
