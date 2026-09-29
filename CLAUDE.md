@@ -53,11 +53,15 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 ## Seguridad (clave x-app-key)
 - Todas las tablas exigen el header `x-app-key`. La función `privado.autorizado()` compara su sha256 con el hash guardado
   (el esquema `privado` no está expuesto). `rpc/clave_ok` devuelve true/false para la pantalla de candado.
-- La app guarda la clave en localStorage. Se entrega una vez con el link `https://finanzas-vicente.vercel.app/#k=CLAVE`
-  (la app la guarda y la borra de la URL) o se pega en la pantalla de candado. **La clave nunca va en el repo.**
-- Sin excepciones: los scripts (Apps Script) también mandan `x-app-key` (constante APP_KEY). Un upsert con
-  `on_conflict` sin clave falla por RLS. `gastos_auto` y `anotar_atajo` son SECURITY DEFINER (el atajo funciona sin clave).
-- Para cambiar la clave: recalcular el hash en `privado.autorizado()` y abrir el link nuevo en el celular.
+- **Entrar = Face ID (passkey).** Edge function `acceso` (WebAuthn, rpID finanzas-vicente.vercel.app): si la passkey es
+  válida devuelve la clave, que la app guarda en localStorage. Tablas `passkeys`, `passkey_retos` y `secretos` (app_key)
+  tienen RLS sin políticas: solo las lee la edge function con service role. El primer registro queda abierto hasta el
+  13-10-2026; después, registrar otra passkey exige la clave (`accion:'nuevo'` + x-app-key).
+- Respaldo: "Usar una clave" en el candado, o el link `#k=CLAVE`. **La clave nunca va en el repo.**
+- Los scripts sin clave (el Apps Script BCI ya instalado) pueden insertar en `gastos` si fuente es bci_auto | transferencia | atajo.
+  La política `scripts_upsert` deja pasar SELECT solo durante POST (para el upsert `on_conflict`): un GET sin clave nunca ve filas.
+  `gastos_auto` y `anotar_atajo` son SECURITY DEFINER.
+- Para cambiar la clave: recalcular el hash en `privado.autorizado()` y actualizar `secretos.app_key`.
 
 ## Lógica de negocio clave
 - "Hoy puedes gastar" = (presupuesto − gastos personales − cuotas del periodo) / días hasta el cierre del 22.

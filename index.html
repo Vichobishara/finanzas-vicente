@@ -240,8 +240,21 @@ function closeSheet(){$('sheet-bg').classList.remove('on')}
 
 $('greet').textContent=(h=>h<12?'Buenos días ☀️':h<20?'Buenas tardes 🌤':'Buenas noches 🌙')(new Date().getHours());
 
-function lock(msg){$('hero-w').innerHTML=`<div class="hero"><div class="h-lbl">🔒 Tu app tiene clave</div><div class="h-l1" style="margin:8px 0 14px">${msg||'Pégala una vez y este celular la recuerda.'}</div><input id="k-in" placeholder="tu clave" autocomplete="off" autocapitalize="off" autocorrect="off" style="width:100%;padding:14px;border-radius:14px;border:none;font-size:16px;margin-bottom:10px"><button class="btn p" style="margin-top:0;background:#fff;color:#0B1B3A" onclick="setKey()">Entrar</button></div>`}
+function lock(msg){$('hero-w').innerHTML=`<div class="hero"><div class="h-lbl">🔒 Tus finanzas están protegidas</div><div class="h-l1" style="margin:8px 0 14px">${msg||'Entra con tu cara, como en el banco.'}</div><button id="fid-btn" class="btn p" style="margin-top:0;background:#fff;color:#0B1B3A" onclick="faceId()">Entrar con Face ID</button><div id="k-box" style="display:none;margin-top:10px"><input id="k-in" placeholder="clave" autocomplete="off" autocapitalize="off" autocorrect="off" style="width:100%;padding:14px;border-radius:14px;border:none;font-size:16px;margin-bottom:10px"><button class="btn p" style="margin-top:0;background:rgba(255,255,255,.15);color:#fff" onclick="setKey()">Entrar con clave</button></div><div style="text-align:center;margin-top:12px"><button style="border:none;background:none;color:rgba(255,255,255,.7);font-size:12.5px;text-decoration:underline" onclick="$('k-box').style.display='block';this.style.display='none'">Usar una clave</button></div></div>`}
 function setKey(){const k=($('k-in').value||'').trim();if(!k)return;try{localStorage.setItem('app-key',k)}catch(e){}loadAll()}
+async function faceId(){
+  const b=$('fid-btn');if(b){b.disabled=true;b.textContent='Abriendo Face ID…'}
+  try{
+    const W=await import('https://esm.sh/@simplewebauthn/browser@13');
+    const fx=body=>fetch(SB+'/functions/v1/acceso',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',...(getKey()?{'x-app-key':getKey()}:{})},body:JSON.stringify(body)}).then(r=>r.json());
+    const ini=await fx({accion:'inicio'});if(ini.error)throw new Error(ini.error);
+    const respuesta=ini.modo==='login'?await W.startAuthentication({optionsJSON:ini.opciones}):await W.startRegistration({optionsJSON:ini.opciones});
+    const fin=await fx({accion:ini.modo,id:ini.id,respuesta});if(!fin.clave)throw new Error(fin.error||'sin clave');
+    try{localStorage.setItem('app-key',fin.clave)}catch(e){}
+    if(ini.modo==='registro')toast('✅ Listo: la próxima vez entras directo');
+    loadAll();
+  }catch(e){console.error(e);lock('No se pudo con Face ID. Toca el botón de nuevo.')}
+}
 async function loadAll(){
   if(!getKey())return lock();
   try{
