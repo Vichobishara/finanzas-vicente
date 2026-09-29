@@ -13,17 +13,28 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - Datos: Supabase REST (`https://caaewoxfvmdizzziyvfz.supabase.co/rest/v1/`) con la anon key (está en index.html).
 - Hosting: Vercel, proyecto `finanzas-vicente` (team `vicente-bisharas-projects`), sitio estático.
   Push a `main` = deploy a producción → https://finanzas-vicente.vercel.app
-- `scripts/importar_bci.gs`: Google Apps Script que lee correos de BCI y los inserta en Supabase cada 15 min.
+- `scripts/importar_correos.gs`: Google Apps Script que cada 15 min lee correos (compras tarjeta BCI, transferencias
+  hechas desde BCI y Scotia, sueldos Toku) y los inserta en Supabase.
+- `supabase/migrations/`: SQL aplicado a mano en Supabase (registro de cambios de esquema).
+- `docs/atajo_apple_pay.md`: cómo armar el atajo de iOS que anota solo las compras Apple Pay con Scotia.
 - `tests/smoke.test.js`: prueba con jsdom y datos falsos. Correr antes de cada push: `npm i jsdom && node tests/smoke.test.js`
 
 ## Base de datos (Supabase `finanzas-vicho`, id `caaewoxfvmdizzziyvfz`)
-- `gastos` (fecha, descripcion, monto, categoria_clave, tarjeta, fuente, pulldex, periodo, ref_externa)
+- `gastos` (fecha, descripcion, monto, categoria_clave, tarjeta, fuente, pulldex, periodo, ref_externa, estado, destinatario)
   - `pulldex = true` significa **negocio** (TCG Logs / PULLDEX): no cuenta en el presupuesto personal.
   - Trigger `gastos_auto` (BEFORE INSERT): si `categoria_clave` es null la asigna con `reglas_categoria`
     (match más largo por ILIKE, si no → `otros`), y calcula `periodo` (YYYY-MM) según el cierre de la
-    tarjeta: Scotiabank día 22, BCI día 20 (compras después del cierre → mes siguiente).
-  - `ref_externa` único = id del correo Gmail (evita duplicados del script BCI).
-  - `fuente`: manual | bci_auto | atajo | app
+    tarjeta: BCI día 20, todo lo demás (Scotia, efectivo, transferencias) día 22 (después del cierre → mes siguiente).
+    Si trae `destinatario` (transferencia), busca en `destinatarios`: ignorar → `estado='ignorado'`, gasto → su
+    categoría; si no lo conoce → `estado='revisar'`.
+  - `ref_externa` único = id del correo Gmail (evita duplicados del script). Por eso los gastos que vienen de un
+    correo no se borran: se marcan `estado='ignorado'` (si se borran, el script los vuelve a traer).
+  - `estado`: ok (cuenta) | revisar (transferencia esperando confirmación, no cuenta) | ignorado (no cuenta).
+  - `fuente`: manual | bci_auto | atajo | app | transferencia. `tarjeta`: scotiabank | bci | santander | efectivo | otro.
+- `destinatarios` (nombre, accion gasto|ignorar, categoria_clave): lo que la app recuerda por destinatario de
+  transferencia (match ILIKE más largo). Transferencias a cuentas propias no se importan (filtro en el script).
+- Función `anotar_atajo(monto_txt, comercio)`: la llama el atajo de iOS vía `/rest/v1/rpc/anotar_atajo`; limpia el
+  monto ("$12.990", "CLP 12.990") e inserta el gasto Scotia con fuente `atajo`.
 - `categorias` (clave, nombre, techo, color): comida 250k, fijo 200k, tech 100k, transporte 30k,
   salud 60k, ocio 70k, coleccionables 0 (bloqueado), viajes, otros.
 - `reglas_categoria` (palabra, categoria_clave, negocio): la app agrega reglas cuando el usuario corrige una categoría.
@@ -33,7 +44,8 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - `ingresos` (fecha, monto, tipo, descripcion, base_tributable, impuesto): liquidaciones Toku.
 - `ajustes` (clave, valor jsonb): `patrimonio` {fintual, colchon, cartas, eth, fecha} (colchon = parte de Fintual en
   Moderate Pitt), `perfil` {nacimiento, meta, sueldo}, `apv` {abierto, fecha}, `evitado` {periodo: monto}.
-- `ingresos` también tiene `ref_externa` (único, id del correo) y `fuente` (manual | app | toku_auto).
+- `ingresos` también tiene `ref_externa` (único, id del correo) y `fuente` (manual | app | toku_auto). El script importa
+  los abonos de TOKU SPA y no duplica si ya hay uno manual con el mismo monto (±5 días).
 - `ahorros` (fecha, monto, destino fintual|apv|colchon, periodo): lo que Vicho **de verdad** transfirió. `periodo` = mes del sueldo.
   Al guardar desde la app se suma a `ajustes.patrimonio`.
 - Ventas del negocio = filas en `gastos` con `pulldex = true` y `monto` negativo (P&L en la sheet Negocio).
@@ -65,7 +77,8 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 
 ## Pendientes / ideas
 - [x] Seguridad: RLS con clave `x-app-key` (ver arriba). Si algún día hay más usuarios: Supabase Auth + RLS por usuario.
-- [ ] Atajo de iOS con disparador "Transacción" (Apple Pay Scotia) → POST a /gastos con fuente `atajo`.
+- [x] Atajo de iOS con disparador "Transacción" (Apple Pay Scotia) → `rpc/anotar_atajo` (ver docs/atajo_apple_pay.md).
+- [ ] Cuadratura mensual Scotia: comparar el total del estado de cuenta con lo anotado y crear el ajuste "sin anotar".
 - [ ] Revisar si Scotiabank permite alertas por correo o SMS, para sumarlas al script.
 - [ ] Alertas por correo desde Apps Script (categoría > 80%, resumen semanal).
 - [ ] Actualización automática del saldo de Fintual (hoy es manual, desde la app).

@@ -218,7 +218,7 @@ const flag=k=>{try{return localStorage.getItem(k)==='1'}catch(e){return false}};
 const setFlag=k=>{try{localStorage.setItem(k,'1')}catch(e){}};
 const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const MESL=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-let S={periodo:null,actual:null,periodos:[],gastos:[],prev:[],cuotas:[],reglas:[],techos:{},pptos:{},ppto:1000000,card:'scotiabank',ing:{},ahorros:[],aj:{},nc:1,V:{}};
+let S={periodo:null,actual:null,periodos:[],gastos:[],prev:[],cuotas:[],revisar:[],reglas:[],techos:{},pptos:{},ppto:1000000,card:'scotiabank',ing:{},ahorros:[],aj:{},nc:1,V:{}};
 
 const api=async(p,o={})=>{const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),12000);try{const r=await fetch(SB+'/rest/v1/'+p,{headers:{...H,'x-app-key':getKey(),...(o.h||{})},method:o.m||'GET',body:o.b?JSON.stringify(o.b):undefined,signal:ctl.signal});if(!r.ok)throw new Error(await r.text());const t=await r.text();return t?JSON.parse(t):null}finally{clearTimeout(to)}};
 const $=s=>document.getElementById(s);
@@ -268,7 +268,8 @@ function setPer(p){S.periodo=p;closeSheet();loadAll();window.scrollTo(0,0)}
 
 async function loadPeriodo(){
   const pv=addM(S.periodo,-1);
-  const all=await api(`gastos?periodo=in.(${S.periodo},${pv})&order=fecha.desc,id.desc`);
+  const [todos,rev]=await Promise.all([api(`gastos?periodo=in.(${S.periodo},${pv})&order=fecha.desc,id.desc`),api('gastos?estado=eq.revisar&order=fecha.desc,id.desc')]);
+  const all=todos.filter(g=>!g.estado||g.estado==='ok');S.revisar=rev||[];
   S.gastos=all.filter(g=>g.periodo===S.periodo);S.prev=all.filter(g=>g.periodo===pv&&!g.pulldex);
   S.ppto=S.pptos[S.periodo]||1000000;render();
 }
@@ -306,7 +307,8 @@ function render(){
 
   const ev=getEv();$('win').innerHTML=esActual&&ev?`<div class="win">💪 Este mes te aguantaste ${fmt(ev)} en compras</div>`:'';
 
-  let nz='';const rev=items.otros||[];
+  let nz='';const rev=items.otros||[],tr=S.revisar||[];
+  if(tr.length)nz+=`<div class="nudge"><div>🔁 <b>${tr.length} transferencia${tr.length>1?'s':''} por revisar</b> · no cuentan hasta que me digas</div><button onclick="openRev()">Revisar</button></div>`;
   if(esActual){const dd=hoy.getDate(),u=S.ahorros[0],dsA=u?Math.round((hoy-new Date(u.fecha+'T00:00:00'))/864e5):99;
     if((dd>=27||dd<=10)&&dsA>15)nz+=`<div class="nudge"><div>💰 <b>¿Ya mandaste a Fintual?</b> Anota cuánto y queda tu ahorro real</div><button onclick="openAhorro()">Anotar</button></div>`;}
   if(rev.length)nz+=`<div class="nudge"><div>❓ <b>${rev.length} gasto${rev.length>1?'s':''} sin categoría</b></div><button onclick="openCat('otros')">Ordenar</button></div>`;
@@ -463,7 +465,53 @@ function openVenta(){openSheet(`<h3>💵 Anotar venta</h3><p>Plata que entró po
 async function saveVenta(){const m=val('v-monto');if(!m){toast('Pon el monto');return}const d=($('v-desc').value||'').trim();
   try{await api('gastos',{m:'POST',b:{fecha:hoyISO(),monto:-m,descripcion:'Venta'+(d?': '+d:''),tarjeta:'otro',fuente:'app',pulldex:true,categoria_clave:'coleccionables'}});closeSheet();toast(`💵 Venta de ${fmt(m)} anotada`);await loadAll();openNeg()}catch(e){toast('❌ Error');console.error(e)}}
 function openMovs(){openSheet(`<h3>Todos los gastos</h3><p>${perL(S.periodo)} · toca uno para editarlo o borrarlo.</p><div class="card">${S.gastos.map(txHtml).join('')||'<div class="empty">Sin gastos</div>'}</div>`)}
-function openCuotas(){const V=S.V;openSheet(`<h3>💳 Cuotas y fijos</h3><p>${fmt(V.cuo)} al mes que se descuentan solos. No tienes que anotarlos.</p><div class="card">${V.CQ.map(c=>`<div class="crow"><div class="cm"><b>${c.nombre}</b><small>${c.label}${c.fin?' · termina en '+perL(c.fin):''}</small></div><div class="ca">${fmt(c.monto_cuota)}</div></div>`).join('')}</div>`)}
+function openCuotas(){const V=S.V;openSheet(`<h3>💳 Cuotas y fijos</h3><p>${fmt(V.cuo)} al mes que se descuentan solos. No tienes que anotarlos. Toca uno para corregirlo.</p><div class="card">${V.CQ.map(c=>`<button class="crow" onclick="openCuota(${c.id})"><div class="cm"><b>${c.nombre}</b><small>${c.label}${c.fin?' · termina en '+perL(c.fin):''}</small></div><div class="ca">${fmt(c.monto_cuota)}</div></button>`).join('')||'<div class="empty">Sin cuotas este mes 🎉</div>'}</div><button class="btn p" style="margin-top:0" onclick="openCuota()">+ Agregar cuota o fijo</button>`)}
+function openCuota(id){
+  const c=S.cuotas.find(x=>x.id===id)||{nombre:'',monto_cuota:0,total_cuotas:12,recurrente:false,tarjeta:'otro'};
+  const n=c.primer_periodo?mdiff(c.primer_periodo,S.periodo)+1:1;
+  openSheet(`<h3>${id?c.nombre:'Nueva cuota o fijo'}</h3><p>Lo que pagas en ${S.V.mes}.</p>
+  <label>Nombre</label><input id="q-nom" value="${c.nombre.replace(/"/g,'&quot;')}" placeholder="ej: iPhone Santander">
+  <label>Monto al mes</label><input id="q-monto" inputmode="numeric" oninput="fmtIn(this)" value="${c.monto_cuota?'$'+c.monto_cuota.toLocaleString('es-CL'):''}">
+  <label>Tipo</label><div class="chips" id="q-tipo"><button class="chip ${c.recurrente?'':'on'}" data-v="0" onclick="selTipo(this)">En cuotas</button><button class="chip ${c.recurrente?'on':''}" data-v="1" onclick="selTipo(this)">Fijo todos los meses</button></div>
+  <div id="q-cuo" style="display:${c.recurrente?'none':'block'}"><label>Total de cuotas</label><input id="q-tot" inputmode="numeric" value="${c.total_cuotas||12}">
+  <label>En ${S.V.mes} vas en la cuota…</label><input id="q-n" inputmode="numeric" value="${Math.max(1,n)}"></div>
+  <button class="btn p" onclick="saveCuota(${id||0})">Guardar</button>${id?`<button class="btn d" onclick="endCuota(${id})">Ya no la pago</button>`:''}`);
+}
+function selTipo(b){$('q-tipo').querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('q-cuo').style.display=b.dataset.v==='1'?'none':'block'}
+async function saveCuota(id){
+  const nombre=$('q-nom').value.trim(),monto=val('q-monto'),rec=$('q-tipo').querySelector('.chip.on').dataset.v==='1';
+  const tot=parseInt($('q-tot').value)||0,n=parseInt($('q-n').value)||0;
+  if(!nombre||!monto){toast('Pon nombre y monto');return}
+  if(!rec&&(tot<1||n<1||n>tot)){toast('Revisa las cuotas: vas en la '+n+' de '+tot);return}
+  const b={nombre,monto_cuota:monto,recurrente:rec,total_cuotas:rec?1:tot,primer_periodo:rec?null:addM(S.periodo,-(n-1))};
+  try{
+    if(id)await api('cuotas?id=eq.'+id,{m:'PATCH',b});else await api('cuotas',{m:'POST',b:{...b,tarjeta:'otro',activa:true}});
+    closeSheet();toast(rec?'✅ Fijo guardado':`✅ Termina en ${perL(addM(b.primer_periodo,tot-1))}`);loadAll();
+  }catch(e){toast('❌ Error');console.error(e)}
+}
+async function endCuota(id){if(!confirm('¿Ya no la pagas? Deja de descontarse.'))return;try{await api('cuotas?id=eq.'+id,{m:'PATCH',b:{activa:false}});closeSheet();toast('🎉 Una menos');loadAll()}catch(e){toast('❌ Error')}}
+function openRev(){const R=S.revisar;if(!R.length){closeSheet();return}
+  openSheet(`<h3>🔁 Transferencias por revisar</h3><p>Llegaron solas desde el correo. No cuentan en tu presupuesto hasta que me digas si fueron gasto.</p><div class="card">${R.map(g=>`<button class="crow" onclick="openRevTx(${g.id})"><div class="ic" style="background:#F2F4F7">🔁</div><div class="cm"><b>${g.destinatario||g.descripcion}</b><small>${g.fecha.slice(8,10)}/${g.fecha.slice(5,7)}</small></div><div class="ca">${fmt(g.monto)}</div></button>`).join('')}</div>`)}
+function openRevTx(id){
+  const g=S.revisar.find(x=>x.id===id);if(!g)return;const nom=g.destinatario||'este destinatario';
+  openSheet(`<h3>${fmt(g.monto)} a ${nom}</h3><p>${g.descripcion} · ${g.fecha.slice(8,10)}/${g.fecha.slice(5,7)}</p>
+  <label>Si fue gasto, ¿de qué?</label><div class="chips">${Object.entries(CAT).filter(([k])=>k!=='otros').map(([k,c])=>`<button class="chip" onclick="saveRev(${id},'${k}')">${c.ic} ${c.n}</button>`).join('')}</div>
+  <button class="btn p" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);box-shadow:none" onclick="saveRev(${id},null)">No cuenta: préstamo, devolución, dólares o un fijo que ya está en cuotas</button>
+  <div class="chips" style="margin-top:14px"><button class="chip" id="rv-rec" onclick="this.classList.toggle('on')">Recordar para todas las de ${nom}</button></div>`);
+}
+async function saveRev(id,cat){
+  const g=S.revisar.find(x=>x.id===id),rec=$('rv-rec').classList.contains('on');
+  const b=cat?{estado:'ok',categoria_clave:cat}:{estado:'ignorado'};
+  try{
+    await api('gastos?id=eq.'+id,{m:'PATCH',b});
+    if(rec&&g.destinatario){
+      await api('destinatarios?on_conflict=nombre',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{nombre:g.destinatario,accion:cat?'gasto':'ignorar',categoria_clave:cat}});
+      await api('gastos?estado=eq.revisar&destinatario=eq.'+encodeURIComponent(g.destinatario),{m:'PATCH',b});
+    }
+    toast(cat?`✅ ${CAT[cat].ic} ${fmt(g.monto)} cuenta como gasto`:'👌 No cuenta');
+    await loadAll();S.revisar.length?openRev():closeSheet();
+  }catch(e){toast('❌ Error');console.error(e)}
+}
 function tipsList(){
   const V=S.V,T=[],d=new Date().getDate();
   if(V.esActual&&(d>=25||d<=5))T.push(['💰','<b>Llega el sueldo:</b> lo primero es transferir a Fintual, antes de gastar nada.']);
@@ -620,7 +668,9 @@ async function saveTx(id){
     closeSheet();toast('✅ Listo, lo recordaré');loadAll();
   }catch(e){toast('❌ Error');console.error(e)}
 }
-async function delTx(id){if(!confirm('¿Borrar este gasto?'))return;try{await api('gastos?id=eq.'+id,{m:'DELETE'});closeSheet();toast('🗑 Borrado');loadAll()}catch(e){toast('❌ Error')}}
+async function delTx(id){if(!confirm('¿Borrar este gasto?'))return;const g=S.gastos.find(x=>x.id===id);
+  // Si vino de un correo, se marca "no cuenta" en vez de borrar; si no, el importador lo volvería a traer.
+  try{await api('gastos?id=eq.'+id,g&&g.ref_externa?{m:'PATCH',b:{estado:'ignorado'}}:{m:'DELETE'});closeSheet();toast('🗑 Borrado');loadAll()}catch(e){toast('❌ Error')}}
 function editPpto(){openSheet(`<h3>⚙️ Presupuesto de ${S.V.mes}</h3><p>Todo lo que puedes gastar en el mes, incluidas cuotas y fijos. Lo que no gastes va a Fintual.</p><input id="e-ppto" class="amt-in" inputmode="numeric" oninput="fmtIn(this)" value="${'$'+S.ppto.toLocaleString('es-CL')}"><button class="btn p" onclick="savePpto()">Guardar</button>`)}
 async function savePpto(){try{await api('presupuestos',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{periodo:S.periodo,monto:val('e-ppto')}});closeSheet();toast('✅ Presupuesto actualizado');loadAll()}catch(e){toast('❌ Error')}}
 async function loadIngresos(){try{const all=await api('ingresos?order=fecha.asc');const b={};all.forEach(i=>{const k=i.fecha.slice(0,7);b[k]=(b[k]||0)+i.monto});S.ing=b;
