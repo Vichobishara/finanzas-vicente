@@ -43,8 +43,8 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   (el esquema `privado` no está expuesto). `rpc/clave_ok` devuelve true/false para la pantalla de candado.
 - La app guarda la clave en localStorage. Se entrega una vez con el link `https://finanzas-vicente.vercel.app/#k=CLAVE`
   (la app la guarda y la borra de la URL) o se pega en la pantalla de candado. **La clave nunca va en el repo.**
-- Excepción: anon puede hacer INSERT en `gastos` sin clave (sin leer) si fuente es bci_auto | atajo | transferencia,
-  para que los scripts no se corten. `gastos_auto` y `anotar_atajo` son SECURITY DEFINER.
+- Sin excepciones: los scripts (Apps Script) también mandan `x-app-key` (constante APP_KEY). Un upsert con
+  `on_conflict` sin clave falla por RLS. `gastos_auto` y `anotar_atajo` son SECURITY DEFINER (el atajo funciona sin clave).
 - Para cambiar la clave: recalcular el hash en `privado.autorizado()` y abrir el link nuevo en el celular.
 
 ## Lógica de negocio clave
