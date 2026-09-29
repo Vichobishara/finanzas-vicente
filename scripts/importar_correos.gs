@@ -10,15 +10,15 @@
  * - Las demás llegan "por revisar": no descuentan hasta que en la app tocas "Es gasto" o "No cuenta".
  *   Si la app ya recuerda al destinatario (tabla destinatarios), se clasifica sola.
  *
- * 1) Pega todo esto en script.google.com (reemplaza el código anterior)
- * 2) Pega la clave de la app en APP_KEY (la misma del link #k=… de la app). Sin clave, Supabase rechaza todo.
- * 3) Ejecuta la función `instalar` una vez y acepta los permisos
+ * Instalar (un solo paso): pega todo esto en script.google.com reemplazando el código anterior,
+ * elige la función `instalar` arriba y toca ▶︎ Ejecutar (acepta los permisos si los pide).
+ * APP_KEY es opcional: sin clave igual entran compras y transferencias; con clave, también los sueldos de Toku.
  * Listo: corre solo cada 15 minutos.
  */
 
 const SUPA_URL = 'https://caaewoxfvmdizzziyvfz.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYWV3b3hmdm1kaXp6eml5dmZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2ODk0ODUsImV4cCI6MjEwNjI2NTQ4NX0.mUu3EZuLUe_jpSLFpU5lkUaoDIQFZdXZqZkwac03EXY';
-// Clave de la app (header x-app-key). Obligatoria: la base rechaza todo sin ella. No la subas al repo.
+// Clave de la app (header x-app-key). Opcional: solo hace falta para importar los sueldos de Toku. No la subas al repo.
 const APP_KEY = '';
 
 // Tus cuentas: transferencias hacia ellas no son gasto.
@@ -38,18 +38,20 @@ function instalar() {
 function importarBCI() { importarTodo(); }
 
 function importarTodo(dias) {
-  if (!APP_KEY) throw new Error('Falta pegar la clave de la app en APP_KEY');
   const d = dias || 5;
   const filas = []
     .concat(comprasBCI(d))
     .concat(transferenciasBCI(d))
     .concat(transferenciasScotia(d));
   if (filas.length) guardar('gastos', filas);
-  importarSueldosToku(Math.max(d, 10));
+  if (APP_KEY) importarSueldosToku(Math.max(d, 10));
+  else Logger.log('Sueldos Toku: sin APP_KEY, se saltan');
 }
 
 function headers() {
-  return { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY, 'x-app-key': APP_KEY };
+  const h = { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY };
+  if (APP_KEY) h['x-app-key'] = APP_KEY;
+  return h;
 }
 
 function guardar(tabla, filas) {
