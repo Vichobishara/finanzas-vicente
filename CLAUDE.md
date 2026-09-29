@@ -31,8 +31,21 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   - La cuota N de un periodo se calcula con `primer_periodo`; `recurrente = true` = fijo mensual (Santander, Crossfit).
 - `presupuestos` (periodo, monto): presupuesto total del mes, **incluye cuotas y fijos**. Default $1.000.000.
 - `ingresos` (fecha, monto, tipo, descripcion, base_tributable, impuesto): liquidaciones Toku.
-- `ajustes` (clave, valor jsonb): `patrimonio` {fintual, cartas, eth, fecha}, `perfil` {nacimiento, meta}.
-- RLS habilitado con política abierta (`USING true`). Ver "Pendientes".
+- `ajustes` (clave, valor jsonb): `patrimonio` {fintual, colchon, cartas, eth, fecha} (colchon = parte de Fintual en
+  Moderate Pitt), `perfil` {nacimiento, meta, sueldo}, `apv` {abierto, fecha}, `evitado` {periodo: monto}.
+- `ingresos` también tiene `ref_externa` (único, id del correo) y `fuente` (manual | app | toku_auto).
+- `ahorros` (fecha, monto, destino fintual|apv|colchon, periodo): lo que Vicho **de verdad** transfirió. `periodo` = mes del sueldo.
+  Al guardar desde la app se suma a `ajustes.patrimonio`.
+- Ventas del negocio = filas en `gastos` con `pulldex = true` y `monto` negativo (P&L en la sheet Negocio).
+
+## Seguridad (clave x-app-key)
+- Todas las tablas exigen el header `x-app-key`. La función `privado.autorizado()` compara su sha256 con el hash guardado
+  (el esquema `privado` no está expuesto). `rpc/clave_ok` devuelve true/false para la pantalla de candado.
+- La app guarda la clave en localStorage. Se entrega una vez con el link `https://finanzas-vicente.vercel.app/#k=CLAVE`
+  (la app la guarda y la borra de la URL) o se pega en la pantalla de candado. **La clave nunca va en el repo.**
+- Excepción: anon puede hacer INSERT en `gastos` sin clave (sin leer) si fuente es bci_auto | atajo | transferencia,
+  para que los scripts no se corten. `gastos_auto` y `anotar_atajo` son SECURITY DEFINER.
+- Para cambiar la clave: recalcular el hash en `privado.autorizado()` y abrir el link nuevo en el celular.
 
 ## Lógica de negocio clave
 - "Hoy puedes gastar" = (presupuesto − gastos personales − cuotas del periodo) / días hasta el cierre del 22.
@@ -51,10 +64,10 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 6. No es asesoría financiera: mantener los avisos "no soy asesor" en las secciones de impuestos e inversión.
 
 ## Pendientes / ideas
-- [ ] **Seguridad:** la anon key está en el cliente y RLS está abierto. Mantener el repo PRIVADO.
-      Siguiente paso: Supabase Auth (magic link) + políticas RLS por usuario.
+- [x] Seguridad: RLS con clave `x-app-key` (ver arriba). Si algún día hay más usuarios: Supabase Auth + RLS por usuario.
 - [ ] Atajo de iOS con disparador "Transacción" (Apple Pay Scotia) → POST a /gastos con fuente `atajo`.
 - [ ] Revisar si Scotiabank permite alertas por correo o SMS, para sumarlas al script.
 - [ ] Alertas por correo desde Apps Script (categoría > 80%, resumen semanal).
 - [ ] Actualización automática del saldo de Fintual (hoy es manual, desde la app).
-- [ ] Aportes al APV reales (AFP Uno, régimen por confirmar) en lugar de supuestos.
+- [x] Aportes reales: tabla `ahorros` (nudge "¿Ya mandaste a Fintual?" del 27 al 10).
+- [ ] Regla de CFO: cero cuotas nuevas mientras cuotas y fijos sean ≥ 30% del presupuesto (¿Me alcanza? ya la aplica).

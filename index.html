@@ -185,6 +185,7 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
     <button class="crow" onclick="openPlata()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 22h18M6 18v-7M10 18v-7M14 18v-7M18 18v-7M12 2l8 5H4z"/></svg></div><div class="cm"><b>Impuestos y dónde invertir</b><small id="m-plata">APV, devolución de impuestos y tu plan</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openAvisos()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div class="cm"><b>Avisos</b><small>Que el celular te recuerde qué hacer y cuándo</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openFin()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg></div><div class="cm"><b>Sueldos y patrimonio</b><small>Fintual, cartas, ETH y tus sueldos</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="openNeg()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 22V12h6v10"/></svg></div><div class="cm"><b>Negocio (PULLDEX)</b><small>Gastos y ventas: ¿gana o pierde plata?</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openMeses()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg></div><div class="cm"><b>Meses anteriores</b><small>Compara cómo te fue</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="editPpto()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></div><div class="cm"><b>Presupuesto del mes</b><small id="m-ppto">—</small></div><span class="chev">›</span></button>
   </div>
@@ -197,6 +198,8 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 const SB='https://caaewoxfvmdizzziyvfz.supabase.co';
 const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYWV3b3hmdm1kaXp6eml5dmZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2ODk0ODUsImV4cCI6MjEwNjI2NTQ4NX0.mUu3EZuLUe_jpSLFpU5lkUaoDIQFZdXZqZkwac03EXY';
 const H={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'};
+const getKey=()=>{try{return localStorage.getItem('app-key')||''}catch(e){return ''}};
+(()=>{const m=location.hash.match(/[#&]k=([\w-]+)/);if(m){try{localStorage.setItem('app-key',m[1])}catch(e){}history.replaceState(null,'',location.pathname)}})();
 const CAT={
  comida:{n:'Comida',ic:'🍽',c:'#12B76A'}, tech:{n:'Compras y tech',ic:'🛍',c:'#7A5AF8'},
  coleccionables:{n:'Cartas y coleccionables',ic:'🃏',c:'#F97316'}, ocio:{n:'Salidas y ocio',ic:'🎮',c:'#64748B'},
@@ -206,7 +209,7 @@ const CAT={
 };
 const TJ={scotiabank:'Scotia',bci:'BCI',santander:'Santander',efectivo:'Efectivo',otro:'Transferencia'};
 const CORTE={scotiabank:22,bci:20};
-const SUELDO=2000000;
+let SUELDO=1900000;
 const UTM=71649,APV_ANUAL=40*UTM,APV_MES=Math.round(APV_ANUAL/12),APV_BONO=6*UTM;
 const TR=[[13.5,0],[30,.04],[50,.08],[70,.135],[90,.23],[120,.304],[310,.35],[1e9,.40]];
 function impAnual(b){const u=b/(UTM*12);let t=0,prev=0;for(const[lim,r]of TR){const hi=Math.min(u,lim);if(hi>prev)t+=(hi-prev)*r;prev=lim;if(u<=lim)break}return t*UTM*12}
@@ -215,9 +218,9 @@ const flag=k=>{try{return localStorage.getItem(k)==='1'}catch(e){return false}};
 const setFlag=k=>{try{localStorage.setItem(k,'1')}catch(e){}};
 const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const MESL=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-let S={periodo:null,actual:null,periodos:[],gastos:[],prev:[],cuotas:[],reglas:[],techos:{},pptos:{},ppto:1000000,card:'scotiabank',ing:{},V:{}};
+let S={periodo:null,actual:null,periodos:[],gastos:[],prev:[],cuotas:[],reglas:[],techos:{},pptos:{},ppto:1000000,card:'scotiabank',ing:{},ahorros:[],aj:{},nc:1,V:{}};
 
-const api=async(p,o={})=>{const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),12000);try{const r=await fetch(SB+'/rest/v1/'+p,{headers:{...H,...(o.h||{})},method:o.m||'GET',body:o.b?JSON.stringify(o.b):undefined,signal:ctl.signal});if(!r.ok)throw new Error(await r.text());const t=await r.text();return t?JSON.parse(t):null}finally{clearTimeout(to)}};
+const api=async(p,o={})=>{const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),12000);try{const r=await fetch(SB+'/rest/v1/'+p,{headers:{...H,'x-app-key':getKey(),...(o.h||{})},method:o.m||'GET',body:o.b?JSON.stringify(o.b):undefined,signal:ctl.signal});if(!r.ok)throw new Error(await r.text());const t=await r.text();return t?JSON.parse(t):null}finally{clearTimeout(to)}};
 const $=s=>document.getElementById(s);
 const fmt=n=>(n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString('es-CL');
 const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2400)};
@@ -228,28 +231,36 @@ function periodoDe(fecha,t){const d=new Date(fecha+'T12:00:00');if(d.getDate()>(
 const hoyISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 function cuotasDe(per){return S.cuotas.map(c=>{if(c.recurrente)return{...c,label:'Todos los meses'};if(!c.primer_periodo)return null;const n=mdiff(c.primer_periodo,per)+1;if(n<1||n>c.total_cuotas)return null;return{...c,n,label:`Cuota ${n} de ${c.total_cuotas}`,restante:c.monto_cuota*(c.total_cuotas-n),fin:addM(c.primer_periodo,c.total_cuotas-1)}}).filter(Boolean)}
 function guess(desc){const d=(desc||'').toLowerCase();const r=S.reglas.find(x=>d.includes(x.palabra.toLowerCase()));return r?{cat:r.categoria_clave,neg:r.negocio}:{cat:'otros',neg:false}}
-const evKey=()=>'evitado-'+S.actual;
-const getEv=()=>{try{return +localStorage.getItem(evKey())||0}catch(e){return 0}};
-const addEv=x=>{try{localStorage.setItem(evKey(),getEv()+x)}catch(e){}};
+const getEv=()=>((S.aj.evitado||{})[S.actual])||0;
+const addEv=x=>saveAj('evitado',{...(S.aj.evitado||{}),[S.actual]:getEv()+x});
+const apvOk=()=>!!(S.aj.apv&&S.aj.apv.abierto);
+const $v=n=>n>0?'$'+Math.round(n).toLocaleString('es-CL'):'';
 function openSheet(h){$('sheet').innerHTML='<div class="handle"></div>'+h;$('sheet-bg').classList.add('on')}
 function closeSheet(){$('sheet-bg').classList.remove('on')}
 
 $('greet').textContent=(h=>h<12?'Buenos días ☀️':h<20?'Buenas tardes 🌤':'Buenas noches 🌙')(new Date().getHours());
 
+function lock(msg){$('hero-w').innerHTML=`<div class="hero"><div class="h-lbl">🔒 Tu app tiene clave</div><div class="h-l1" style="margin:8px 0 14px">${msg||'Pégala una vez y este celular la recuerda.'}</div><input id="k-in" placeholder="tu clave" autocomplete="off" autocapitalize="off" autocorrect="off" style="width:100%;padding:14px;border-radius:14px;border:none;font-size:16px;margin-bottom:10px"><button class="btn p" style="margin-top:0;background:#fff;color:#0B1B3A" onclick="setKey()">Entrar</button></div>`}
+function setKey(){const k=($('k-in').value||'').trim();if(!k)return;try{localStorage.setItem('app-key',k)}catch(e){}loadAll()}
 async function loadAll(){
+  if(!getKey())return lock();
   try{
-    const [cats,pers,cuotas,pptos,reglas,aj]=await Promise.all([
+    const [ok,ahorros,cats,pers,cuotas,pptos,reglas,aj]=await Promise.all([api('rpc/clave_ok',{m:'POST',b:{}}),api('ahorros?order=fecha.desc,id.desc'),
       api('categorias?select=clave,techo'),api('gastos?select=periodo'),
       api('cuotas?activa=eq.true&order=monto_cuota.desc'),api('presupuestos?select=*'),
       api('reglas_categoria?select=palabra,categoria_clave,negocio'),api('ajustes?select=clave,valor')
     ]);
-    S.aj={};(aj||[]).forEach(a=>S.aj[a.clave]=a.valor);
+    if(!ok)return lock('Esa clave no funciona. Revisa que esté bien copiada.');
+    S.aj={};(aj||[]).forEach(a=>S.aj[a.clave]=a.valor);S.ahorros=ahorros||[];
+    SUELDO=PERF().sueldo||SUELDO;
     cats.forEach(c=>S.techos[c.clave]=c.techo);
     S.cuotas=cuotas;S.pptos={};pptos.forEach(p=>S.pptos[p.periodo]=p.monto);
     S.reglas=reglas.sort((a,b)=>b.palabra.length-a.palabra.length);
     S.actual=periodoDe(hoyISO(),'scotiabank');
     S.periodos=[...new Set(pers.map(x=>x.periodo).filter(Boolean).concat(S.actual))].sort();
     if(!S.periodo)S.periodo=S.actual;
+    try{if(localStorage.getItem('apv-abierto')==='1'&&!apvOk())saveAj('apv',{abierto:true,fecha:hoyISO()},true);
+      const l=+localStorage.getItem('evitado-'+S.actual)||0;if(l&&!getEv())saveAj('evitado',{...(S.aj.evitado||{}),[S.actual]:l},true);}catch(e){}
     await loadPeriodo();loadIngresos();
   }catch(e){console.error(e);$('hero-w').innerHTML='<div class="hero bad"><div class="h-lbl">Sin conexión</div><div class="h-l1" style="margin-top:8px">Toca ↻ arriba para reintentar</div></div>';}
 }
@@ -296,6 +307,8 @@ function render(){
   const ev=getEv();$('win').innerHTML=esActual&&ev?`<div class="win">💪 Este mes te aguantaste ${fmt(ev)} en compras</div>`:'';
 
   let nz='';const rev=items.otros||[];
+  if(esActual){const dd=hoy.getDate(),u=S.ahorros[0],dsA=u?Math.round((hoy-new Date(u.fecha+'T00:00:00'))/864e5):99;
+    if((dd>=27||dd<=10)&&dsA>15)nz+=`<div class="nudge"><div>💰 <b>¿Ya mandaste a Fintual?</b> Anota cuánto y queda tu ahorro real</div><button onclick="openAhorro()">Anotar</button></div>`;}
   if(rev.length)nz+=`<div class="nudge"><div>❓ <b>${rev.length} gasto${rev.length>1?'s':''} sin categoría</b></div><button onclick="openCat('otros')">Ordenar</button></div>`;
   if(esActual){const man=S.gastos.filter(g=>g.tarjeta==='scotiabank'||g.tarjeta==='efectivo').map(g=>g.fecha).sort().pop();const ds=man?Math.round((hoy-new Date(man+'T00:00:00'))/864e5):null;
     if(ds===null||ds>=2)nz+=`<div class="nudge"><div>✍️ ${ds===null?'No has anotado gastos de Scotia':`Llevas <b>${ds} días</b> sin anotar lo de Scotia`}</div><button onclick="openAdd()">Anotar</button></div>`;}
@@ -315,22 +328,22 @@ function render(){
 function nextMove(){
   const m=new Date().getMonth()+1,T=S.tax;
   if(T&&T.dev>50000&&m>=3&&m<=5)return['🧾',`Pide la reliquidación en la Operación Renta`,`Te podrían devolver ≈ ${fmt(Math.round(T.dev/10000)*10000)}`];
-  if(!flag('apv-abierto'))return['🎯','Abre tu APV régimen A en Fintual',`Aportando ${fmt(APV_MES)} al mes, el Estado te pone hasta ${fmt(APV_BONO)} al año`];
+  if(!apvOk())return['🎯','Abre tu APV régimen A en Fintual',`Aportando ${fmt(APV_MES)} al mes, el Estado te pone hasta ${fmt(APV_BONO)} al año`];
   if(T&&T.dev>50000)return['🧾',`Abril ${+T.y+1}: pide la reliquidación`,`Te podrían devolver ≈ ${fmt(Math.round(T.dev/10000)*10000)} de impuestos`];
   return['💰','El día del sueldo: primero APV y Fintual','Después gastas lo que queda'];
 }
 function renderNext(){if(!S.V.esActual){$('next').innerHTML='';return}const[i,b,s]=nextMove();$('next').innerHTML=`<button class="next" onclick="openPlata()"><i>${i}</i><div class="cm"><b>Tu próximo movimiento</b><small>${b} · ${s}</small></div><span class="chev">›</span></button>`;
-  if(S.tax)$('m-plata').textContent=`Devolución estimada ${fmt(Math.round(S.tax.dev/10000)*10000)} · APV ${flag('apv-abierto')?'✓':'pendiente'}`}
+  if(S.tax)$('m-plata').textContent=`Devolución estimada ${fmt(Math.round(S.tax.dev/10000)*10000)} · APV ${apvOk()?'✓':'pendiente'}`}
 
 function openPlata(){
-  const T=S.tax,apv=flag('apv-abierto'),P0=PAT(),pat=P0.fintual+P0.cartas+P0.eth,alt=Math.round((P0.cartas+P0.eth)/pat*100);
+  const T=S.tax,apv=apvOk(),P0=PAT(),pat=P0.fintual+P0.cartas+P0.eth,alt=Math.round((P0.cartas+P0.eth)/pat*100);
   const dev=T?Math.round(T.dev/10000)*10000:0;
   openSheet(`<h3>🏦 Impuestos y dónde invertir</h3><p>Con tus números reales. Ordenado de lo que más plata te da a lo que menos.</p>
   ${T?`<div class="box"><div style="padding:12px 0 4px"><small style="color:var(--sec);font-size:12px">🧾 Devolución de impuestos estimada · Operación Renta abril ${+T.y+1}</small><div class="big-g">≈ ${fmt(dev)}</div><small style="color:var(--sec);font-size:12px;line-height:1.5;display:block;padding-bottom:10px">Tu sueldo es variable: en ${T.abril?'abril':'los meses de bono'} te retuvieron impuesto como si ganaras eso todos los meses. Con un solo empleador puedes pedir la <b style="color:var(--text)">reliquidación anual</b> y te devuelven lo pagado de más. Pagaste ≈ ${fmt(T.pagado)} y en el año te correspondería ≈ ${fmt(T.debido)}.</small></div></div>`:''}
   <div class="card"><div class="card-h"><h2>Tu plan, en orden</h2></div>
-    <div class="step"><div class="n ${apv?'ok':''}">${apv?'✓':'1'}</div><div><b>🎯 APV régimen A: ${fmt(APV_MES)} al mes</b><small>El Estado te pone 15% encima, hasta ${fmt(APV_BONO)} al año. Con tu sueldo normal pagas 4% de impuesto, así que el régimen A (15%) te conviene más que el B. Se abre en Fintual → “Mi primera jubilación”. Ojo: es para la pensión; si lo sacas antes, devuelves el bono.</small>${apv?'':`<button class="chip on" style="margin-top:8px" onclick="setFlag('apv-abierto');openPlata();render()">Ya lo abrí ✓</button>`}</div></div>
-    <div class="step"><div class="n ${2700000>=3000000?'ok':''}">2</div><div><b>🛟 Colchón: 3 meses de gastos (~$3.000.000)</b><small>Plata para emergencias, a la mano y sin riesgo. Tus $2,7M en Moderate Pitt casi lo cubren: completa ~$300k con el colchón de este mes y no lo toques.</small></div></div>
-    <div class="step"><div class="n">3</div><div><b>📈 Largo plazo: todo lo demás a Risky Norris</b><small>Lo que no va al APV ni al colchón, a tu fondo agresivo en Fintual. Plata que no vas a tocar en años. Ya ganaste +26,7% ahí.</small></div></div>
+    <div class="step"><div class="n ${apv?'ok':''}">${apv?'✓':'1'}</div><div><b>🎯 APV régimen A: ${fmt(APV_MES)} al mes</b><small>El Estado te pone 15% encima, hasta ${fmt(APV_BONO)} al año. Con tu sueldo normal pagas 4% de impuesto, así que el régimen A (15%) te conviene más que el B. Se abre en Fintual → “Mi primera jubilación”. Ojo: es para la pensión; si lo sacas antes, devuelves el bono.</small>${apv?`<small style="display:block;margin-top:6px;color:var(--text)">Este año llevas <b>${fmt(ahorradoAnio('apv'))}</b> de ${fmt(APV_ANUAL)} para el bono completo.</small>`:''}${apv?'':`<button class="chip on" style="margin-top:8px" onclick="saveAj('apv',{abierto:true,fecha:hoyISO()}).then(openPlata)">Ya lo abrí ✓</button>`}</div></div>
+    <div class="step"><div class="n ${colLleno()?'ok':''}">${colLleno()?'✓':'2'}</div><div><b>🛟 Colchón: 3 meses de gastos (~${fmtM(metaCol())})</b><small>Plata para emergencias, a la mano y sin riesgo. ${colLleno()?`Ya tienes ${fmtM(PAT().colchon||0)} en Moderate Pitt: está listo. No lo toques y la plata nueva va al largo plazo.`:`Tienes ${fmtM(PAT().colchon||0)} en Moderate Pitt: te faltan ${fmt(metaCol()-(PAT().colchon||0))}. Complétalo con el colchón de cada mes y no lo toques.`}</small></div></div>
+    <div class="step"><div class="n">3</div><div><b>📈 Largo plazo: todo lo demás a Risky Norris</b><small>Lo que no va al APV ni al colchón, a tu fondo agresivo en Fintual. Plata que no vas a tocar en años.</small></div></div>
     <div class="step"><div class="n">4</div><div><b>🃏 Cartas y ETH: no sumar más por ahora</b><small>Ya son el ${alt}% de todo lo que tienes. Es harto en cosas que suben y bajan fuerte. Mientras no baje de ~20%, la plata nueva va a Fintual.</small></div></div>
     <div class="step"><div class="n">5</div><div><b>🏠 Si te independizas en menos de 2 años</b><small>Esa plata no va al fondo agresivo: va a uno conservador, para que una caída no te deje sin el pie para arrendar.</small></div></div>
   </div>
@@ -358,7 +371,8 @@ function aportes(){
   const base=Math.max(0,Math.round(Math.max(0,SUELDO-S.ppto)/2))+Math.round(APV_MES*.15);
   const ks=Object.keys(S.ing||{}).sort().slice(-12);
   const bonos=ks.reduce((s,k)=>s+Math.max(0,S.ing[k]-SUELDO),0)*.7/12/2;
-  return{base,conBonos:Math.round(base+bonos)};
+  const pm={};S.ahorros.forEach(a=>{const k=a.periodo||a.fecha.slice(0,7);pm[k]=(pm[k]||0)+a.monto});const rv=Object.values(pm).slice(-6);
+  return{base,conBonos:Math.round(base+bonos),real:rv.length?Math.round(rv.reduce((a,x)=>a+x,0)/rv.length):null,nReal:rv.length};
 }
 function proyMeta(T,A){const p=PAT(),inv=p.fintual+p.eth,m=mesesHasta(inv,A,Math.max(0,T-p.cartas));const e=edadAhora()+m/12,y=new Date().getFullYear()+Math.floor((new Date().getMonth()+m)/12);return{m,e,y}}
 function renderMeta(){
@@ -380,18 +394,20 @@ function openMeta(){
    <div class="lever"><i style="font-style:normal">🍽</i><div>Bajar comida a su tope (~<b>${fmt(ahorroCom)} menos al mes</b>) e invertirlo te hace llegar a tu meta <b>${Math.max(0,((rB.m-rC.m)/12)).toLocaleString('es-CL',{maximumFractionDigits:1})} años antes</b>.</div></div>
    <div class="lever"><i style="font-style:normal">💸</i><div>Cada <b>$100.000</b> que no gastas hoy son <b>${fmt(d10(100000))}</b> en 10 años. Antes de comprar, toca ¿Me alcanza?</div></div>
    <div class="lever"><i style="font-style:normal">💳</i><div>Una cuota de $50.000 al mes por 12 meses son ${fmt(600000)} que no se invierten: <b>${fmt(d10(600000))}</b> menos en 10 años.</div></div>
+   ${(()=>{const a=aportes();return a.real===null?`<div class="lever"><i style="font-style:normal">📊</i><div>Todavía no anotas cuánto inviertes de verdad. El día del sueldo toca <b>💰 Anotar</b> y aquí vas a ver si estás cumpliendo el plan.</div></div>`:`<div class="lever"><i style="font-style:normal">📊</i><div>Lo que de verdad has invertido: <b>${fmt(a.real)} al mes</b> en promedio (${a.nReal} ${a.nReal>1?'meses':'mes'}). El plan dice ${fmt(a.base)}. ${a.real>=a.base?'Vas cumpliendo 💪':'Te estás quedando corto.'}</div></div>`})()}
    <div class="lever"><i style="font-style:normal">🎯</i><div>El bono del APV (hasta <b>${fmt(APV_BONO)}</b> al año) y la devolución de impuestos van <b>directo a invertir</b>, no a gastar.</div></div>
   </div>
   <label>Cambiar tu meta</label><div class="chips">${metas.map(([T,l])=>`<button class="chip ${PERF().meta===T?'on':''}" onclick="saveAj('perfil',{...PERF(),meta:${T}}).then(openMeta)">${l}</button>`).join('')}</div>
   <button class="btn p" style="background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="editPat()">Actualizar mi patrimonio</button>
   <p class="fine" style="margin-top:12px">*Supuesto: 6% anual sobre la inflación y dólar ~$950. Es una proyección, no una promesa: los mercados suben y bajan. Las cartas y ETH no se proyectan con crecimiento.</p>`);
 }
-async function saveAj(clave,valor){try{await api('ajustes',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{clave,valor}});S.aj[clave]=valor;render();}catch(e){toast('❌ Error')}}
+async function saveAj(clave,valor,quiet){try{await api('ajustes',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{clave,valor}});S.aj[clave]=valor;if(!quiet)render();}catch(e){toast('❌ Error')}}
 function editPat(){const p=PAT();openSheet(`<h3>Tu patrimonio hoy</h3><p>Actualízalo una vez al mes (el día del sueldo va perfecto).</p>
   <label>Fintual (todo)</label><input id="p-f" inputmode="numeric" oninput="fmtIn(this)" value="$${p.fintual.toLocaleString('es-CL')}">
   <label>Cartas Pokémon (valor de venta)</label><input id="p-c" inputmode="numeric" oninput="fmtIn(this)" value="$${p.cartas.toLocaleString('es-CL')}">
+  <label>De ese Fintual, ¿cuánto es colchón? (Moderate Pitt)</label><input id="p-col" inputmode="numeric" oninput="fmtIn(this)" value="$${(p.colchon||0).toLocaleString('es-CL')}">
   <label>Ethereum en pesos</label><input id="p-e" inputmode="numeric" oninput="fmtIn(this)" value="$${p.eth.toLocaleString('es-CL')}">
-  <button class="btn p" onclick="saveAj('patrimonio',{fintual:val('p-f'),cartas:val('p-c'),eth:val('p-e'),fecha:hoyISO()}).then(()=>{toast('✅ Patrimonio actualizado');openMeta()})">Guardar</button>`)}
+  <button class="btn p" onclick="saveAj('patrimonio',{fintual:val('p-f'),colchon:val('p-col'),cartas:val('p-c'),eth:val('p-e'),fecha:hoyISO()}).then(()=>{toast('✅ Patrimonio actualizado');openMeta()})">Guardar</button>`)}
 
 function icsEvt(uid,start,title,desc,rrule){return['BEGIN:VEVENT','UID:'+uid+'@finanzas-vicho','DTSTAMP:20260929T120000Z','DTSTART;TZID=America/Santiago:'+start,'DURATION:PT15M','SUMMARY:'+title,'DESCRIPTION:'+desc,rrule?'RRULE:'+rrule:null,'BEGIN:VALARM','TRIGGER:PT0M','ACTION:DISPLAY','DESCRIPTION:'+title,'END:VALARM','END:VEVENT'].filter(Boolean).join('\r\n')}
 function openAvisos(){
@@ -434,7 +450,18 @@ function openCat(k){
   const info=k==='otros'?'Tócalos y elige la categoría. La app lo recuerda para la próxima.':`${fmt(s)}${t?' de '+fmt(t):''}${p?` · en ${V.pvL} fueron ${fmt(p)}`:''}`;
   openSheet(`<h3>${c.ic} ${c.n}</h3><p>${info}</p><div class="card">${it.map(txHtml).join('')||'<div class="empty">Nada por aquí 🎉</div>'}</div>`);
 }
-function openNeg(){const V=S.V;openSheet(`<h3>🧩 Negocio</h3><p>${fmt(V.nt)} en TCG Logs / PULLDEX. No cuenta en tu presupuesto, pero es plata que tiene que volver.</p><div class="card">${V.neg.map(txHtml).join('')}</div>`)}
+async function openNeg(){const V=S.V,g=V.neg.filter(x=>x.monto>0).reduce((s,x)=>s+x.monto,0),v=-V.neg.filter(x=>x.monto<0).reduce((s,x)=>s+x.monto,0);
+  const res=(a,b,l)=>`<div class="row"><span style="color:var(--text);font-weight:700">${l||(b>=a?'Vas ganando':'Falta recuperar')}</span><b style="color:${b>=a?'var(--green-d)':'var(--red-d)'}">${fmt(Math.abs(b-a))}</b></div>`;
+  openSheet(`<h3>🧩 Negocio</h3><p>TCG Logs / PULLDEX. No cuenta en tu presupuesto, pero tiene que dar plata.</p>
+  <div class="box"><div class="row"><span>Gastaste en ${V.mes}</span><b>${fmt(g)}</b></div><div class="row"><span>Vendiste en ${V.mes}</span><b style="color:var(--green-d)">${fmt(v)}</b></div>${res(g,v,v>=g?'Ganaste en '+V.mes:'Perdiste en '+V.mes)}</div>
+  <div class="box" id="neg-tot"><div class="row"><span>Desde que anotas</span><b>…</b></div></div>
+  <button class="btn p" style="margin-top:0" onclick="openVenta()">💵 Anotar venta</button>
+  <div class="card" style="margin-top:14px">${V.neg.map(txHtml).join('')||'<div class="empty">Sin movimientos este mes</div>'}</div>`);
+  try{const all=await api('gastos?pulldex=eq.true&or=(estado.is.null,estado.neq.ignorado)&select=monto'),tg=all.filter(x=>x.monto>0).reduce((s,x)=>s+x.monto,0),tv=-all.filter(x=>x.monto<0).reduce((s,x)=>s+x.monto,0),el=$('neg-tot');
+    if(el)el.innerHTML=`<div class="row"><span>Invertido desde que anotas</span><b>${fmt(tg)}</b></div><div class="row"><span>Vendido desde que anotas</span><b style="color:var(--green-d)">${fmt(tv)}</b></div>${res(tg,tv)}`}catch(e){}}
+function openVenta(){openSheet(`<h3>💵 Anotar venta</h3><p>Plata que entró por el negocio: cartas vendidas, PULLDEX, etc.</p><input id="v-monto" class="amt-in" inputmode="numeric" placeholder="$0" oninput="fmtIn(this)"><label>¿Qué vendiste?</label><input id="v-desc" placeholder="ej: Charizard PSA 9" onkeydown="if(event.key==='Enter')saveVenta()"><button class="btn p" onclick="saveVenta()">Guardar</button>`);$('v-monto').focus()}
+async function saveVenta(){const m=val('v-monto');if(!m){toast('Pon el monto');return}const d=($('v-desc').value||'').trim();
+  try{await api('gastos',{m:'POST',b:{fecha:hoyISO(),monto:-m,descripcion:'Venta'+(d?': '+d:''),tarjeta:'otro',fuente:'app',pulldex:true,categoria_clave:'coleccionables'}});closeSheet();toast(`💵 Venta de ${fmt(m)} anotada`);await loadAll();openNeg()}catch(e){toast('❌ Error');console.error(e)}}
 function openMovs(){openSheet(`<h3>Todos los gastos</h3><p>${perL(S.periodo)} · toca uno para editarlo o borrarlo.</p><div class="card">${S.gastos.map(txHtml).join('')||'<div class="empty">Sin gastos</div>'}</div>`)}
 function openCuotas(){const V=S.V;openSheet(`<h3>💳 Cuotas y fijos</h3><p>${fmt(V.cuo)} al mes que se descuentan solos. No tienes que anotarlos.</p><div class="card">${V.CQ.map(c=>`<div class="crow"><div class="cm"><b>${c.nombre}</b><small>${c.label}${c.fin?' · termina en '+perL(c.fin):''}</small></div><div class="ca">${fmt(c.monto_cuota)}</div></div>`).join('')}</div>`)}
 function tipsList(){
@@ -446,7 +473,7 @@ function tipsList(){
   if(terminan.length)T.push(['🎉',`Este mes terminas <b>${terminan.map(c=>c.nombre).join(' y ')}</b>. Desde el próximo tienes ${fmt(terminan.reduce((s,c)=>s+c.monto_cuota,0))} más al mes.`]);
   T.push(['💳',`Antes de gastar un peso ya se fueron <b>${fmt(V.cuo)}</b> en cuotas y fijos. Cada cuota nueva achica tu "hoy puedes gastar".`]);
   T.push(['🤔','Antes de cualquier compra sobre $10.000, toca <b>¿Me alcanza?</b>. Si la app dice que no, es que no.']);
-  if(!flag('apv-abierto'))T.push(['🎯',`<b>APV pendiente:</b> abre “Mi primera jubilación” en Fintual con ${fmt(APV_MES)} al mes y el Estado te regala hasta ${fmt(APV_BONO)} al año.`]);
+  if(!apvOk())T.push(['🎯',`<b>APV pendiente:</b> abre “Mi primera jubilación” en Fintual con ${fmt(APV_MES)} al mes y el Estado te regala hasta ${fmt(APV_BONO)} al año.`]);
   if(S.tax&&S.tax.dev>50000)T.push(['🧾',`En abril pide la <b>reliquidación anual</b>: te podrían devolver ≈ ${fmt(Math.round(S.tax.dev/10000)*10000)} de impuestos.`]);
   return T;
 }
@@ -454,7 +481,7 @@ function openTips(){openSheet(`<h3>💡 Consejos</h3><p>Basados en tus números 
 function openProy(){
   const V=S.V,P=V.proy;
   openSheet(`<h3>📈 Fintual</h3><p>${!V.esActual?`Con lo que gastaste en ${V.mes} quedaban libres ${fmt(P.libre)}.`:P.over?'Ya te pasaste: cada peso extra sale de lo que iba a Fintual.':`Mientras no te pases del presupuesto, estos ${fmt(P.fin)} están asegurados.`}</p>
-  <div class="box"><div class="row"><span>Sueldo que llega</span><b>${fmt(SUELDO)}</b></div><div class="row"><span>Pagas tarjetas y cuotas de ${V.mes}</span><b style="color:var(--red-d)">-${fmt(P.base)}</b></div><div class="row"><span>Queda libre</span><b>${fmt(P.libre)}</b></div><div class="row"><span>→ APV régimen A</span><b style="color:var(--green-d)">${fmt(Math.min(P.fin,APV_MES))}</b></div><div class="row"><span>→ Fintual largo plazo</span><b style="color:var(--green-d)">${fmt(Math.max(0,P.fin-APV_MES))}</b></div><div class="row"><span>→ Colchón en la cuenta</span><b>${fmt(P.col)}</b></div></div>
+  <div class="box"><div class="row"><span>Sueldo que llega</span><b>${fmt(SUELDO)}</b></div><div class="row"><span>Pagas tarjetas y cuotas de ${V.mes}</span><b style="color:var(--red-d)">-${fmt(P.base)}</b></div><div class="row"><span>Queda libre</span><b>${fmt(P.libre)}</b></div><div class="row"><span>→ APV régimen A</span><b style="color:var(--green-d)">${fmt(Math.min(P.fin,APV_MES))}</b></div><div class="row"><span>→ Fintual largo plazo</span><b style="color:var(--green-d)">${fmt(Math.max(0,P.fin-APV_MES))}</b></div><div class="row"><span>${colLleno()?'→ Más Fintual (el colchón ya está lleno)':'→ Colchón (Moderate Pitt)'}</span><b${colLleno()?' style="color:var(--green-d)"':''}>${fmt(P.col)}</b></div></div>
   <p>Del APV el Estado te devuelve 15% encima (hasta ${fmt(APV_BONO)} al año).</p>`);
 }
 function openFin(){
@@ -462,9 +489,48 @@ function openFin(){
   const avg=v.length?v.reduce((a,x)=>a+x,0)/v.length:0,med=v.length?[...v].sort((a,x)=>a-x)[Math.floor(v.length/2)]:0;
   openSheet(`<h3>📈 Sueldos y patrimonio</h3><p>Lo que tienes y lo que te entra.</p>
   <div class="box"><div class="row"><span>Fintual</span><b style="color:var(--green-d)">${fmt(PAT().fintual)}</b></div><div class="row"><span>Cartas Pokémon</span><b>${fmt(PAT().cartas)}</b></div><div class="row"><span>Ethereum</span><b>${fmt(PAT().eth)}</b></div><div class="row"><span style="color:var(--text);font-weight:700">Total</span><b style="color:var(--ac)">${fmt(PAT().fintual+PAT().cartas+PAT().eth)}</b></div></div><button class="chip" style="margin-bottom:12px" onclick="editPat()">✏️ Actualizar valores</button>
-  <div class="box"><div class="chart">${ks.map(k=>`<div><span class="${b[k]>2100000?'b':''}" style="height:${Math.max(3,b[k]/mx*100)}%"></span><small>${MES[+k.slice(5)-1][0]}</small></div>`).join('')}</div></div>
-  <div class="box"><div class="row"><span>Tu sueldo normal</span><b>${fmt(med)}</b></div><div class="row"><span>Promedio 12 meses (con comisiones)</span><b>${fmt(avg)}</b></div>${[...ks].reverse().slice(0,6).map(k=>`<div class="row"><span>${perL(k)}</span><b style="color:var(--green-d)">${fmt(b[k])}</b></div>`).join('')}</div>`);
+  <div class="box"><div class="chart">${ks.map(k=>`<div><span class="${b[k]>SUELDO*1.1?'b':''}" style="height:${Math.max(3,b[k]/mx*100)}%"></span><small>${MES[+k.slice(5)-1][0]}</small></div>`).join('')}</div></div>
+  <div class="box"><div class="row"><span>Sueldo fijo que usa la app</span><b>${fmt(SUELDO)}</b></div><div class="row"><span>Tu sueldo típico (mediana 12 meses)</span><b>${fmt(med)}</b></div><div class="row"><span>Promedio 12 meses (con comisiones)</span><b>${fmt(avg)}</b></div>${[...ks].reverse().slice(0,6).map(k=>`<div class="row"><span>${perL(k)}</span><b style="color:var(--green-d)">${fmt(b[k])}</b></div>`).join('')}</div>
+  <div class="chips" style="margin-bottom:14px"><button class="chip" onclick="openIng()">➕ Agregar sueldo</button><button class="chip" onclick="editSueldo()">✏️ Cambiar sueldo fijo</button></div>
+  <div class="card"><div class="card-h"><h2>Lo que de verdad ahorraste</h2></div>${tasaAhorro()}</div>`);
 }
+function tasaAhorro(){
+  const pm={};S.ahorros.forEach(a=>{const k=a.periodo||a.fecha.slice(0,7);pm[k]=(pm[k]||0)+a.monto});const ks=Object.keys(pm).sort().reverse().slice(0,6);
+  if(!ks.length)return`<div class="empty">Aún no anotas ahorros. El día del sueldo aparece <b>💰 Anotar</b> en el inicio.</div>`;
+  return ks.map(k=>{const i=S.ing[k]||0,pc=i?Math.round(pm[k]/i*100):null;return`<div class="row"><span>${perL(k)}${pc!==null?` · <b style="color:${pc>=20?'var(--green-d)':'var(--amber-d)'}">${pc}%</b> del sueldo`:''}</span><b>${fmt(pm[k])}</b></div>`}).join('')+`<p class="fine" style="margin:8px 0 4px">Meta de un millonario en formación: 20% o más de lo que te entra.</p>`;
+}
+function openIng(){openSheet(`<h3>➕ Agregar sueldo</h3><p>Lo que te llegó líquido. Los sueldos de Toku se anotan solos desde el correo del BCI; esto es para corregir o sumar otro ingreso.</p>
+  <input id="i-monto" class="amt-in" inputmode="numeric" placeholder="$0" oninput="fmtIn(this)">
+  <label>Fecha</label><input id="i-fecha" type="date" value="${hoyISO()}">
+  <label>Tipo</label><div class="chips" id="i-tipo">${[['sueldo','Sueldo'],['bono','Bono o comisión'],['otro','Otro']].map(([k,l],i)=>`<button class="chip ${i?'':'on'}" data-k="${k}" onclick="document.querySelectorAll('#i-tipo .chip').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${l}</button>`).join('')}</div>
+  <label>Base tributable (opcional, sale en la liquidación)</label><input id="i-base" inputmode="numeric" oninput="fmtIn(this)" placeholder="$0">
+  <label>Impuesto único (opcional)</label><input id="i-imp" inputmode="numeric" oninput="fmtIn(this)" placeholder="$0">
+  <button class="btn p" onclick="saveIng()">Guardar</button>`);$('i-monto').focus()}
+async function saveIng(){const m=val('i-monto');if(!m){toast('Pon el monto');return}const b=val('i-base'),tipo=$('i-tipo').querySelector('.chip.on').dataset.k;
+  try{await api('ingresos',{m:'POST',b:{fecha:$('i-fecha').value||hoyISO(),monto:m,tipo,descripcion:tipo==='sueldo'?'Sueldo':tipo==='bono'?'Bono':'Ingreso',fuente:'app',base_tributable:b||null,impuesto:b?val('i-imp'):null}});closeSheet();toast('✅ Anotado');await loadIngresos();openFin()}catch(e){toast('❌ Error');console.error(e)}}
+function editSueldo(){openSheet(`<h3>Tu sueldo fijo</h3><p>Lo que te llega seguro cada mes, sin comisiones. La app lo usa para calcular cuánto ahorras; las comisiones cuentan como bono.</p><input id="s-in" class="amt-in" inputmode="numeric" oninput="fmtIn(this)" value="$${SUELDO.toLocaleString('es-CL')}"><button class="btn p" onclick="saveSueldo()">Guardar</button>`)}
+async function saveSueldo(){const v=val('s-in');if(!v)return;SUELDO=v;await saveAj('perfil',{...PERF(),sueldo:v});toast('✅ Listo');openFin()}
+
+const metaCol=()=>3*(S.ppto||1000000);
+const colLleno=()=>(PAT().colchon||0)>=metaCol();
+const ahorradoAnio=d=>{const y=String(new Date().getFullYear());return S.ahorros.filter(a=>a.destino===d&&a.fecha.startsWith(y)).reduce((s,a)=>s+a.monto,0)};
+function sugAhorro(){
+  const pv=addM(S.actual,-1),g=(S.periodo===S.actual?S.prev:[]).reduce((s,x)=>s+x.monto,0),cq=cuotasDe(pv).reduce((s,c)=>s+c.monto_cuota,0);
+  const libre=Math.max(0,SUELDO-Math.max(g+cq,S.pptos[pv]||1000000)),fin=Math.round(libre/2),apv=apvOk()?Math.min(fin,APV_MES):0;
+  return colLleno()?{pv,apv,fintual:libre-apv,colchon:0}:{pv,apv,fintual:fin-apv,colchon:libre-fin};
+}
+function openAhorro(){const s=sugAhorro();
+  openSheet(`<h3>💰 ¿Cuánto mandaste?</h3><p>Anota lo que transferiste de verdad, no lo que pensabas. Viene escrito lo que te toca según lo que gastaste en ${MESL[+s.pv.slice(5)-1]}.</p>
+  ${apvOk()?`<label>🎯 APV (Fintual · Mi primera jubilación)</label><input id="h-apv" inputmode="numeric" oninput="fmtIn(this)" placeholder="$0" value="${$v(s.apv)}">`:''}
+  <label>📈 Fintual largo plazo (Risky Norris)</label><input id="h-fin" inputmode="numeric" oninput="fmtIn(this)" placeholder="$0" value="${$v(s.fintual)}">
+  <label>🛟 Colchón (Moderate Pitt)</label><input id="h-col" inputmode="numeric" oninput="fmtIn(this)" placeholder="$0" value="${$v(s.colchon)}">
+  <button class="btn p" onclick="saveAhorro()">Guardar</button><p class="fine" style="margin-top:10px">Se suma solo a tu patrimonio en la app.</p>`)}
+async function saveAhorro(){
+  const rows=[['apv','h-apv'],['fintual','h-fin'],['colchon','h-col']].filter(([d,id])=>$(id)&&val(id)>0).map(([destino,id])=>({destino,monto:val(id),fecha:hoyISO(),periodo:addM(S.actual,-1)}));
+  if(!rows.length){toast('Pon al menos un monto');return}
+  try{await api('ahorros',{m:'POST',b:rows});const p=PAT(),t=rows.reduce((s,r)=>s+r.monto,0),c=rows.filter(r=>r.destino==='colchon').reduce((s,r)=>s+r.monto,0);
+    await saveAj('patrimonio',{...p,fintual:p.fintual+t,colchon:(p.colchon||0)+c,fecha:hoyISO()},true);
+    closeSheet();toast(`💪 ${fmt(t)} invertidos. Así se llega.`);loadAll()}catch(e){toast('❌ Error');console.error(e)}}
 function openMeses(){openSheet(`<h3>🗓 Meses</h3><p>Elige un mes para ver cómo te fue.</p><div class="chips">${S.periodos.map(p=>`<button class="chip ${p===S.periodo?'on':''}" onclick="setPer('${p}')">${perL(p)}</button>`).join('')}</div>`)}
 
 function cardChips(){return `<div class="chips" id="a-cards">${['scotiabank','bci','santander','efectivo'].map(k=>`<button class="chip ${S.card===k?'on':''}" onclick="S.card='${k}';$('a-cards').outerHTML=cardChips()">${TJ[k]}</button>`).join('')}</div>`}
@@ -494,10 +560,11 @@ async function saveAdd(){
   }catch(e){toast('❌ No se pudo guardar');console.error(e)}
 }
 
-function openCheck(){
+function openCheck(){S.nc=1;
   openSheet(`<h3>🤔 ¿Me alcanza?</h3><p>Antes de comprar, pon cuánto sale. Te digo la verdad.</p>
   <input id="a-monto" class="amt-in" inputmode="numeric" placeholder="$0" autocomplete="off" oninput="fmtIn(this);evalCheck()">
   <label>¿Qué es?</label><input id="a-desc" placeholder="ej: cartas, zapatillas, sushi" autocomplete="off" oninput="evalCheck()">
+  <label>¿Cómo lo pagarías?</label><div class="chips" id="nc-ch">${[1,3,6,12].map(n=>`<button class="chip ${n===1?'on':''}" onclick="S.nc=${n};document.querySelectorAll('#nc-ch .chip').forEach(b=>b.classList.remove('on'));this.classList.add('on');evalCheck()">${n===1?'Al contado':n+' cuotas'}</button>`).join('')}</div>
   <div class="verdict" id="verdict"></div>
   <div id="chk-btns" style="display:none">
     <button class="btn g" onclick="skipBuy()">💪 Mejor no lo compro</button>
@@ -506,23 +573,30 @@ function openCheck(){
   $('a-monto').focus();
 }
 function evalCheck(){
-  const V=S.V,x=val('a-monto'),desc=$('a-desc').value,{cat,neg}=guess(desc),el=$('verdict');
+  let V=S.V,x=val('a-monto'),desc=$('a-desc').value,{cat,neg}=guess(desc),el=$('verdict');
   if(!x){el.className='verdict';$('chk-btns').style.display='none';return}
   $('chk-btns').style.display='block';
   const t=S.techos[cat]||0,s=V.tot[cat]||0,catN=cat!=='otros'?CAT[cat].n:null;
+  const X=x,nc=S.nc||1,mc=Math.round(X/nc);x=nc>1?mc:X;const cuoP=Math.round(V.cuo/S.ppto*100),cuoP2=Math.round((V.cuo+mc)/S.ppto*100);
   const q2=V.queda-x,d2=q2/V.dias,fin2=Math.round(Math.max(0,SUELDO-Math.max(V.total+x,S.ppto))/2);
   let c,h,b;
   if(neg){c='neg';h='🧩 Es para el negocio';b=`No toca tu presupuesto personal, pero son ${fmt(x)} que tienen que volver con ventas.`}
   else if(cat==='coleccionables'&&!t){c='bad';h='🚫 No. Cartas bloqueadas este mes';b=`Este mes los coleccionables personales tienen tope $0. Si es para PULLDEX, escribe "pulldex" en la descripción.`}
+  else if(nc>1&&cuoP>=30){c='bad';h='🔴 No: cero cuotas nuevas';b=`Ya tienes ${fmt(V.cuo)} al mes amarrados en cuotas y fijos (${cuoP}% de tu presupuesto). Con esta quedarías en ${cuoP2}%. Si no te alcanza al contado, no te alcanza.`}
   else if(q2<0){c='bad';h='🔴 No te alcanza';b=`Te pasarías del mes por ${fmt(-q2)} y eso sale de tu ahorro: a Fintual irían ${fmt(fin2)} en vez de ${fmt(V.proy.fin)}.`}
   else if(x<=Math.max(0,V.diario)){c='ok';h='✅ Sí, te alcanza';b=`Después de esto, hoy te quedarían ${fmt(V.diario-x)}. Fintual sigue intacto.`}
   else if(catN&&t&&s+x>t){c='warn';h=`⚠️ Te alcanza, pero te pasas en ${catN}`;b=`Quedarías ${fmt(s+x-t)} sobre el tope de ${catN}. Tu gasto diario bajaría a ${fmt(d2)} hasta el 22.`}
   else{c='warn';h='⚠️ Te alcanza, pero te aprieta';b=`Es más de lo que te toca hoy. Los próximos ${V.dias} días bajarías a ${fmt(d2)} al día.`}
-  if(!neg)b+=`<br><span style="color:var(--sec);font-size:13px">💡 Invertidos, esos ${fmt(x)} serían ${fmt(x*Math.pow(1.06,10))} en 10 años.</span>`;
+  if(nc>1&&!(c==='bad'&&cuoP>=30))b+=`<br>💳 ${nc} cuotas de ${fmt(mc)}: te amarras hasta ${perL(addM(S.actual,nc))} y tus cuotas pasan al ${cuoP2}% del presupuesto.`;
+  if(!neg)b+=`<br><span style="color:var(--sec);font-size:13px">💡 Invertidos, esos ${fmt(X)} serían ${fmt(X*Math.pow(1.06,10))} en 10 años.</span>`;
   el.className='verdict on '+c;el.innerHTML=`<b>${h}</b>${b}`;
 }
 function skipBuy(){const x=val('a-monto');if(x)addEv(x);closeSheet();toast(`💪 Bien ahí, te ahorraste ${fmt(x)}`);render()}
-function boughtIt(){openAdd({m:val('a-monto'),d:$('a-desc').value});}
+function boughtIt(){if((S.nc||1)>1)return openCuotaNueva();openAdd({m:val('a-monto'),d:$('a-desc').value});}
+function openCuotaNueva(){const x=val('a-monto'),d=($('a-desc').value||'').trim()||'Compra en cuotas',nc=S.nc,mc=Math.round(x/nc);S.cq={d,nc,mc};
+  openSheet(`<h3>💳 Compra en cuotas</h3><p>${d}: ${nc} cuotas de ${fmt(mc)}. Se suma sola a tus cuotas desde la próxima boleta.</p><label>Pagaste con</label>${cardChips()}<button class="btn p" onclick="saveCuotaNueva()">Guardar</button><p class="fine" style="margin-top:10px">Si después llega el correo del banco con el total, bórralo de los gastos para no contarlo dos veces.</p>`)}
+async function saveCuotaNueva(){const q=S.cq,pp=addM(periodoDe(hoyISO(),S.card),1);
+  try{await api('cuotas',{m:'POST',b:{nombre:q.d,monto_cuota:q.mc,total_cuotas:q.nc,tarjeta:S.card,activa:true,recurrente:false,primer_periodo:pp}});closeSheet();toast(`💳 ${q.nc} cuotas de ${fmt(q.mc)} anotadas`);loadAll()}catch(e){toast('❌ Error');console.error(e)}}
 
 function openTx(id){
   const g=S.gastos.find(x=>x.id===id);if(!g)return;
