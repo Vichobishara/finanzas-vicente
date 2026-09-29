@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Finanzas">
+<meta name="theme-color" content="#090910">
+<title>Finanzas Vicho</title>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/apple-touch-icon.png">
+<style>
+:root{--bg:#090910;--bg2:#111118;--bg3:#1A1A24;--border:#262632;--text:#F0F0F8;--sec:#8A8AA8;--hint:#4A4A66;--ac:#7C6FFF;--ac2:#A855F7;--green:#22C55E;--red:#FF5C5C;--amber:#FBBF24;--safe-t:env(safe-area-inset-top,20px);--safe-b:env(safe-area-inset-bottom,16px)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer;color:inherit}
+.app{max-width:440px;margin:0 auto;padding:calc(var(--safe-t) + 14px) 16px calc(28px + var(--safe-b))}
+.hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding:0 2px}
+.hdr small{font-size:13px;color:var(--sec)}
+.hdr h1{font-size:24px;font-weight:800;letter-spacing:-.5px}
+.refresh{width:40px;height:40px;border-radius:13px;background:var(--bg3);border:1px solid var(--border);font-size:18px}
+.hero{border-radius:26px;padding:22px 20px 20px;position:relative;overflow:hidden;background:linear-gradient(145deg,#4338CA,#7C3AED);transition:background .4s}
+.hero.ok{background:linear-gradient(145deg,#047857,#10B981)}
+.hero.warn{background:linear-gradient(145deg,#B45309,#F59E0B)}
+.hero.bad{background:linear-gradient(145deg,#991B1B,#EF4444)}
+.hero:after{content:'';position:absolute;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.08);top:-90px;right:-70px;pointer-events:none}
+.h-lbl{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.8)}
+.h-amt{font-size:54px;font-weight:900;letter-spacing:-2.5px;line-height:1.05;margin:4px 0 8px}
+.h-l1{font-size:15px;font-weight:600}
+.h-l2{font-size:12px;color:rgba(255,255,255,.75);margin-top:3px}
+.h-bar{height:6px;background:rgba(0,0,0,.2);border-radius:3px;margin:16px 0 14px;overflow:hidden}
+.h-bar div{height:100%;background:#fff;border-radius:3px;width:0;transition:width .6s}
+.h-msg{display:flex;gap:8px;align-items:flex-start;background:rgba(0,0,0,.18);border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.45;position:relative;z-index:1}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.act{border:none;border-radius:18px;padding:18px 12px;font-size:15px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:6px}
+.act i{font-style:normal;font-size:26px;line-height:1}
+.act.p{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;box-shadow:0 8px 24px rgba(124,111,255,.35)}
+.act.s{background:var(--bg3);border:1px solid var(--border)}
+.act:active{transform:scale(.96)}
+.win{margin:-2px 0 12px;text-align:center;font-size:13px;color:var(--green);font-weight:600}
+.nudge{margin-bottom:10px;padding:12px 14px;border-radius:14px;background:rgba(251,191,36,.09);border:1px solid rgba(251,191,36,.3);font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.nudge button{border:none;background:var(--amber);color:#1a1300;font-weight:700;font-size:12px;padding:8px 12px;border-radius:10px;white-space:nowrap}
+.card{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 14px;margin-bottom:12px}
+.card-h{display:flex;justify-content:space-between;align-items:center;padding:10px 0 4px}
+.card-h h2{font-size:15px;font-weight:700}
+.card-h button{border:none;background:none;color:var(--ac);font-size:13px;font-weight:600}
+.crow{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);width:100%;background:none;border-left:none;border-right:none;border-top:none;text-align:left}
+.crow:last-child{border-bottom:none}
+.ic{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.cm{flex:1;min-width:0}
+.cm b{font-size:14px;display:block}
+.cm small{font-size:12px;color:var(--sec)}
+.ca{text-align:right;font-size:15px;font-weight:800;white-space:nowrap}
+.bar{height:4px;background:var(--border);border-radius:2px;margin-top:7px;overflow:hidden}
+.bar div{height:100%;border-radius:2px}
+.fin{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px;border-radius:20px;margin-bottom:12px;background:linear-gradient(135deg,rgba(34,197,94,.14),rgba(16,185,129,.04));border:1px solid rgba(34,197,94,.3);width:100%;text-align:left}
+.fin span{font-size:13px;color:var(--sec)}
+.fin span b{display:block;color:var(--text);font-size:14px;margin-bottom:2px}
+.fin > b{font-size:22px;color:var(--green);white-space:nowrap}
+.menu .crow .cm b{font-weight:600}
+.chev{color:var(--hint);font-size:18px}
+.next{display:flex;gap:12px;align-items:center;padding:14px;border-radius:20px;margin-bottom:12px;background:linear-gradient(135deg,rgba(124,111,255,.16),rgba(168,85,247,.06));border:1px solid rgba(124,111,255,.35);width:100%;text-align:left}
+.next i{font-style:normal;font-size:26px}
+.next b{font-size:14px;display:block}
+.next small{font-size:12px;color:var(--sec)}
+.big-g{font-size:34px;font-weight:900;letter-spacing:-1px;color:var(--green);margin:2px 0 4px}
+.step{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.step:last-child{border-bottom:none}
+.step .n{width:26px;height:26px;border-radius:50%;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+.step .n.ok{background:var(--green);border-color:var(--green);color:#04210f}
+.step b{font-size:14px;display:block;margin-bottom:2px}
+.step small{font-size:12px;color:var(--sec);line-height:1.45;display:block}
+.fine{font-size:11px!important;color:var(--hint)!important}
+.meta{padding:16px;border-radius:20px;margin-bottom:12px;background:linear-gradient(135deg,rgba(251,191,36,.14),rgba(245,158,11,.04));border:1px solid rgba(251,191,36,.35);width:100%;text-align:left}
+.meta .t{font-size:11px;font-weight:800;color:var(--amber);letter-spacing:.08em;text-transform:uppercase}
+.meta .v{font-size:22px;font-weight:900;margin:4px 0 2px}
+.meta small{font-size:12px;color:var(--sec)}
+.meta .bar div{background:linear-gradient(90deg,#F59E0B,#FBBF24)}
+.mt{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:6px;font-size:12px;padding:9px 0;border-bottom:1px solid var(--border);align-items:center}
+.mt:last-child{border-bottom:none}
+.mt b{font-size:13px}
+.mt.h{color:var(--hint);font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+.lever{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.45;color:var(--sec)}
+.lever:last-child{border-bottom:none}
+.lever b{color:var(--text)}
+.cal{display:block;text-align:center;text-decoration:none;padding:16px;border-radius:15px;font-size:16px;font-weight:700;margin-top:14px;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;display:none;align-items:flex-end;backdrop-filter:blur(3px)}
+.sheet-bg.on{display:flex}
+.sheet{width:100%;max-width:440px;margin:0 auto;background:var(--bg2);border-radius:24px 24px 0 0;padding:10px 18px calc(20px + var(--safe-b));max-height:90vh;overflow-y:auto}
+.handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px}
+.sheet h3{font-size:20px;margin-bottom:4px}
+.sheet p{font-size:13px;color:var(--sec);margin-bottom:12px;line-height:1.5}
+.sheet label{font-size:11px;color:var(--sec);font-weight:700;display:block;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.05em}
+.sheet input,.sheet select{width:100%;padding:13px;border-radius:13px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;-webkit-appearance:none;outline:none}
+.sheet input:focus{border-color:var(--ac)}
+.amt-in{font-size:42px!important;font-weight:800;text-align:center;letter-spacing:-1px}
+.sugs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.sugs button,.chip{padding:8px 13px;border-radius:16px;border:1px solid var(--border);background:var(--bg3);font-size:13px}
+.chip.on{background:linear-gradient(135deg,var(--ac),var(--ac2));border-color:transparent;color:#fff;font-weight:600}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.btn{width:100%;padding:16px;border-radius:15px;border:none;font-size:16px;font-weight:700;margin-top:14px}
+.btn.p{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff}
+.btn.g{background:rgba(34,197,94,.14);color:var(--green);margin-top:8px}
+.btn.d{background:rgba(255,92,92,.12);color:var(--red);margin-top:8px}
+.verdict{margin-top:14px;padding:14px;border-radius:16px;font-size:14px;line-height:1.5;display:none}
+.verdict.on{display:block}
+.verdict b{font-size:17px;display:block;margin-bottom:4px}
+.verdict.ok{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3)}
+.verdict.warn{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3)}
+.verdict.bad{background:rgba(255,92,92,.1);border:1px solid rgba(255,92,92,.3)}
+.verdict.neg{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3)}
+.box{background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:4px 14px;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);font-size:13px;gap:10px}
+.row:last-child{border-bottom:none}
+.row span{color:var(--sec)}
+.row b{text-align:right}
+.chart{display:flex;align-items:flex-end;gap:5px;height:130px;padding:14px 2px 6px}
+.chart div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px}
+.chart span{width:100%;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#A855F7,#7C6FFF);min-height:3px}
+.chart span.b{background:linear-gradient(180deg,#22C55E,#16A34A)}
+.chart small{font-size:9px;color:var(--hint)}
+.tip{display:flex;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:12px;font-size:13px;line-height:1.5;color:var(--sec);margin-bottom:8px}
+.tip i{font-style:normal;font-size:18px}
+.tip b{color:var(--text)}
+.empty{text-align:center;color:var(--hint);font-size:13px;padding:20px}
+.toast{position:fixed;bottom:calc(30px + var(--safe-b));left:50%;transform:translateX(-50%);background:#222230;border:1px solid var(--border);padding:12px 18px;border-radius:22px;font-size:14px;opacity:0;transition:.2s;z-index:200;white-space:nowrap;pointer-events:none}
+.toast.on{opacity:1}
+.skel{height:190px;border-radius:26px;background:linear-gradient(90deg,var(--bg3),#22222e,var(--bg3));background-size:200% 100%;animation:sk 1.2s infinite}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hdr">
+    <div><small id="greet">Hola</small><h1 id="mes-t">Vicho</h1></div>
+    <button class="refresh" onclick="loadAll()">↻</button>
+  </div>
+  <div id="viendo"></div>
+  <div id="hero-w"><div class="skel"></div></div>
+  <div class="actions">
+    <button class="act p" onclick="openAdd()"><i>＋</i>Anotar gasto</button>
+    <button class="act s" onclick="openCheck()"><i>🤔</i>¿Me alcanza?</button>
+  </div>
+  <div id="win"></div>
+  <div id="nudges"></div>
+  <div class="card">
+    <div class="card-h"><h2>En qué se te va</h2><button onclick="openAll()">Ver todo</button></div>
+    <div id="top3"></div>
+  </div>
+  <button class="fin" id="fin" onclick="openProy()"></button>
+  <div id="next"></div>
+  <button class="meta" id="meta" onclick="openMeta()" style="display:none"></button>
+  <div class="card menu">
+    <button class="crow" onclick="openMovs()"><div class="ic" style="background:#ffffff0d">🧾</div><div class="cm"><b>Todos los gastos</b><small id="m-movs">—</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="openCuotas()"><div class="ic" style="background:#60A5FA22">💳</div><div class="cm"><b>Cuotas y fijos</b><small id="m-cuo">—</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="openTips()"><div class="ic" style="background:#7C6FFF22">💡</div><div class="cm"><b>Consejos del coach</b><small id="m-tips">—</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="openPlata()"><div class="ic" style="background:#FBBF2422">🏦</div><div class="cm"><b>Impuestos y dónde invertir</b><small id="m-plata">APV, devolución de impuestos y tu plan</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="openAvisos()"><div class="ic" style="background:#F472B622">📅</div><div class="cm"><b>Avisos</b><small>Que el celular te recuerde qué hacer y cuándo</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="openFin()"><div class="ic" style="background:#22C55E22">📈</div><div class="cm"><b>Sueldos y patrimonio</b><small>Fintual, cartas, ETH y tus sueldos</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="openMeses()"><div class="ic" style="background:#ffffff0d">🗓</div><div class="cm"><b>Meses anteriores</b><small>Compara cómo te fue</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="editPpto()"><div class="ic" style="background:#ffffff0d">⚙️</div><div class="cm"><b>Presupuesto del mes</b><small id="m-ppto">—</small></div><span class="chev">›</span></button>
+  </div>
+</div>
+
+<div class="sheet-bg" id="sheet-bg" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SB='https://caaewoxfvmdizzziyvfz.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYWV3b3hmdm1kaXp6eml5dmZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2ODk0ODUsImV4cCI6MjEwNjI2NTQ4NX0.mUu3EZuLUe_jpSLFpU5lkUaoDIQFZdXZqZkwac03EXY';
+const H={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'};
+const CAT={
+ comida:{n:'Comida',ic:'🍽',c:'#22C55E'}, tech:{n:'Compras y tech',ic:'🛍',c:'#A78BFA'},
+ coleccionables:{n:'Cartas y coleccionables',ic:'🃏',c:'#FB923C'}, ocio:{n:'Salidas y ocio',ic:'🎮',c:'#94A3B8'},
+ fijo:{n:'Suscripciones',ic:'🔁',c:'#60A5FA'}, transporte:{n:'Transporte',ic:'🚇',c:'#FBBF24'},
+ salud:{n:'Salud y cuidado',ic:'💈',c:'#F472B6'}, viajes:{n:'Viajes',ic:'✈️',c:'#34D399'},
+ otros:{n:'Sin categoría',ic:'❓',c:'#94A3B8'}
+};
+const TJ={scotiabank:'Scotia',bci:'BCI',santander:'Santander',efectivo:'Efectivo',otro:'Transferencia'};
+const CORTE={scotiabank:22,bci:20};
+const SUELDO=2000000;
+const UTM=71649,APV_ANUAL=40*UTM,APV_MES=Math.round(APV_ANUAL/12),APV_BONO=6*UTM;
+const TR=[[13.5,0],[30,.04],[50,.08],[70,.135],[90,.23],[120,.304],[310,.35],[1e9,.40]];
+function impAnual(b){const u=b/(UTM*12);let t=0,prev=0;for(const[lim,r]of TR){const hi=Math.min(u,lim);if(hi>prev)t+=(hi-prev)*r;prev=lim;if(u<=lim)break}return t*UTM*12}
+const impMes=b=>impAnual(b*12)/12;
+const flag=k=>{try{return localStorage.getItem(k)==='1'}catch(e){return false}};
+const setFlag=k=>{try{localStorage.setItem(k,'1')}catch(e){}};
+const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MESL=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+let S={periodo:null,actual:null,periodos:[],gastos:[],prev:[],cuotas:[],reglas:[],techos:{},pptos:{},ppto:1000000,card:'scotiabank',ing:{},V:{}};
+
+const api=async(p,o={})=>{const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),12000);try{const r=await fetch(SB+'/rest/v1/'+p,{headers:{...H,...(o.h||{})},method:o.m||'GET',body:o.b?JSON.stringify(o.b):undefined,signal:ctl.signal});if(!r.ok)throw new Error(await r.text());const t=await r.text();return t?JSON.parse(t):null}finally{clearTimeout(to)}};
+const $=s=>document.getElementById(s);
+const fmt=n=>(n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString('es-CL');
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2400)};
+const perL=p=>{const[y,m]=p.split('-');return MESL[+m-1]+' '+y};
+const mdiff=(a,b)=>{const[ay,am]=a.split('-').map(Number),[by,bm]=b.split('-').map(Number);return(by-ay)*12+(bm-am)};
+const addM=(p,n)=>{let[y,m]=p.split('-').map(Number);m+=n;while(m>12){m-=12;y++}while(m<1){m+=12;y--}return y+'-'+String(m).padStart(2,'0')};
+function periodoDe(fecha,t){const d=new Date(fecha+'T12:00:00');if(d.getDate()>(CORTE[t]||31))d.setMonth(d.getMonth()+1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+const hoyISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function cuotasDe(per){return S.cuotas.map(c=>{if(c.recurrente)return{...c,label:'Todos los meses'};if(!c.primer_periodo)return null;const n=mdiff(c.primer_periodo,per)+1;if(n<1||n>c.total_cuotas)return null;return{...c,n,label:`Cuota ${n} de ${c.total_cuotas}`,restante:c.monto_cuota*(c.total_cuotas-n),fin:addM(c.primer_periodo,c.total_cuotas-1)}}).filter(Boolean)}
+function guess(desc){const d=(desc||'').toLowerCase();const r=S.reglas.find(x=>d.includes(x.palabra.toLowerCase()));return r?{cat:r.categoria_clave,neg:r.negocio}:{cat:'otros',neg:false}}
+const evKey=()=>'evitado-'+S.actual;
+const getEv=()=>{try{return +localStorage.getItem(evKey())||0}catch(e){return 0}};
+const addEv=x=>{try{localStorage.setItem(evKey(),getEv()+x)}catch(e){}};
+function openSheet(h){$('sheet').innerHTML='<div class="handle"></div>'+h;$('sheet-bg').classList.add('on')}
+function closeSheet(){$('sheet-bg').classList.remove('on')}
+
+$('greet').textContent=(h=>h<12?'Buenos días ☀️':h<20?'Buenas tardes 🌤':'Buenas noches 🌙')(new Date().getHours());
+
+async function loadAll(){
+  try{
+    const [cats,pers,cuotas,pptos,reglas,aj]=await Promise.all([
+      api('categorias?select=clave,techo'),api('gastos?select=periodo'),
+      api('cuotas?activa=eq.true&order=monto_cuota.desc'),api('presupuestos?select=*'),
+      api('reglas_categoria?select=palabra,categoria_clave,negocio'),api('ajustes?select=clave,valor')
+    ]);
+    S.aj={};(aj||[]).forEach(a=>S.aj[a.clave]=a.valor);
+    cats.forEach(c=>S.techos[c.clave]=c.techo);
+    S.cuotas=cuotas;S.pptos={};pptos.forEach(p=>S.pptos[p.periodo]=p.monto);
+    S.reglas=reglas.sort((a,b)=>b.palabra.length-a.palabra.length);
+    S.actual=periodoDe(hoyISO(),'scotiabank');
+    S.periodos=[...new Set(pers.map(x=>x.periodo).filter(Boolean).concat(S.actual))].sort();
+    if(!S.periodo)S.periodo=S.actual;
+    await loadPeriodo();loadIngresos();
+  }catch(e){console.error(e);$('hero-w').innerHTML='<div class="hero bad"><div class="h-lbl">Sin conexión</div><div class="h-l1" style="margin-top:8px">Toca ↻ arriba para reintentar</div></div>';}
+}
+function setPer(p){S.periodo=p;closeSheet();loadAll();window.scrollTo(0,0)}
+
+async function loadPeriodo(){
+  const pv=addM(S.periodo,-1);
+  const all=await api(`gastos?periodo=in.(${S.periodo},${pv})&order=fecha.desc,id.desc`);
+  S.gastos=all.filter(g=>g.periodo===S.periodo);S.prev=all.filter(g=>g.periodo===pv&&!g.pulldex);
+  S.ppto=S.pptos[S.periodo]||1000000;render();
+}
+
+function render(){
+  const pers=S.gastos.filter(g=>!g.pulldex),neg=S.gastos.filter(g=>g.pulldex);
+  const gast=pers.reduce((s,g)=>s+g.monto,0),CQ=cuotasDe(S.periodo),cuo=CQ.reduce((s,c)=>s+c.monto_cuota,0);
+  const total=gast+cuo,queda=S.ppto-total,p=Math.min(100,Math.round(total/S.ppto*100));
+  const[y,m]=S.periodo.split('-').map(Number);
+  const cierre=new Date(y,m-1,22),hoy=new Date();hoy.setHours(0,0,0,0);
+  const dias=Math.max(1,Math.round((cierre-hoy)/864e5)+1),esActual=S.periodo===S.actual;
+  const tot={},items={},ptot={};
+  pers.forEach(g=>{tot[g.categoria_clave]=(tot[g.categoria_clave]||0)+g.monto;(items[g.categoria_clave]=items[g.categoria_clave]||[]).push(g)});
+  S.prev.forEach(g=>ptot[g.categoria_clave]=(ptot[g.categoria_clave]||0)+g.monto);
+  const nt=neg.reduce((s,g)=>s+g.monto,0),mes=MESL[m-1],pvL=MESL[+addM(S.periodo,-1).slice(5)-1];
+  const com=tot.comida||0,tc=S.techos.comida||250000,diario=queda/dias;
+  const base=esActual?Math.max(total,S.ppto):total,libre=Math.max(0,SUELDO-base),fin=Math.round(libre/2);
+  S.V={tot,items,ptot,nt,neg,mes,pvL,CQ,cuo,gast,total,queda,dias,esActual,diario,proy:{base,libre,fin,col:libre-fin,over:total>S.ppto}};
+
+  $('mes-t').textContent=mes;
+  $('viendo').innerHTML=esActual?'':`<div class="nudge"><div>👀 Estás viendo <b>${perL(S.periodo)}</b></div><button onclick="setPer(S.actual)">Volver a hoy</button></div>`;
+
+  let cls,lbl,amt,l1,msg;
+  if(!esActual){cls='';lbl=queda>=0?`Te sobró en ${mes}`:`Te pasaste en ${mes}`;amt=fmt(Math.abs(queda));l1=`Gastaste ${fmt(total)} de ${fmt(S.ppto)}`;msg=queda>=0?'👏 Mes cerrado en positivo.':'📉 Mes cerrado en rojo. Que no se repita.';}
+  else if(queda<0){cls='bad';lbl='Te pasaste por';amt=fmt(-queda);l1='Hasta el 22 cada peso sale de tu ahorro';msg='🛑 <span>Freno total: solo súper y transporte hasta el 22.</span>';}
+  else{
+    lbl='Hoy puedes gastar';amt=fmt(diario);l1=`Te quedan ${fmt(queda)} hasta el 22`;
+    if(com>tc*.8){cls='warn';msg=`🍽 <span>Comida va al ${Math.round(com/tc*100)}%. Cero delivery y restoranes hasta el 22.</span>`;}
+    else if(diario<15000){cls='warn';msg='🍳 <span>Margen justo. Cocina en casa y posterga cualquier compra.</span>';}
+    else{cls='ok';msg=`✅ <span>Vas bien. Si te mantienes, fin de mes van <b>${fmt(fin)}</b> a Fintual.</span>`;}
+  }
+  $('hero-w').innerHTML=`<div class="hero ${cls}"><div class="h-lbl">${lbl}</div><div class="h-amt">${amt}</div><div class="h-l1">${l1}</div><div class="h-l2">Ya descontados ${fmt(cuo)} de cuotas y fijos</div><div class="h-bar"><div style="width:${p}%"></div></div><div class="h-msg">${msg}</div></div>`;
+
+  const ev=getEv();$('win').innerHTML=esActual&&ev?`<div class="win">💪 Este mes te aguantaste ${fmt(ev)} en compras</div>`:'';
+
+  let nz='';const rev=items.otros||[];
+  if(rev.length)nz+=`<div class="nudge"><div>❓ <b>${rev.length} gasto${rev.length>1?'s':''} sin categoría</b></div><button onclick="openCat('otros')">Ordenar</button></div>`;
+  if(esActual){const man=S.gastos.filter(g=>g.tarjeta==='scotiabank'||g.tarjeta==='efectivo').map(g=>g.fecha).sort().pop();const ds=man?Math.round((hoy-new Date(man+'T00:00:00'))/864e5):null;
+    if(ds===null||ds>=2)nz+=`<div class="nudge"><div>✍️ ${ds===null?'No has anotado gastos de Scotia':`Llevas <b>${ds} días</b> sin anotar lo de Scotia`}</div><button onclick="openAdd()">Anotar</button></div>`;}
+  $('nudges').innerHTML=nz;
+
+  const tops=Object.entries(tot).filter(([k])=>k!=='otros').sort((a,b)=>b[1]-a[1]).slice(0,3);
+  $('top3').innerHTML=tops.length?tops.map(([k])=>catRow(k)).join(''):'<div class="empty">Aún no hay gastos este mes 🎉</div>';
+
+  $('fin').innerHTML=esActual?`<span><b>📈 A Fintual a fin de ${mes}</b>${S.V.proy.over?'Te pasaste: ya bajó':'Asegurado si no te pasas'}</span><b>${fmt(fin)}</b>`:`<span><b>📈 Quedaba para ahorrar</b>en ${mes}</span><b>${fmt(libre)}</b>`;
+  $('m-movs').textContent=`${S.gastos.length} este mes${nt?' · incluye negocio':''}`;
+  $('m-cuo').textContent=`${fmt(cuo)} al mes · se suman solas`;
+  $('m-tips').textContent=`${tipsList().length} consejos para ${mes}`;
+  $('m-ppto').textContent=`${fmt(S.ppto)} (incluye cuotas)`;
+  renderNext();renderMeta();
+}
+
+function nextMove(){
+  const m=new Date().getMonth()+1,T=S.tax;
+  if(T&&T.dev>50000&&m>=3&&m<=5)return['🧾',`Pide la reliquidación en la Operación Renta`,`Te podrían devolver ≈ ${fmt(Math.round(T.dev/10000)*10000)}`];
+  if(!flag('apv-abierto'))return['🎯','Abre tu APV régimen A en Fintual',`Aportando ${fmt(APV_MES)} al mes, el Estado te pone hasta ${fmt(APV_BONO)} al año`];
+  if(T&&T.dev>50000)return['🧾',`Abril ${+T.y+1}: pide la reliquidación`,`Te podrían devolver ≈ ${fmt(Math.round(T.dev/10000)*10000)} de impuestos`];
+  return['💰','El día del sueldo: primero APV y Fintual','Después gastas lo que queda'];
+}
+function renderNext(){if(!S.V.esActual){$('next').innerHTML='';return}const[i,b,s]=nextMove();$('next').innerHTML=`<button class="next" onclick="openPlata()"><i>${i}</i><div class="cm"><b>Tu próximo movimiento</b><small>${b} · ${s}</small></div><span class="chev">›</span></button>`;
+  if(S.tax)$('m-plata').textContent=`Devolución estimada ${fmt(Math.round(S.tax.dev/10000)*10000)} · APV ${flag('apv-abierto')?'✓':'pendiente'}`}
+
+function openPlata(){
+  const T=S.tax,apv=flag('apv-abierto'),P0=PAT(),pat=P0.fintual+P0.cartas+P0.eth,alt=Math.round((P0.cartas+P0.eth)/pat*100);
+  const dev=T?Math.round(T.dev/10000)*10000:0;
+  openSheet(`<h3>🏦 Impuestos y dónde invertir</h3><p>Con tus números reales. Ordenado de lo que más plata te da a lo que menos.</p>
+  ${T?`<div class="box"><div style="padding:12px 0 4px"><small style="color:var(--sec);font-size:12px">🧾 Devolución de impuestos estimada · Operación Renta abril ${+T.y+1}</small><div class="big-g">≈ ${fmt(dev)}</div><small style="color:var(--sec);font-size:12px;line-height:1.5;display:block;padding-bottom:10px">Tu sueldo es variable: en ${T.abril?'abril':'los meses de bono'} te retuvieron impuesto como si ganaras eso todos los meses. Con un solo empleador puedes pedir la <b style="color:var(--text)">reliquidación anual</b> y te devuelven lo pagado de más. Pagaste ≈ ${fmt(T.pagado)} y en el año te correspondería ≈ ${fmt(T.debido)}.</small></div></div>`:''}
+  <div class="card"><div class="card-h"><h2>Tu plan, en orden</h2></div>
+    <div class="step"><div class="n ${apv?'ok':''}">${apv?'✓':'1'}</div><div><b>🎯 APV régimen A: ${fmt(APV_MES)} al mes</b><small>El Estado te pone 15% encima, hasta ${fmt(APV_BONO)} al año. Con tu sueldo normal pagas 4% de impuesto, así que el régimen A (15%) te conviene más que el B. Se abre en Fintual → “Mi primera jubilación”. Ojo: es para la pensión; si lo sacas antes, devuelves el bono.</small>${apv?'':`<button class="chip on" style="margin-top:8px" onclick="setFlag('apv-abierto');openPlata();render()">Ya lo abrí ✓</button>`}</div></div>
+    <div class="step"><div class="n ${2700000>=3000000?'ok':''}">2</div><div><b>🛟 Colchón: 3 meses de gastos (~$3.000.000)</b><small>Plata para emergencias, a la mano y sin riesgo. Tus $2,7M en Moderate Pitt casi lo cubren: completa ~$300k con el colchón de este mes y no lo toques.</small></div></div>
+    <div class="step"><div class="n">3</div><div><b>📈 Largo plazo: todo lo demás a Risky Norris</b><small>Lo que no va al APV ni al colchón, a tu fondo agresivo en Fintual. Plata que no vas a tocar en años. Ya ganaste +26,7% ahí.</small></div></div>
+    <div class="step"><div class="n">4</div><div><b>🃏 Cartas y ETH: no sumar más por ahora</b><small>Ya son el ${alt}% de todo lo que tienes. Es harto en cosas que suben y bajan fuerte. Mientras no baje de ~20%, la plata nueva va a Fintual.</small></div></div>
+    <div class="step"><div class="n">5</div><div><b>🏠 Si te independizas en menos de 2 años</b><small>Esa plata no va al fondo agresivo: va a uno conservador, para que una caída no te deje sin el pie para arrendar.</small></div></div>
+  </div>
+  <div class="card"><div class="card-h"><h2>¿Te llegó un bono?</h2></div><p style="margin:4px 0 8px">Pon cuánto te llegó líquido ese mes y te digo dónde va cada peso.</p>
+    <input id="b-in" class="amt-in" inputmode="numeric" placeholder="$0" oninput="fmtIn(this);calcBono()"><div id="b-out" style="padding:6px 0 10px"></div></div>
+  <p class="fine">No soy asesor financiero ni tributario: son reglas generales aplicadas a tus números, con la UTM de ${fmt(UTM)}. Para la renta, confírmalo en sii.cl (reliquidación art. 47) o con un contador.</p>`);
+}
+function calcBono(){
+  const x=val('b-in'),o=$('b-out');if(!x){o.innerHTML='';return}
+  if(x<=SUELDO){o.innerHTML=`<div class="row"><span>Es un mes normal: sigue el plan de siempre.</span></div>`;return}
+  const extra=x-SUELDO,inv=Math.round(extra*.7),apv=Math.min(inv,APV_ANUAL),rv=inv-apv,libre=extra-inv;
+  o.innerHTML=`<div class="row"><span>Sueldo normal (para el mes)</span><b>${fmt(SUELDO)}</b></div><div class="row"><span>Extra del bono</span><b>${fmt(extra)}</b></div>
+  <div class="row"><span>→ APV régimen A</span><b style="color:var(--green)">${fmt(apv)}</b></div>${rv?`<div class="row"><span>→ Fintual largo plazo</span><b style="color:var(--green)">${fmt(rv)}</b></div>`:''}
+  <div class="row"><span>→ Para ti, sin culpa (30%)</span><b>${fmt(libre)}</b></div>
+  <small style="color:var(--sec);font-size:12px;display:block;padding-top:8px">El impuesto alto que te retengan ese mes lo recuperas en abril con la reliquidación.</small>`;
+}
+
+const PAT=()=>S.aj.patrimonio||{fintual:13047596,cartas:5000000,eth:1440000};
+const PERF=()=>S.aj.perfil||{nacimiento:'1999-12-03',meta:100000000};
+const RENT=.06;
+const fmtM=n=>n>=1e9?'$'+(n/1e9).toLocaleString('es-CL',{maximumFractionDigits:2})+' mil M':'$'+(n/1e6).toLocaleString('es-CL',{maximumFractionDigits:n<1e8?1:0})+'M';
+function edadAhora(){const b=new Date(PERF().nacimiento+'T12:00:00'),n=new Date();return (n-b)/(365.25*864e5)}
+function mesesHasta(P,A,T){let m=0;while(P<T&&m<1200){P=P*(1+RENT/12)+A;m++}return m}
+function aportes(){
+  const base=Math.max(0,Math.round(Math.max(0,SUELDO-S.ppto)/2))+Math.round(APV_MES*.15);
+  const ks=Object.keys(S.ing||{}).sort().slice(-12);
+  const bonos=ks.reduce((s,k)=>s+Math.max(0,S.ing[k]-SUELDO),0)*.7/12/2;
+  return{base,conBonos:Math.round(base+bonos)};
+}
+function proyMeta(T,A){const p=PAT(),inv=p.fintual+p.eth,m=mesesHasta(inv,A,Math.max(0,T-p.cartas));const e=edadAhora()+m/12,y=new Date().getFullYear()+Math.floor((new Date().getMonth()+m)/12);return{m,e,y}}
+function renderMeta(){
+  const el=$('meta');if(!S.V.esActual||!S.ing||!Object.keys(S.ing).length){el.style.display='none';return}
+  const p=PAT(),tot=p.fintual+p.eth+p.cartas,meta=PERF().meta,{base,conBonos}=aportes(),r=proyMeta(meta,base),r2=proyMeta(meta,conBonos);
+  el.style.display='block';
+  el.innerHTML=`<div class="t">🏆 Camino a tus primeros ${fmtM(meta)}</div><div class="v">${fmtM(tot)} <span style="font-size:14px;color:var(--sec);font-weight:600">de ${fmtM(meta)}</span></div><small>Siguiendo el plan llegas a los <b style="color:var(--text)">${Math.floor(r.e)} años</b> (${r.y}). Con la mitad de tus bonos, a los <b style="color:var(--text)">${Math.floor(r2.e)}</b>.</small><div class="bar"><div style="width:${Math.min(100,tot/meta*100)}%"></div></div>`;
+}
+function openMeta(){
+  const p=PAT(),tot=p.fintual+p.eth+p.cartas,{base,conBonos}=aportes(),metas=[[50e6,'$50M'],[100e6,'$100M'],[250e6,'$250M'],[950e6,'USD 1 millón*']];
+  const d10=x=>x*Math.pow(1+RENT,10);
+  const ahorroCom=200000,rC=proyMeta(PERF().meta,base+ahorroCom),rB=proyMeta(PERF().meta,base);
+  openSheet(`<h3>🏆 Camino a millonario</h3><p>Hoy tienes <b style="color:var(--text)">${fmtM(tot)}</b> (Fintual ${fmtM(p.fintual)}, cartas ${fmtM(p.cartas)}, ETH ${fmtM(p.eth)}). Tienes ${Math.floor(edadAhora())} años.</p>
+  <div class="card"><div class="card-h"><h2>¿Cuándo llegas?</h2></div>
+   <div class="mt h"><span>Meta</span><span>Solo el plan<br>${fmt(base)}/mes</span><span>+ mitad bonos<br>${fmt(conBonos)}/mes</span></div>
+   ${metas.map(([T,l])=>{const a=proyMeta(T,base),b=proyMeta(T,conBonos);return`<div class="mt"><b>${l}</b><span>${Math.floor(a.e)} años · ${a.y}</span><span style="color:var(--green)">${Math.floor(b.e)} años · ${b.y}</span></div>`}).join('')}
+  </div>
+  <div class="card"><div class="card-h"><h2>Lo que más te acelera</h2></div>
+   <div class="lever"><i style="font-style:normal">🍽</i><div>Bajar comida a su tope (~<b>${fmt(ahorroCom)} menos al mes</b>) e invertirlo te hace llegar a tu meta <b>${Math.max(0,((rB.m-rC.m)/12)).toLocaleString('es-CL',{maximumFractionDigits:1})} años antes</b>.</div></div>
+   <div class="lever"><i style="font-style:normal">💸</i><div>Cada <b>$100.000</b> que no gastas hoy son <b>${fmt(d10(100000))}</b> en 10 años. Antes de comprar, toca ¿Me alcanza?</div></div>
+   <div class="lever"><i style="font-style:normal">💳</i><div>Una cuota de $50.000 al mes por 12 meses son ${fmt(600000)} que no se invierten: <b>${fmt(d10(600000))}</b> menos en 10 años.</div></div>
+   <div class="lever"><i style="font-style:normal">🎯</i><div>El bono del APV (hasta <b>${fmt(APV_BONO)}</b> al año) y la devolución de impuestos van <b>directo a invertir</b>, no a gastar.</div></div>
+  </div>
+  <label>Cambiar tu meta</label><div class="chips">${metas.map(([T,l])=>`<button class="chip ${PERF().meta===T?'on':''}" onclick="saveAj('perfil',{...PERF(),meta:${T}}).then(openMeta)">${l}</button>`).join('')}</div>
+  <button class="btn p" style="background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="editPat()">Actualizar mi patrimonio</button>
+  <p class="fine" style="margin-top:12px">*Supuesto: 6% anual sobre la inflación y dólar ~$950. Es una proyección, no una promesa: los mercados suben y bajan. Las cartas y ETH no se proyectan con crecimiento.</p>`);
+}
+async function saveAj(clave,valor){try{await api('ajustes',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{clave,valor}});S.aj[clave]=valor;render();}catch(e){toast('❌ Error')}}
+function editPat(){const p=PAT();openSheet(`<h3>Tu patrimonio hoy</h3><p>Actualízalo una vez al mes (el día del sueldo va perfecto).</p>
+  <label>Fintual (todo)</label><input id="p-f" inputmode="numeric" oninput="fmtIn(this)" value="$${p.fintual.toLocaleString('es-CL')}">
+  <label>Cartas Pokémon (valor de venta)</label><input id="p-c" inputmode="numeric" oninput="fmtIn(this)" value="$${p.cartas.toLocaleString('es-CL')}">
+  <label>Ethereum en pesos</label><input id="p-e" inputmode="numeric" oninput="fmtIn(this)" value="$${p.eth.toLocaleString('es-CL')}">
+  <button class="btn p" onclick="saveAj('patrimonio',{fintual:val('p-f'),cartas:val('p-c'),eth:val('p-e'),fecha:hoyISO()}).then(()=>{toast('✅ Patrimonio actualizado');openMeta()})">Guardar</button>`)}
+
+function icsEvt(uid,start,title,desc,rrule){return['BEGIN:VEVENT','UID:'+uid+'@finanzas-vicho','DTSTAMP:20260929T120000Z','DTSTART;TZID=America/Santiago:'+start,'DURATION:PT15M','SUMMARY:'+title,'DESCRIPTION:'+desc,rrule?'RRULE:'+rrule:null,'BEGIN:VALARM','TRIGGER:PT0M','ACTION:DISPLAY','DESCRIPTION:'+title,'END:VALARM','END:VEVENT'].filter(Boolean).join('\r\n')}
+function openAvisos(){
+  const y=new Date().getFullYear(),ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Finanzas Vicho//ES',
+    icsEvt('sueldo','20261030T090000','💰 Llegó el sueldo: APV + Fintual PRIMERO','1) '+fmt(APV_MES)+' al APV régimen A\\n2) El resto del ahorro a Fintual\\n3) Actualiza tu patrimonio en la app\\nhttps://finanzas-vicente.vercel.app','FREQ=MONTHLY;BYMONTHDAY=28,29,30;BYSETPOS=-1'),
+    icsEvt('lunes','20261005T090000','🧾 5 min: anota lo de Scotia en la app','https://finanzas-vicente.vercel.app','FREQ=WEEKLY;BYDAY=MO'),
+    icsEvt('cierre','20261020T190000','⚠️ En 2 días cierra la tarjeta','Abre la app y revisa si vas en verde. https://finanzas-vicente.vercel.app','FREQ=MONTHLY;BYMONTHDAY=20'),
+    icsEvt('apv','20261218T100000','🎯 Completa tu APV del año (plazo 30 dic a mediodía)','Para sacar el bono completo del Estado necesitas '+fmt(APV_ANUAL)+' aportados en el año.','FREQ=YEARLY'),
+    icsEvt('renta','20270406T100000','🧾 Operación Renta: pide la reliquidación (art. 47)','sii.cl → Operación Renta → revisa la propuesta. Si no trae la devolución, marca la reliquidación anual del impuesto único.','FREQ=YEARLY'),
+    'END:VCALENDAR'].join('\r\n');
+  const href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics);
+  openSheet(`<h3>📅 Avisos</h3><p>Toca el botón y el iPhone te ofrece agregarlos a tu calendario. Te van a llegar como notificación.</p>
+  <div class="card">
+   <div class="lever"><i style="font-style:normal">💰</i><div><b>Fin de cada mes · 9:00</b><br>Llegó el sueldo: APV y Fintual primero</div></div>
+   <div class="lever"><i style="font-style:normal">🧾</i><div><b>Todos los lunes · 9:00</b><br>5 minutos para anotar lo de Scotia</div></div>
+   <div class="lever"><i style="font-style:normal">⚠️</i><div><b>Cada 20 · 19:00</b><br>En 2 días cierra la tarjeta: revisa cómo vas</div></div>
+   <div class="lever"><i style="font-style:normal">🎯</i><div><b>18 de diciembre</b><br>Completa el APV del año para el bono completo</div></div>
+   <div class="lever"><i style="font-style:normal">🧾</i><div><b>6 de abril</b><br>Operación Renta: pide tu devolución</div></div>
+  </div>
+  <a class="cal" href="${href}" download="avisos-finanzas.ics">📅 Agregar todos a mi calendario</a>
+  <p class="fine" style="margin-top:10px">Si no se abre el calendario, abre la app desde Safari (no desde la pantalla de inicio) y toca el botón de nuevo.</p>`);
+}
+
+function catRow(k){
+  const V=S.V,s=V.tot[k]||0,t=S.techos[k]||0,c=CAT[k];
+  const pc=t?Math.min(100,Math.round(s/t*100)):(s?100:0);
+  const col=t&&s>t?'#FF5C5C':t&&s>t*.8?'#FBBF24':c.c;
+  const sub=!t?(s?'sin tope este mes':'bloqueado este mes 🚫'):s>t?`te pasaste por ${fmt(s-t)}`:`te quedan ${fmt(t-s)}`;
+  return `<button class="crow" onclick="openCat('${k}')"><div class="ic" style="background:${c.c}22">${c.ic}</div><div class="cm"><b>${c.n}</b><small>${sub}</small><div class="bar"><div style="width:${pc}%;background:${col}"></div></div></div><div class="ca" style="color:${col}">${fmt(s)}</div></button>`;
+}
+function txHtml(g){const c=CAT[g.categoria_clave]||CAT.otros;const d=g.fecha.slice(8,10)+'/'+g.fecha.slice(5,7);
+  return `<button class="crow" onclick="openTx(${g.id})"><div class="ic" style="background:${c.c}22">${c.ic}</div><div class="cm"><b>${g.descripcion}</b><small>${TJ[g.tarjeta]||g.tarjeta} · ${d}${g.pulldex?' · negocio':''}</small></div><div class="ca" style="color:${g.monto<0?'var(--green)':'var(--text)'}">${fmt(-g.monto)}</div></button>`}
+
+function openAll(){
+  const V=S.V,ks=['comida','fijo','tech','transporte','salud','ocio','coleccionables','viajes'].filter(k=>V.tot[k]||S.techos[k]);
+  openSheet(`<h3>Todo ${V.mes}</h3><p>Toca una categoría para ver sus gastos.</p><div class="card">${ks.map(catRow).join('')}<button class="crow" onclick="openCuotas()"><div class="ic" style="background:#60A5FA22">💳</div><div class="cm"><b>Cuotas y fijos</b><small>se descuentan solas</small></div><div class="ca" style="color:#60A5FA">${fmt(V.cuo)}</div></button></div>${V.nt?`<button class="crow" onclick="openNeg()" style="border:none"><div class="ic" style="background:#A78BFA22">🧩</div><div class="cm"><b>Negocio (TCG Logs / PULLDEX)</b><small>no cuenta en tu presupuesto</small></div><div class="ca" style="color:#A78BFA">${fmt(V.nt)}</div></button>`:''}`);
+}
+function openCat(k){
+  const V=S.V,c=CAT[k],s=V.tot[k]||0,t=S.techos[k]||0,p=V.ptot[k],it=V.items[k]||[];
+  const info=k==='otros'?'Tócalos y elige la categoría. La app lo recuerda para la próxima.':`${fmt(s)}${t?' de '+fmt(t):''}${p?` · en ${V.pvL} fueron ${fmt(p)}`:''}`;
+  openSheet(`<h3>${c.ic} ${c.n}</h3><p>${info}</p><div class="card">${it.map(txHtml).join('')||'<div class="empty">Nada por aquí 🎉</div>'}</div>`);
+}
+function openNeg(){const V=S.V;openSheet(`<h3>🧩 Negocio</h3><p>${fmt(V.nt)} en TCG Logs / PULLDEX. No cuenta en tu presupuesto, pero es plata que tiene que volver.</p><div class="card">${V.neg.map(txHtml).join('')}</div>`)}
+function openMovs(){openSheet(`<h3>Todos los gastos</h3><p>${perL(S.periodo)} · toca uno para editarlo o borrarlo.</p><div class="card">${S.gastos.map(txHtml).join('')||'<div class="empty">Sin gastos</div>'}</div>`)}
+function openCuotas(){const V=S.V;openSheet(`<h3>💳 Cuotas y fijos</h3><p>${fmt(V.cuo)} al mes que se descuentan solos. No tienes que anotarlos.</p><div class="card">${V.CQ.map(c=>`<div class="crow"><div class="cm"><b>${c.nombre}</b><small>${c.label}${c.fin?' · termina en '+perL(c.fin):''}</small></div><div class="ca">${fmt(c.monto_cuota)}</div></div>`).join('')}</div>`)}
+function tipsList(){
+  const V=S.V,T=[],d=new Date().getDate();
+  if(V.esActual&&(d>=25||d<=5))T.push(['💰','<b>Llega el sueldo:</b> lo primero es transferir a Fintual, antes de gastar nada.']);
+  const top=Object.entries(V.tot).filter(([k])=>k!=='otros').sort((a,b)=>b[1]-a[1])[0];
+  if(top){const[k,v]=top;T.push([CAT[k].ic,`<b>${CAT[k].n}</b> es donde más se te va: ${fmt(v)}${V.ptot[k]?` (en ${V.pvL}: ${fmt(V.ptot[k])})`:''}.`])}
+  const terminan=V.CQ.filter(c=>c.n&&c.n===c.total_cuotas);
+  if(terminan.length)T.push(['🎉',`Este mes terminas <b>${terminan.map(c=>c.nombre).join(' y ')}</b>. Desde el próximo tienes ${fmt(terminan.reduce((s,c)=>s+c.monto_cuota,0))} más al mes.`]);
+  T.push(['💳',`Antes de gastar un peso ya se fueron <b>${fmt(V.cuo)}</b> en cuotas y fijos. Cada cuota nueva achica tu "hoy puedes gastar".`]);
+  T.push(['🤔','Antes de cualquier compra sobre $10.000, toca <b>¿Me alcanza?</b>. Si la app dice que no, es que no.']);
+  if(!flag('apv-abierto'))T.push(['🎯',`<b>APV pendiente:</b> abre “Mi primera jubilación” en Fintual con ${fmt(APV_MES)} al mes y el Estado te regala hasta ${fmt(APV_BONO)} al año.`]);
+  if(S.tax&&S.tax.dev>50000)T.push(['🧾',`En abril pide la <b>reliquidación anual</b>: te podrían devolver ≈ ${fmt(Math.round(S.tax.dev/10000)*10000)} de impuestos.`]);
+  return T;
+}
+function openTips(){openSheet(`<h3>💡 Consejos</h3><p>Basados en tus números de ${S.V.mes}.</p>${tipsList().map(([i,t])=>`<div class="tip"><i>${i}</i><div>${t}</div></div>`).join('')}`)}
+function openProy(){
+  const V=S.V,P=V.proy;
+  openSheet(`<h3>📈 Fintual</h3><p>${!V.esActual?`Con lo que gastaste en ${V.mes} quedaban libres ${fmt(P.libre)}.`:P.over?'Ya te pasaste: cada peso extra sale de lo que iba a Fintual.':`Mientras no te pases del presupuesto, estos ${fmt(P.fin)} están asegurados.`}</p>
+  <div class="box"><div class="row"><span>Sueldo que llega</span><b>${fmt(SUELDO)}</b></div><div class="row"><span>Pagas tarjetas y cuotas de ${V.mes}</span><b style="color:var(--red)">-${fmt(P.base)}</b></div><div class="row"><span>Queda libre</span><b>${fmt(P.libre)}</b></div><div class="row"><span>→ APV régimen A</span><b style="color:var(--green)">${fmt(Math.min(P.fin,APV_MES))}</b></div><div class="row"><span>→ Fintual largo plazo</span><b style="color:var(--green)">${fmt(Math.max(0,P.fin-APV_MES))}</b></div><div class="row"><span>→ Colchón en la cuenta</span><b>${fmt(P.col)}</b></div></div>
+  <p>Del APV el Estado te devuelve 15% encima (hasta ${fmt(APV_BONO)} al año).</p>`);
+}
+function openFin(){
+  const b=S.ing,ks=Object.keys(b).sort().slice(-12),mx=Math.max(1,...ks.map(k=>b[k])),v=ks.map(k=>b[k]);
+  const avg=v.length?v.reduce((a,x)=>a+x,0)/v.length:0,med=v.length?[...v].sort((a,x)=>a-x)[Math.floor(v.length/2)]:0;
+  openSheet(`<h3>📈 Sueldos y patrimonio</h3><p>Lo que tienes y lo que te entra.</p>
+  <div class="box"><div class="row"><span>Fintual</span><b style="color:var(--green)">${fmt(PAT().fintual)}</b></div><div class="row"><span>Cartas Pokémon</span><b>${fmt(PAT().cartas)}</b></div><div class="row"><span>Ethereum</span><b>${fmt(PAT().eth)}</b></div><div class="row"><span style="color:var(--text);font-weight:700">Total</span><b style="color:var(--ac)">${fmt(PAT().fintual+PAT().cartas+PAT().eth)}</b></div></div><button class="chip" style="margin-bottom:12px" onclick="editPat()">✏️ Actualizar valores</button>
+  <div class="box"><div class="chart">${ks.map(k=>`<div><span class="${b[k]>2100000?'b':''}" style="height:${Math.max(3,b[k]/mx*100)}%"></span><small>${MES[+k.slice(5)-1][0]}</small></div>`).join('')}</div></div>
+  <div class="box"><div class="row"><span>Tu sueldo normal</span><b>${fmt(med)}</b></div><div class="row"><span>Promedio 12 meses (con comisiones)</span><b>${fmt(avg)}</b></div>${[...ks].reverse().slice(0,6).map(k=>`<div class="row"><span>${perL(k)}</span><b style="color:var(--green)">${fmt(b[k])}</b></div>`).join('')}</div>`);
+}
+function openMeses(){openSheet(`<h3>🗓 Meses</h3><p>Elige un mes para ver cómo te fue.</p><div class="chips">${S.periodos.map(p=>`<button class="chip ${p===S.periodo?'on':''}" onclick="setPer('${p}')">${perL(p)}</button>`).join('')}</div>`)}
+
+function cardChips(){return `<div class="chips" id="a-cards">${['scotiabank','bci','santander','efectivo'].map(k=>`<button class="chip ${S.card===k?'on':''}" onclick="S.card='${k}';$('a-cards').outerHTML=cardChips()">${TJ[k]}</button>`).join('')}</div>`}
+function fmtIn(el){const v=el.value.replace(/\D/g,'');el.value=v?'$'+Number(v).toLocaleString('es-CL'):''}
+const val=id=>parseInt(($(id).value||'').replace(/\D/g,''))||0;
+const SUGS=['Jumbo','Almuerzo','Café','Delivery','Uber','Metro','Farmacia','Transferencia'];
+
+function openAdd(pre){
+  openSheet(`<h3>Anotar gasto</h3>
+  <input id="a-monto" class="amt-in" inputmode="numeric" placeholder="$0" autocomplete="off" oninput="fmtIn(this)" value="${pre&&pre.m?'$'+pre.m.toLocaleString('es-CL'):''}">
+  <label>¿En qué?</label><input id="a-desc" placeholder="ej: almuerzo" autocomplete="off" enterkeyhint="done" onkeydown="if(event.key==='Enter')saveAdd()" value="${pre&&pre.d?pre.d.replace(/"/g,'&quot;'):''}">
+  <div class="sugs">${SUGS.map(s=>`<button onclick="$('a-desc').value='${s}'">${s}</button>`).join('')}</div>
+  <label>Pagaste con</label>${cardChips()}
+  <button class="btn p" onclick="saveAdd()">Guardar</button>`);
+  if(!pre)$('a-monto').focus();
+}
+async function saveAdd(){
+  const monto=val('a-monto'),desc=($('a-desc').value||'').trim()||'Gasto';
+  if(!monto){toast('Pon el monto');$('a-monto').focus();return}
+  try{
+    const r=await api('gastos',{m:'POST',h:{Prefer:'return=representation'},b:{fecha:hoyISO(),monto,descripcion:desc,tarjeta:S.card,fuente:'app'}});
+    const g=r[0],c=CAT[g.categoria_clave]||CAT.otros;closeSheet();
+    const nuevoDiario=(S.V.queda-(g.pulldex?0:monto))/S.V.dias;
+    toast(g.pulldex?`✅ ${fmt(monto)} anotado como negocio`:`✅ ${c.ic} ${fmt(monto)} · hoy te quedan ${fmt(Math.max(0,nuevoDiario))}`);
+    S.periodo=g.periodo;await loadAll();
+    if(g.categoria_clave==='otros')setTimeout(()=>openTx(g.id),400);
+  }catch(e){toast('❌ No se pudo guardar');console.error(e)}
+}
+
+function openCheck(){
+  openSheet(`<h3>🤔 ¿Me alcanza?</h3><p>Antes de comprar, pon cuánto sale. Te digo la verdad.</p>
+  <input id="a-monto" class="amt-in" inputmode="numeric" placeholder="$0" autocomplete="off" oninput="fmtIn(this);evalCheck()">
+  <label>¿Qué es?</label><input id="a-desc" placeholder="ej: cartas, zapatillas, sushi" autocomplete="off" oninput="evalCheck()">
+  <div class="verdict" id="verdict"></div>
+  <div id="chk-btns" style="display:none">
+    <button class="btn g" onclick="skipBuy()">💪 Mejor no lo compro</button>
+    <button class="btn p" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="boughtIt()">Lo compré igual → anotar</button>
+  </div>`);
+  $('a-monto').focus();
+}
+function evalCheck(){
+  const V=S.V,x=val('a-monto'),desc=$('a-desc').value,{cat,neg}=guess(desc),el=$('verdict');
+  if(!x){el.className='verdict';$('chk-btns').style.display='none';return}
+  $('chk-btns').style.display='block';
+  const t=S.techos[cat]||0,s=V.tot[cat]||0,catN=cat!=='otros'?CAT[cat].n:null;
+  const q2=V.queda-x,d2=q2/V.dias,fin2=Math.round(Math.max(0,SUELDO-Math.max(V.total+x,S.ppto))/2);
+  let c,h,b;
+  if(neg){c='neg';h='🧩 Es para el negocio';b=`No toca tu presupuesto personal, pero son ${fmt(x)} que tienen que volver con ventas.`}
+  else if(cat==='coleccionables'&&!t){c='bad';h='🚫 No. Cartas bloqueadas este mes';b=`Este mes los coleccionables personales tienen tope $0. Si es para PULLDEX, escribe "pulldex" en la descripción.`}
+  else if(q2<0){c='bad';h='🔴 No te alcanza';b=`Te pasarías del mes por ${fmt(-q2)} y eso sale de tu ahorro: a Fintual irían ${fmt(fin2)} en vez de ${fmt(V.proy.fin)}.`}
+  else if(x<=Math.max(0,V.diario)){c='ok';h='✅ Sí, te alcanza';b=`Después de esto, hoy te quedarían ${fmt(V.diario-x)}. Fintual sigue intacto.`}
+  else if(catN&&t&&s+x>t){c='warn';h=`⚠️ Te alcanza, pero te pasas en ${catN}`;b=`Quedarías ${fmt(s+x-t)} sobre el tope de ${catN}. Tu gasto diario bajaría a ${fmt(d2)} hasta el 22.`}
+  else{c='warn';h='⚠️ Te alcanza, pero te aprieta';b=`Es más de lo que te toca hoy. Los próximos ${V.dias} días bajarías a ${fmt(d2)} al día.`}
+  if(!neg)b+=`<br><span style="color:var(--sec);font-size:13px">💡 Invertidos, esos ${fmt(x)} serían ${fmt(x*Math.pow(1.06,10))} en 10 años.</span>`;
+  el.className='verdict on '+c;el.innerHTML=`<b>${h}</b>${b}`;
+}
+function skipBuy(){const x=val('a-monto');if(x)addEv(x);closeSheet();toast(`💪 Bien ahí, te ahorraste ${fmt(x)}`);render()}
+function boughtIt(){openAdd({m:val('a-monto'),d:$('a-desc').value});}
+
+function openTx(id){
+  const g=S.gastos.find(x=>x.id===id);if(!g)return;
+  openSheet(`<h3>${g.descripcion}</h3><p>${fmt(g.monto)} · ${TJ[g.tarjeta]||g.tarjeta} · ${g.fecha}</p>
+  <label>¿Qué tipo de gasto es?</label><div class="chips">${Object.entries(CAT).filter(([k])=>k!=='otros').map(([k,c])=>`<button class="chip ${k===g.categoria_clave?'on':''}" onclick="document.querySelectorAll('#cat-ch .chip').forEach(b=>b.classList.remove('on'));this.classList.add('on');this.dataset.sel=1" data-k="${k}">${c.ic} ${c.n}</button>`).join('').replace('<div class="chips">','')}</div>
+  <label>Es de</label><div class="chips" id="neg-ch"><button class="chip ${!g.pulldex?'on':''}" data-v="0" onclick="selNeg(this)">Personal</button><button class="chip ${g.pulldex?'on':''}" data-v="1" onclick="selNeg(this)">Negocio</button></div>
+  <label>Monto</label><input id="e-monto" inputmode="numeric" value="${g.monto}">
+  <button class="btn p" onclick="saveTx(${id})">Guardar (y recordar para la próxima)</button>
+  <button class="btn d" onclick="delTx(${id})">Borrar gasto</button>`);
+  const chips=$('sheet').querySelectorAll('.chips')[0];chips.id='cat-ch';
+}
+function selNeg(b){$('neg-ch').querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on')}
+async function saveTx(id){
+  const g=S.gastos.find(x=>x.id===id);
+  const sel=$('cat-ch').querySelector('.chip.on'),cat=sel?sel.dataset.k:g.categoria_clave;
+  const neg=$('neg-ch').querySelector('.chip.on').dataset.v==='1';
+  try{
+    await api('gastos?id=eq.'+id,{m:'PATCH',b:{monto:parseInt($('e-monto').value)||g.monto,categoria_clave:cat,pulldex:neg}});
+    const palabra=g.descripcion.split(' ')[0].toLowerCase();
+    if(cat!=='otros'&&palabra.length>2&&!S.reglas.some(r=>r.palabra.toLowerCase()===palabra))await api('reglas_categoria',{m:'POST',b:{palabra,categoria_clave:cat,negocio:neg}});
+    closeSheet();toast('✅ Listo, lo recordaré');loadAll();
+  }catch(e){toast('❌ Error');console.error(e)}
+}
+async function delTx(id){if(!confirm('¿Borrar este gasto?'))return;try{await api('gastos?id=eq.'+id,{m:'DELETE'});closeSheet();toast('🗑 Borrado');loadAll()}catch(e){toast('❌ Error')}}
+function editPpto(){openSheet(`<h3>⚙️ Presupuesto de ${S.V.mes}</h3><p>Todo lo que puedes gastar en el mes, incluidas cuotas y fijos. Lo que no gastes va a Fintual.</p><input id="e-ppto" class="amt-in" inputmode="numeric" oninput="fmtIn(this)" value="${'$'+S.ppto.toLocaleString('es-CL')}"><button class="btn p" onclick="savePpto()">Guardar</button>`)}
+async function savePpto(){try{await api('presupuestos',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{periodo:S.periodo,monto:val('e-ppto')}});closeSheet();toast('✅ Presupuesto actualizado');loadAll()}catch(e){toast('❌ Error')}}
+async function loadIngresos(){try{const all=await api('ingresos?order=fecha.asc');const b={};all.forEach(i=>{const k=i.fecha.slice(0,7);b[k]=(b[k]||0)+i.monto});S.ing=b;
+  const y=String(new Date().getFullYear()),rows=all.filter(i=>i.fecha.startsWith(y)&&i.base_tributable);
+  if(rows.length){const meses=new Set(rows.map(r=>r.fecha.slice(0,7))).size,last=rows[rows.length-1].base_tributable,rest=Math.max(0,12-meses);
+    const baseAnual=rows.reduce((s,r)=>s+r.base_tributable,0)+last*rest,pagado=rows.reduce((s,r)=>s+(r.impuesto||0),0)+impMes(last)*rest,debido=impAnual(baseAnual);
+    S.tax={y,pagado,debido,dev:Math.max(0,pagado-debido),baseAnual,marg:TR.find(([l])=>last/UTM<=l)[1],abril:rows.find(r=>r.fecha.slice(5,7)==='04')};}
+  if(S.V.mes){renderNext();renderMeta();}}catch(e){console.error(e)}}
+
+loadAll();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('sheet-bg').classList.contains('on'))loadAll()});
+</script>
+</body>
+</html>
