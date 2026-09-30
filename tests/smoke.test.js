@@ -20,7 +20,7 @@ const DB={
 function run(url,claveOk){return new Promise(res=>{const heads=[];
  const dom=new JSDOM(html,{url,runScripts:'dangerously',pretendToBeVisual:true,beforeParse(w){
   w.scrollTo=()=>{};w.AbortController=AbortController;
-  w.fetch=async(u,o)=>{heads.push(o&&o.headers);if(u.includes('rpc/clave_ok'))return{ok:true,text:async()=>JSON.stringify(claveOk)};
+  w.fetch=async(u,o)=>{heads.push(o&&o.headers);(w.CALLS=w.CALLS||[]).push({u,m:o&&o.method,b:o&&o.body});if(u.includes('rpc/clave_ok'))return{ok:true,text:async()=>JSON.stringify(claveOk)};
    const k=u.includes('ahorros')?'ahorros':u.includes('categorias')?'categorias':u.includes('select=periodo')?'periodos':u.includes('cuotas')?'cuotas':u.includes('presupuestos')?null:u.includes('reglas')?'reglas':u.includes('ajustes')?'ajustes':u.includes('estado=eq.revisar')?'revisar':u.includes('gastos')?'gastos':u.includes('ingresos')?'ingresos':null;
    const rows=k?DB[k]:[];return{ok:true,text:async()=>JSON.stringify(u.includes('pulldex=eq.true')?rows.filter(g=>g.pulldex):rows)}};
  }});setTimeout(()=>res({dom,heads}),1200)})}
@@ -55,6 +55,13 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval("openFin()");checks['ahorro real en sueldos']=t('sheet').includes('Lo que de verdad ahorraste')&&t('sheet').includes('$439.000');
  w.eval("openAhorro()");checks['sheet ahorro']=!!d.getElementById('h-fin');
  w.eval("openPlata()");checks['colchón dinámico']=t('sheet').includes('te faltan')&&!t('sheet').includes('26,7');
+ // Arreglos de UX: la hoja se puede cerrar, editar un monto con puntos no lo rompe y una venta sigue siendo venta
+ w.eval('openTx(1)');checks['hoja tiene botón cerrar']=!!d.querySelector('#sheet .x');
+ d.getElementById('e-monto').value='12.990';w.CALLS=[];w.eval('saveTx(1)');await new Promise(r=>setTimeout(r,50));
+ checks['editar monto con puntos']=JSON.parse(w.CALLS.find(c=>c.m==='PATCH').b).monto===12990;
+ w.eval('openTx(3)');d.getElementById('e-monto').value='90.000';w.CALLS=[];w.eval('saveTx(3)');await new Promise(r=>setTimeout(r,50));
+ checks['editar venta mantiene el signo']=JSON.parse(w.CALLS.find(c=>c.m==='PATCH').b).monto===-90000;
+ w.eval('closeSheet()');checks['cerrar hoja']=!d.getElementById('sheet-bg').classList.contains('on')&&!d.body.classList.contains('lock');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();
