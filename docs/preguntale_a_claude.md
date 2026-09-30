@@ -16,7 +16,7 @@ La app le manda tu pregunta y los números del mes a la edge function `consejo` 
    - Abre https://supabase.com/dashboard/project/caaewoxfvmdizzziyvfz/functions/secrets
      (revisa que arriba diga **finanzas-vicho**, no `os-tcg`).
    - **Add new secret** → Name: `ANTHROPIC_API_KEY` → Value: la key → **Save**.
-4. **Prueba**: en la app toca **¿Me alcanza?** → abajo, "O pregúntale a Claude" → escribe algo y **Preguntar**.
+4. **Prueba**: en la app toca **¿Me alcanza?** → pestaña **Coach** → "Pregúntale a Claude" → escribe algo y **Preguntar**.
    Si dice "Falta conectar tu API", el secreto no quedó guardado con ese nombre exacto.
 
 ## Costo

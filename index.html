@@ -149,8 +149,16 @@ body.lock{overflow:hidden}
 .verdict.warn b{color:var(--amber-d)}
 .verdict.bad{background:#FEF3F2;border-color:#FECDCA}
 .verdict.bad b{color:var(--red-d)}
-.ia{margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
-.ia h4{font-size:15px;font-weight:700;margin-bottom:4px}
+.ia{padding:16px 16px 14px;margin-bottom:16px}
+.ia h4{font-size:16px;font-weight:700;margin-bottom:2px}
+.ia p{font-size:13px;color:var(--sec)}
+.ia .chips{margin:10px 0 2px}
+.ia .chip{font-size:12.5px;padding:7px 11px}
+.ia-in{display:flex;gap:8px;margin-top:10px}
+.ia-in input{flex:1;min-width:0;padding:13px 14px;border-radius:14px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text);font-size:16px;-webkit-appearance:none;outline:none}
+.ia-in input:focus{border-color:var(--ac);background:#fff}
+.ia-in button{margin:0;width:auto;padding:0 18px;font-size:15px}
+.ia-in button:disabled{opacity:.5}
 .ia-log{display:flex;flex-direction:column;gap:8px;margin:10px 0}
 .ia-q,.ia-a{padding:11px 14px;border-radius:16px;font-size:14px;line-height:1.5;max-width:92%}
 .ia-q{align-self:flex-end;background:var(--navy);color:#fff}
@@ -233,7 +241,12 @@ body.ready .toast{bottom:calc(90px + var(--safe-b))}
 
   <section class="tab" data-tab="coach" hidden>
   <h2 class="tab-t">Coach</h2>
-  <p class="tab-s" id="m-tips">—</p>
+  <div class="card ia"><h4>🤖 Pregúntale a Claude</h4><p>Con tus números de este mes. Pregunta como le hablarías a un amigo.</p>
+    <div class="ia-log" id="ia-log"></div>
+    <div class="chips" id="ia-sug"></div>
+    <div class="ia-in"><input id="ia-in" placeholder="Escribe tu pregunta…" autocomplete="off" enterkeyhint="send" onkeydown="if(event.key==='Enter')askIA()"><button class="btn p" id="ia-btn" onclick="askIA()">Preguntar</button></div>
+  </div>
+  <p class="tab-s" id="m-tips" style="margin-top:0">—</p>
   <div id="coach"></div>
   <div class="card menu" style="margin-top:6px">
     <button class="crow" onclick="openAvisos()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div class="cm"><b>Avisos</b><small>Que el celular te recuerde qué hacer y cuándo</small></div><span class="chev">›</span></button>
@@ -430,6 +443,7 @@ function render(){
   $('m-movs').textContent=`${S.gastos.length} este mes${nt?' · incluye negocio':''}`;
   $('m-cuo').textContent=`${fmt(cuo)} al mes · se suman solas`;
   const TL=tipsList();$('m-tips').textContent=`${TL.length} consejos para ${mes}, con tus números.`;
+  if(!(S.iaH||[]).length&&!$('ia-log').children.length)$('ia-sug').innerHTML=IA_SUG.map(q=>`<button class="chip" onclick="askIA(this.textContent)">${q}</button>`).join('');
   $('coach').innerHTML=TL.map(([i,t])=>`<div class="tip"><i>${i}</i><div>${t}</div></div>`).join('');
   $('m-ppto').textContent=`${fmt(S.ppto)} (incluye cuotas)`;
   renderNext();renderMeta();
@@ -726,10 +740,7 @@ function openCheck(){S.nc=1;
     <button class="btn g" onclick="skipBuy()">💪 Mejor no lo compro</button>
     <button class="btn p" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="boughtIt()">Lo compré igual → anotar</button>
   </div>
-  <div class="ia"><h4>🤖 O pregúntale a Claude</h4><p>Con tus números de este mes. Pregunta como le hablarías a un amigo.</p>
-  <div class="ia-log" id="ia-log"></div>
-  <input id="ia-in" placeholder="ej: ¿me compro unas zapatillas de 90 lucas?" autocomplete="off" onkeydown="if(event.key==='Enter')askIA()">
-  <button class="btn p" id="ia-btn" onclick="askIA()">Preguntar</button></div>`);S.iaH=[];
+  <button class="btn p" style="background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="askCheck()">🤖 Pregúntale a Claude</button>`);
   $('a-monto').focus();
 }
 function evalCheck(){
@@ -758,14 +769,17 @@ function ctxIA(){const V=S.V,ks=Object.keys(CAT);
     ultimos_gastos:S.gastos.filter(g=>!g.pulldex).slice(0,25).map(g=>({fecha:g.fecha,que:g.descripcion,monto:g.monto,categoria:(CAT[g.categoria_clave]||CAT.otros).n})),
     te_aguantaste_este_mes:getEv(),sueldo:SUELDO,a_fintual_si_te_mantienes:V.proy.fin,patrimonio:S.aj.patrimonio||null}}
 const mdIA=t=>t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
-async function askIA(){const inp=$('ia-in'),btn=$('ia-btn');let q=inp.value.trim();
-  if(!q){const x=val('a-monto'),d=$('a-desc').value.trim();if(!x)return inp.focus();q=`¿Me alcanza para ${d||'esto'} de ${fmt(x)}${(S.nc||1)>1?` en ${S.nc} cuotas`:' al contado'}?`}
+const IA_SUG=['¿Cómo voy este mes?','¿En qué se me está yendo la plata?','¿Cuánto puedo gastar este finde?'];
+function askCheck(){const x=val('a-monto'),d=$('a-desc').value.trim(),q=x?`¿Me alcanza para ${d||'esto'} de ${fmt(x)}${(S.nc||1)>1?` en ${S.nc} cuotas`:' al contado'}?`:'';
+  closeSheet();tab('coach');if(q)askIA(q);else $('ia-in').focus()}
+async function askIA(pre){const inp=$('ia-in'),btn=$('ia-btn');let q=(pre||inp.value).trim();if(!q)return inp.focus();if(btn.disabled)return;
+  S.iaH=S.iaH||[];$('ia-sug').innerHTML='';
   const log=$('ia-log');log.insertAdjacentHTML('beforeend',`<div class="ia-q">${mdIA(q)}</div><div class="ia-a" id="ia-w">Pensando…</div>`);inp.value='';btn.disabled=true;
   let a;try{const r=await fetch(SB+'/functions/v1/consejo',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json','x-app-key':getKey()},body:JSON.stringify({pregunta:q,datos:ctxIA(),historial:S.iaH})});
     const j=await r.json();a=j.respuesta||({sin_api:'Falta conectar tu API de Anthropic (paso 3 de la guía).',api_mala:'La API key de Anthropic no funciona. Revísala en Supabase.',limite:'Muchas preguntas seguidas. Espera un minuto.',clave:'Tu sesión venció. Vuelve a entrar.'}[j.error]||'No pude responder. Intenta de nuevo.');
     if(j.respuesta)S.iaH.push({role:'user',content:q},{role:'assistant',content:j.respuesta});
   }catch(e){console.error(e);a='Sin conexión. Intenta de nuevo.'}
-  const w=$('ia-w');if(w){w.innerHTML=mdIA(a);w.removeAttribute('id')}btn.disabled=false;
+  const w=$('ia-w');if(w){w.innerHTML=mdIA(a);w.removeAttribute('id')}btn.disabled=false;w&&w.scrollIntoView&&w.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
 function skipBuy(){const x=val('a-monto');if(x)addEv(x);closeSheet();toast(`💪 Bien ahí, te ahorraste ${fmt(x)}`);render()}
 function boughtIt(){if((S.nc||1)>1)return openCuotaNueva();openAdd({m:val('a-monto'),d:$('a-desc').value});}
