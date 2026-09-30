@@ -954,15 +954,18 @@ function openCheck(){S.nc=1;
   <label>¿Qué es?</label><input id="a-desc" placeholder="ej: cartas, zapatillas, sushi" autocomplete="off" oninput="evalCheck()">
   <label>¿Cómo lo pagarías?</label><div class="chips" id="nc-ch">${[1,3,6,12].map(n=>`<button class="chip ${n===1?'on':''}" onclick="S.nc=${n};document.querySelectorAll('#nc-ch .chip').forEach(b=>b.classList.remove('on'));this.classList.add('on');evalCheck()">${n===1?'Al contado':n+' cuotas'}</button>`).join('')}</div>
   <div class="verdict" id="verdict"></div>
+  <div id="chk-ia"></div>
   <div id="chk-btns" style="display:none">
     <button class="btn g" onclick="skipBuy()">💪 Mejor no lo compro</button>
     <button class="btn p" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="boughtIt()">Lo compré igual → anotar</button>
-  </div>
-  <button class="btn p" style="background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="askCheck()">🤖 Pregúntale a Claude</button>`);
+    <button class="btn p" id="chk-ia-btn" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="askCheck()">🤖 Segunda opinión de Claude</button>
+  </div>`);
   $('a-monto').focus();
 }
 function evalCheck(){
   let V=S.V,x=val('a-monto'),desc=$('a-desc').value,{cat,neg}=guess(desc),el=$('verdict');
+  // Si cambias la compra, la opinión de Claude ya no aplica.
+  if(S.chkIA&&S.chkIA!==chkQ()){S.chkIA=null;$('chk-ia').innerHTML=''}
   if(!x){el.className='verdict';$('chk-btns').style.display='none';return}
   $('chk-btns').style.display='block';
   const t=S.techos[cat]||0,s=V.tot[cat]||0,catN=cat!=='otros'&&CAT[cat]?CAT[cat].n:null;
@@ -988,15 +991,27 @@ function ctxIA(){const V=S.V,ks=Object.keys(CAT);
     te_aguantaste_este_mes:getEv(),sueldo:SUELDO,a_fintual_si_te_mantienes:V.proy.fin,patrimonio:S.aj.patrimonio||null}}
 const mdIA=t=>t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
 const IA_SUG=['¿Cómo voy este mes?','¿En qué se me está yendo la plata?','¿Cuánto puedo gastar este finde?'];
-function askCheck(){const x=val('a-monto'),d=$('a-desc').value.trim(),q=x?`¿Me alcanza para ${d||'esto'} de ${fmt(x)}${(S.nc||1)>1?` en ${S.nc} cuotas`:' al contado'}?`:'';
-  closeSheet();tab('coach');if(q)askIA(q);else $('ia-in').focus()}
+const chkQ=()=>{const x=val('a-monto'),d=$('a-desc').value.trim();return x?`¿Me alcanza para ${d||'esto'} de ${fmt(x)}${(S.nc||1)>1?` en ${S.nc} cuotas`:' al contado'}?`:''};
+// Segunda opinión dentro de ¿Me alcanza?: Claude recibe el veredicto de la app (la regla manda) y suma lo que la regla no ve.
+async function askCheck(){const q=chkQ(),el=$('chk-ia'),btn=$('chk-ia-btn');if(!q){$('a-monto').focus();return}if(btn.disabled)return;
+  const v=$('verdict'),vt=v.querySelector('.vt');
+  const datos={...ctxIA(),veredicto_app:{resultado:vt?vt.textContent:'',detalle:v.textContent.replace(vt?vt.textContent:'','').trim(),
+    instruccion:'Esta es la decisión de la app según las reglas: no la contradigas. Confírmala en una línea y agrega solo lo que la regla no ve (¿vale la pena?, alternativa más barata, esperar 48 horas). Máximo 4 líneas.'}};
+  S.chkIA=q;btn.disabled=true;btn.textContent='🤖 Claude está pensando…';el.innerHTML='<div class="ia-a" style="margin-top:12px;max-width:100%">Pensando…</div>';
+  const a=await callIA(q,datos,[]);
+  if(S.chkIA!==q)return;btn.disabled=false;btn.textContent='🤖 Preguntar de nuevo';
+  el.innerHTML=`<div class="ia-a" style="margin-top:12px;max-width:100%">${mdIA(a.texto)}</div>${a.ok?`<button class="chip" style="margin-top:8px" onclick="seguirIA()">Seguir conversando en Coach →</button>`:''}`;
+  if(a.ok)S.chkPar=[q,a.texto];}
+// Lleva la pregunta y la respuesta al chat del Coach para seguir ahí.
+function seguirIA(){const[q,a]=S.chkPar||[];closeSheet();tab('coach');if(!q)return;S.iaH=S.iaH||[];S.iaH.push({role:'user',content:q},{role:'assistant',content:a});$('ia-sug').innerHTML='';
+  $('ia-log').insertAdjacentHTML('beforeend',`<div class="ia-q">${mdIA(q)}</div><div class="ia-a">${mdIA(a)}</div>`);$('ia-in').focus()}
+async function callIA(q,datos,hist){try{const r=await fetch(SB+'/functions/v1/consejo',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json','x-app-key':getKey()},body:JSON.stringify({pregunta:q,datos,historial:hist})});
+    const j=await r.json();return j.respuesta?{ok:true,texto:j.respuesta}:{ok:false,texto:({sin_api:'Falta conectar tu API de Anthropic (paso 3 de la guía).',api_mala:'La API key de Anthropic no funciona. Revísala en Supabase.',limite:'Muchas preguntas seguidas. Espera un minuto.',clave:'Tu sesión venció. Vuelve a entrar.'}[j.error]||'No pude responder. Intenta de nuevo.')}}
+  catch(e){console.error(e);return{ok:false,texto:'Sin conexión. Intenta de nuevo.'}}}
 async function askIA(pre){const inp=$('ia-in'),btn=$('ia-btn');let q=(pre||inp.value).trim();if(!q)return inp.focus();if(btn.disabled)return;
   S.iaH=S.iaH||[];$('ia-sug').innerHTML='';
   const log=$('ia-log');log.insertAdjacentHTML('beforeend',`<div class="ia-q">${mdIA(q)}</div><div class="ia-a" id="ia-w">Pensando…</div>`);inp.value='';btn.disabled=true;
-  let a;try{const r=await fetch(SB+'/functions/v1/consejo',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json','x-app-key':getKey()},body:JSON.stringify({pregunta:q,datos:ctxIA(),historial:S.iaH})});
-    const j=await r.json();a=j.respuesta||({sin_api:'Falta conectar tu API de Anthropic (paso 3 de la guía).',api_mala:'La API key de Anthropic no funciona. Revísala en Supabase.',limite:'Muchas preguntas seguidas. Espera un minuto.',clave:'Tu sesión venció. Vuelve a entrar.'}[j.error]||'No pude responder. Intenta de nuevo.');
-    if(j.respuesta)S.iaH.push({role:'user',content:q},{role:'assistant',content:j.respuesta});
-  }catch(e){console.error(e);a='Sin conexión. Intenta de nuevo.'}
+  const r=await callIA(q,ctxIA(),S.iaH),a=r.texto;if(r.ok)S.iaH.push({role:'user',content:q},{role:'assistant',content:a});
   const w=$('ia-w');if(w){w.innerHTML=mdIA(a);w.removeAttribute('id')}btn.disabled=false;w&&w.scrollIntoView&&w.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
 function skipBuy(){const x=val('a-monto');if(x)addEv(x);closeSheet();toast(`💪 Bien ahí, te ahorraste ${fmt(x)}`);render()}
