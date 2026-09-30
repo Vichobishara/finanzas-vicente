@@ -59,6 +59,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval('openCuota()');checks['formulario de cuota']=!!d.getElementById('q-n');
  w.eval("openCheck()");d.getElementById('a-monto').value='30000';w.eval("fmtIn($('a-monto'))");d.getElementById('a-desc').value='cartas';w.eval('evalCheck()');
  checks['¿Me alcanza? bloquea cartas']=t('verdict').includes('bloqueadas');
+ checks['veredicto: negritas en línea']=!!d.querySelector('#verdict .vt')&&d.querySelectorAll('#verdict .vt').length===1;
  d.getElementById('a-desc').value='zapatillas';w.eval("S.nc=6;evalCheck()");
  checks['¿Me alcanza? frena cuotas nuevas']=t('verdict').includes('cero cuotas');
  w.eval('askCheck()');await new Promise(r=>setTimeout(r,50));
@@ -80,6 +81,11 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
   checks['gasto grande: te pasaste hoy y desde mañana']=w.eval('S.V').dias>1?t('hero-w').includes('Hoy te pasaste')&&t('hero-w').includes('desde mañana'):true;
   checks['hero muestra la semana']=t('hero-w').includes('Esta semana');
   w.eval('S.gastos.pop();render()');}
+ w.eval('openAdd()');checks['anotar: sugerencias']=d.querySelectorAll('#sheet .sugs button').length>=5;
+ d.getElementById('a-monto').value='$5.000';w.CALLS=[];await w.eval('saveAdd()');await new Promise(r=>setTimeout(r,1400));
+ const tb=d.querySelector('#toast button');checks['anotar: botón deshacer']=!!tb&&tb.textContent==='Deshacer';
+ if(tb){w.CALLS=[];tb.click();await new Promise(r=>setTimeout(r,50));checks['deshacer borra el gasto']=w.CALLS.some(c=>c.m==='DELETE'&&c.u.includes('gastos?id=eq.'))}
+ w.eval('openTx(1)');checks['fecha legible']=!/\d{4}-\d{2}-\d{2}/.test(t('sheet'));
  w.eval('closeSheet()');checks['cerrar hoja']=!d.getElementById('sheet-bg').classList.contains('on')&&!d.body.classList.contains('lock');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
