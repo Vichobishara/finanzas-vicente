@@ -43,7 +43,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['top categorías']=t('top3').includes('Comida');
  checks['tarjeta Fintual']=t('fin').includes('Fintual');
  checks['camino a millonario']=t('meta').includes('Camino');
- checks['barra de navegación']=d.body.classList.contains('ready')&&d.querySelectorAll('#nav button').length===4;
+ checks['barra de navegación']=d.body.classList.contains('ready')&&d.querySelectorAll('#nav button[data-t]').length===4&&!!d.querySelector('#nav button.add');
  w.eval("tab('gastos')");checks['pestaña gastos']=!d.querySelector('[data-tab=gastos]').hidden&&d.querySelector('[data-tab=hoy]').hidden;
  w.eval("tab('coach')");checks['coach en pestaña']=t('coach').length>20;w.eval("tab('hoy')");
  checks['coach: hábitos con puntaje']=/\d\/\d/.test(t('coach-hab'))&&t('coach-hab').includes('Todo ordenado')&&t('coach-hab').includes('Mandaste plata a Fintual');
