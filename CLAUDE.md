@@ -96,6 +96,17 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - ¿Me alcanza? → **¿Cuál me compro?** compara 2 opciones (costo real con reventa, atraso de metas, 10 años).
 - Coach → **Widget en tu inicio**: script de Scriptable (`widgetJS`) con el código personal → `rpc/widget(token)`.
 
+## Fintual conectado (30-09-2026)
+- Plata → **Conectar Fintual**: la persona pone correo y contraseña de Fintual UNA vez. La edge function `fintual` llama
+  `POST fintual.cl/api/access_tokens` y guarda **solo el token** en `fintual_conexion` (RLS sin políticas; la contraseña
+  nunca se guarda ni se registra). Con `GET /api/goals?user_email&user_token` actualiza `ajustes.patrimonio` (fintual = todas
+  las metas que cuentan, colchon aparte; cartas y ETH no se tocan) y detecta aportes: si sube `deposited` de una meta desde
+  la última foto (`fintual_conexion.ultimo`), inserta en `ahorros` (nota "Detectado en Fintual", salvo que ya haya uno manual
+  ±2% en 10 días) y manda un push. Destino de cada meta (fintual | colchon | apv | fuera) se elige en la app.
+- Acciones: `conectar`, `sync`, `destinos`, `desconectar` (con x-app-key) y `todos` (cron `fintual` 00:00 UTC ≈ 21:00
+  Santiago, con x-avisos-token). La app lee el estado en `ajustes.fintual` (sin token) y sincroniza al abrir si pasaron > 6 h.
+  Si Fintual responde 401 (cambió la contraseña) queda `error:'token'` y la app pide volver a conectar.
+
 ## Seguridad (clave x-app-key)
 - Todas las tablas exigen el header `x-app-key`. La función `privado.autorizado()` compara su sha256 con el hash guardado
   (el esquema `privado` no está expuesto). `rpc/clave_ok` devuelve true/false para la pantalla de candado.
@@ -160,6 +171,6 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   la app las compara con lo anotado (monto ±$1, fecha ±3 días) y ofrece agregar las que faltan (salta las en cuotas).
 - [ ] Revisar si Scotiabank permite alertas por correo o SMS, para sumarlas al script.
 - [ ] Alertas por correo desde Apps Script (categoría > 80%, resumen semanal).
-- [ ] Actualización automática del saldo de Fintual (hoy es manual, desde la app).
+- [x] Actualización automática del saldo de Fintual (ver "Fintual conectado").
 - [x] Aportes reales: tabla `ahorros` (nudge "¿Ya mandaste a Fintual?" del 27 al 10).
 - [ ] Regla de CFO: cero cuotas nuevas mientras cuotas y fijos sean ≥ 30% del presupuesto (¿Me alcanza? ya la aplica).

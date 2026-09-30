@@ -20,7 +20,7 @@ const DB={
 function run(url,claveOk){return new Promise(res=>{const heads=[];
  const dom=new JSDOM(html,{url,runScripts:'dangerously',pretendToBeVisual:true,beforeParse(w){
   w.scrollTo=()=>{};w.AbortController=AbortController;
-  w.fetch=async(u,o)=>{heads.push(o&&o.headers);(w.CALLS=w.CALLS||[]).push({u,m:o&&o.method,b:o&&o.body});if(u.includes('functions/v1/cartola')){w.__cart=JSON.parse(o.body);return{ok:true,json:async()=>({fecha_cartola:'',nota:'',cuotas:[{nombre:'Falabella iPhone',monto_cuota:95000,cuota_actual:4,total_cuotas:12,banco:'Scotiabank'},{nombre:'TOUS',monto_cuota:80800,cuota_actual:1,total_cuotas:3,banco:'Scotiabank'}]})}}if(u.includes('functions/v1/acceso_google')){const t=(o.headers.Authorization||'').split(' ')[1];return{ok:true,json:async()=>t==='tok-vicho'?{clave:'test123',nombre:'Vicente Bishara'}:{error:'no_invitado',email:'amigo@gmail.com'}}}if(u.includes('functions/v1/consejo')){w.__ia=JSON.parse(o.body);return{ok:true,json:async()=>({respuesta:'🔴 **No**, cero cuotas nuevas'})}}if(u.includes('rpc/clave_ok'))return{ok:true,text:async()=>JSON.stringify(claveOk)};
+  w.fetch=async(u,o)=>{heads.push(o&&o.headers);(w.CALLS=w.CALLS||[]).push({u,m:o&&o.method,b:o&&o.body});if(u.includes('functions/v1/cartola')){w.__cart=JSON.parse(o.body);return{ok:true,json:async()=>({fecha_cartola:'',nota:'',cuotas:[{nombre:'Falabella iPhone',monto_cuota:95000,cuota_actual:4,total_cuotas:12,banco:'Scotiabank'},{nombre:'TOUS',monto_cuota:80800,cuota_actual:1,total_cuotas:3,banco:'Scotiabank'}]})}}if(u.includes('functions/v1/acceso_google')){const t=(o.headers.Authorization||'').split(' ')[1];return{ok:true,json:async()=>t==='tok-vicho'?{clave:'test123',nombre:'Vicente Bishara'}:{error:'no_invitado',email:'amigo@gmail.com'}}}if(u.includes('functions/v1/fintual')){const b=JSON.parse(o.body);w.__fin=b;return{ok:true,status:b.password==='mala'?401:200,json:async()=>b.password==='mala'?{error:'credenciales'}:{ok:true,anotados:b.accion==='sync'?300000:0}}}if(u.includes('functions/v1/consejo')){w.__ia=JSON.parse(o.body);return{ok:true,json:async()=>({respuesta:'🔴 **No**, cero cuotas nuevas'})}}if(u.includes('rpc/clave_ok'))return{ok:true,text:async()=>JSON.stringify(claveOk)};
    const k=u.includes('ahorros')?'ahorros':u.includes('categorias')?'categorias':u.includes('select=periodo')?'periodos':u.includes('cuotas')?'cuotas':u.includes('presupuestos')?null:u.includes('reglas')?'reglas':u.includes('ajustes')?'ajustes':u.includes('estado=eq.revisar')?'revisar':u.includes('gastos')?'gastos':u.includes('ingresos')?'ingresos':null;
    const rows=k?DB[k]:[];return{ok:true,text:async()=>JSON.stringify(u.includes('pulldex=eq.true')?rows.filter(g=>g.pulldex):rows)}};
  }});setTimeout(()=>res({dom,heads}),1200)})}
@@ -201,6 +201,14 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval('openCheck()');d.getElementById('a-monto').value='$'+Math.round(w.eval('S.V.cupoHoy')*2.5);d.getElementById('a-desc').value='zapatillas';w.eval('S.nc=1;evalCheck()');
  checks['¿Me alcanza?: días con coma decimal']=!/\d\.\d días/.test(t('verdict'));w.eval('closeSheet()');
  w.eval('S.logrosAll=0;renderLogros()');checks['logros: los que tienes y los 2 próximos']=d.querySelectorAll('#logros-c .logro').length<7&&t('logros-c').includes('que faltan');
+ // Fintual: conectar sin guardar la contraseña, metas con destino y aportes solos
+ w.eval("delete S.aj.fintual;openFintual()");checks['fintual: pide correo y dice que la contraseña no se guarda']=t('sheet').includes('Conecta tu Fintual')&&t('sheet').includes('no se guarda');
+ d.getElementById('fz-e').value='vicho@mail.com';d.getElementById('fz-p').value='mala';await w.eval('conectarFintual()');
+ checks['fintual: contraseña mala avisa y no conecta']=w.__fin.accion==='conectar'&&d.getElementById('fz-p').value===''&&t('sheet').includes('Conecta tu Fintual');
+ w.eval("S.aj.fintual={conectado:true,email:'vicho@mail.com',sync_at:new Date().toISOString(),metas:[{id:'1',nombre:'Risky <b>',nav:9000000,depositado:8000000,destino:'fintual'},{id:'2',nombre:'Colchón',nav:3000000,depositado:2900000,destino:'colchon'}]};openFintual()");
+ checks['fintual: conectado muestra metas, total y destinos (escapado)']=t('sheet').includes('$12.000.000')&&t('sheet').includes('Risky <b>')&&d.querySelectorAll('#sheet .chip.on').length===2;
+ w.eval('openAhorro()');checks['fintual: aportes se detectan solos (sin inputs)']=t('sheet').includes('lo detecta y lo anota sola')&&!d.getElementById('h-fin');w.eval('closeSheet()');
+ w.eval('delete S.aj.fintual');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();
