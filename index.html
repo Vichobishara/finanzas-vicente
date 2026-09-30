@@ -366,6 +366,13 @@ body:not(.ready) .mes-b .chev{display:none}
 .lg-k input{width:100%;padding:15px 16px;border-radius:16px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:16px;outline:none}
 .lg-k input:focus{border-color:var(--ac)}
 .lg-link{background:none;border:none;color:var(--sec);font-size:14px;font-weight:500;padding:8px}
+.login.on~.sheet-bg{z-index:160}
+/* Guía "Agrégala a tu inicio": no está en la App Store, se instala desde el navegador */
+.gi-app{display:flex;align-items:center;gap:14px;padding:6px 0 16px}.gi-app img{width:58px;height:58px;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.gi-app b{display:block;font-size:15px;font-weight:600}.gi-app small{font-size:13px;color:var(--sec)}
+.gi-k{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:8px;background:var(--bg3);font-weight:600;font-size:13px;color:var(--text);vertical-align:middle;white-space:nowrap}
+.gi-k svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.gi-no{font-size:13px;color:var(--sec);line-height:1.5;background:var(--bg3);border-radius:14px;padding:11px 14px;margin:14px 0 4px}
 .lg-fine{text-align:center;font-size:12px;color:var(--hint)}
 </style>
 </head>
@@ -510,6 +517,29 @@ const $v=n=>n>0?'$'+Math.round(n).toLocaleString('es-CL'):'';
 // Solo se apila al tocar dentro de la hoja; si se abre después de guardar, no (así ‹ nunca vuelve a un formulario viejo).
 let cierreT,SH=[];
 const shTit=h=>(String(h).match(/<h3[^>]*>([\s\S]*?)<\/h3>/)||[])[1]||'';
+// ---------- "Agrégala a tu inicio": la app no está en la App Store ni en Play Store; se instala desde el navegador ----------
+const UA=navigator.userAgent,enApp=/Instagram|FBAN|FBAV|WhatsApp|Line\/|LinkedInApp|TikTok|GSA\//.test(UA),iosChrome=/CriOS|FxiOS|EdgiOS/.test(UA);
+let instalarEv=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();instalarEv=e});
+const GK=(ic,t)=>`<span class="gi-k">${ic?`<svg viewBox="0 0 24 24">${ic}</svg>`:''}${t}</span>`,
+  GI={share:'<path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/>',mas:'<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/>',
+    dots:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',vdots:'<circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>'};
+const paso=(n,t,d)=>`<div class="step"><div class="n">${n}</div><div><b>${t}</b>${d?`<small>${d}</small>`:''}</div></div>`;
+function guiaInicio(){try{localStorage.setItem('no-inicio',1)}catch(e){}
+  let P;
+  if(enApp)P=[paso(1,`Toca ${GK(GI.dots,'')} o ${GK('','Abrir en…')}`,'Estás dentro de WhatsApp o Instagram. Arriba o abajo hay un botón para abrir la página en el navegador.'),
+    paso(2,esIOS?'Elige "Abrir en Safari"':'Elige "Abrir en Chrome"','Ahí sí se puede agregar a tu inicio.'),paso(3,'Vuelve a tocar "Agrégala a tu pantalla de inicio"','Y sigues los pasos.')];
+  else if(esIOS)P=[paso(1,`Toca ${GK(GI.share,'Compartir')}`,iosChrome?'Está arriba, al lado de la dirección.':`Está abajo en Safari. Si no lo ves, toca ${GK(GI.dots,'')} primero.`),
+    paso(2,`Toca ${GK(GI.mas,'Agregar a inicio')}`,'Si no aparece, baja un poco en esa lista.'),paso(3,`Toca ${GK('','Agregar')} arriba a la derecha`,''),
+    paso(4,'Ábrela desde tu pantalla de inicio','Vas a ver el ícono de las tres barras. Desde ahí entra como app y te llegan los avisos.')];
+  else P=[paso(1,`Toca ${GK(GI.vdots,'')} arriba a la derecha`,'En Chrome.'),paso(2,`Toca ${GK(GI.mas,'Agregar a la pantalla principal')}`,'O "Instalar app", según tu celular.'),
+    paso(3,`Toca ${GK('','Instalar')}`,''),paso(4,'Ábrela desde tu pantalla de inicio','Vas a ver el ícono de las tres barras.')];
+  openSheet(`<h3>Ponla en tu pantalla de inicio</h3><p>Así la abres con un toque, como cualquier app.</p>
+  <div class="gi-app"><img src="/apple-touch-icon.png" alt=""><div><b>Finanzas</b><small>Se ve y funciona como una app</small></div></div>
+  ${instalarEv&&!esIOS?`<button class="btn p" onclick="instalar()">Instalar ahora</button><p class="fine" style="margin:10px 0 4px">¿No funcionó? Hazlo a mano:</p>`:''}
+  ${P.join('')}
+  <div class="gi-no"><b>No la busques en la ${esIOS?'App Store':'Play Store'}.</b> No está ahí: se agrega desde el navegador y es gratis. Casi no ocupa espacio y se actualiza sola.</div>
+  <button class="btn p" style="margin-top:14px" onclick="closeSheet()">Entendido</button>`)}
+async function instalar(){if(!instalarEv)return;instalarEv.prompt();const r=await instalarEv.userChoice.catch(()=>null);instalarEv=null;closeSheet();if(r&&r.outcome==='accepted')toast('📲 Lista: ábrela desde tu inicio')}
 function openSheet(h){const sh=$('sheet'),ev=window.event,tit=shTit(h);
   if(sheetOn()&&ev&&ev.type==='click'&&sh.contains(ev.target)){const c=sh.cloneNode(true);c.querySelectorAll(':scope>.handle,:scope>.x,:scope>.bk').forEach(n=>n.remove());
     if(shTit(c.innerHTML)!==tit)SH.push({h:c.innerHTML,y:sh.scrollTop})}else if(!sheetOn())SH=[];
@@ -592,6 +622,7 @@ function lock(msg,tipo){document.body.classList.remove('ready');tab('hoy');$('he
     ${fidPrimero?bFid+bG:bG+bFid}
     <div id="k-box" class="lg-k"><input id="k-in" placeholder="Tu clave" autocomplete="off" autocapitalize="off" autocorrect="off" enterkeyhint="go" onkeydown="if(event.key==='Enter')setKey()"><button class="lg-b s" onclick="setKey()"><span>Entrar con clave</span></button></div>
     <button class="lg-link" onclick="$('k-box').classList.add('on');this.remove();$('k-in').focus()">Usar una clave</button>
+    ${standalone?'':`<button class="lg-link" onclick="guiaInicio()">📲 Agrégala a tu pantalla de inicio</button>`}
     <div class="lg-fine">🔒 Tus datos solo los ves tú</div></div>`;
   L.classList.remove('fuera');L.classList.add('on');if(msg&&tipo==='mal'){L.classList.remove('sacude');void L.offsetWidth;L.classList.add('sacude')}}
 // Botón ocupado mientras abre Face ID o Google
@@ -741,7 +772,7 @@ function render(){
   if(esActual){const man=S.gastos.filter(g=>g.tarjeta==='scotiabank'||g.tarjeta==='efectivo').map(g=>g.fecha).sort().pop();const ds=man?Math.round((hoy-new Date(man+'T00:00:00'))/864e5):null;
     if(ds===null||ds>=2)nz+=`<div class="nudge"><div>✍️ ${ds===null?'No has anotado gastos de Scotia':`Llevas <b>${ds} días</b> sin anotar lo de Scotia`}</div><button onclick="openAdd()">Anotar</button></div>`;}
   if(esActual&&pushOk()&&Notification.permission==='default'&&(standalone||!esIOS)&&!localStorage.getItem('no-push'))nz+=`<div class="nudge"><div>🔔 <b>Activa los avisos:</b> te aviso cuando te pases, el lunes y cuando llegue el sueldo</div><button onclick="activarPush()">Activar</button></div>`;
-  if(esActual&&esIOS&&!standalone&&!localStorage.getItem('no-inicio'))nz+=`<div class="nudge"><div>📲 <b>Úsala como app:</b> toca Compartir ⬆️ y luego "Agregar a inicio"</div><button onclick="localStorage.setItem('no-inicio',1);this.parentNode.remove()">Listo</button></div>`;
+  if(esActual&&!standalone&&!localStorage.getItem('no-inicio'))nz+=`<div class="nudge"><div>📲 <b>Úsala como app:</b> ponla en tu pantalla de inicio, en 3 toques</div><button onclick="guiaInicio()">Cómo</button></div>`;
   $('nudges').innerHTML=nz;
 
   const tops=Object.entries(tot).filter(([k])=>k!=='otros').sort((a,b)=>b[1]-a[1]).slice(0,3);
