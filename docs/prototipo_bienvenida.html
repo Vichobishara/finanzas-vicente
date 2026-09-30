@@ -403,6 +403,10 @@ body:not(.ready) .mes-b .chev{display:none}
 .w-reco-in{display:flex;align-items:center;gap:12px}
 .w-go{display:block;margin-top:14px;background:#121217;color:#fff;font-size:15px;font-weight:600;padding:13px;border-radius:99px;text-align:center}
 .w-lbl{font-size:12px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--hint);margin:22px 4px 8px}
+.w-k{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:8px;background:var(--bg3);font-weight:600;font-size:14px;white-space:nowrap;vertical-align:middle}
+.w-k svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.w-ini p{margin:0;line-height:1.9;color:var(--text);flex:1}
+.w-steps .w-k{width:auto;height:auto;border-radius:8px;display:inline-flex;font-size:14px;font-weight:600;padding:2px 8px;flex-shrink:1}
 .w-steps{border:1px solid var(--border);border-radius:16px;background:#fff;padding:4px 14px}
 .w-steps div{display:flex;align-items:center;gap:12px;min-height:50px;font-size:15px;font-weight:400}
 .w-steps div+div{border-top:1px solid var(--border)}
@@ -532,7 +536,20 @@ function sigBanco(){S.i++;S.i<S.bancos.length?hConectar():sigue()}
 function fin(){const P=plan();abre(H('Tu plan del mes','Para que te sobre plata todos los meses.')+
   `<div class="w-plan"><div><small>Para gastar</small><b>${fmt(P.gasto)}</b></div><div><small>Para ahorrar</small><b class="v">${fmt(P.ahorro)}</b></div></div>`+
   pie(bt('Me parece',`S.listo=true;cierra();setTimeout(()=>toast('Listo, ${S.nombre||'bienvenido'}'),300)`)))}
-pinta();setTimeout(hNombre,600);
+// ---------- Paso 0: ponerla en la pantalla de inicio (no está en la App Store). Va primero: en iPhone, lo que
+// respondes en Safari no pasa a la app del inicio, así que conviene instalarla antes de empezar ----------
+const UA=navigator.userAgent,esIOS=/iP(hone|ad|od)/.test(UA),enApp=/Instagram|FBAN|FBAV|WhatsApp|Line\/|TikTok|GSA\//.test(UA),
+  instalada=navigator.standalone||!!(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+const K=(d,t)=>`<span class="w-k">${d?`<svg viewBox="0 0 24 24">${d}</svg>`:''}${t}</span>`,
+  KI={share:'<path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/>',mas:'<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/>',
+    dots:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',vdots:'<circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>'};
+function hInicio(){const P=enApp?[`Toca ${K(KI.dots,'')} y elige "Abrir en ${esIOS?'Safari':'Chrome'}"`,'Ahí sigues con estos pasos']
+   :esIOS?[`Toca ${K(KI.share,'Compartir')} abajo`,`Toca ${K(KI.mas,'Agregar a inicio')}`,`Toca ${K('','Agregar')}`,'Ábrela desde el ícono nuevo']
+   :[`Toca ${K(KI.vdots,'')} arriba`,`Toca ${K(KI.mas,'Agregar a pantalla principal')}`,'Ábrela desde el ícono nuevo'];
+  abre(`<h3 class="w-h">Primero, ponla en tu inicio</h3><p class="w-p">No está en la ${esIOS?'App Store':'Play Store'}: se agrega desde el navegador, gratis. Así la abres con un toque, como cualquier app.</p>
+  <div class="w-steps w-ini">${P.map((t,j)=>`<div><span>${j+1}</span><p>${t}</p></div>`).join('')}</div>`+
+  pie(bt('Ya la agregué',"toast('Ábrela desde tu inicio');cierra();setTimeout(hNombre,650)"),bt('Lo hago después','cierra();setTimeout(hNombre,650)','sec')))}
+pinta();setTimeout(instalada?hNombre:hInicio,600);
 </script>
 </body>
 </html>
