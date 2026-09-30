@@ -92,7 +92,7 @@ create policy propio_leer on public.avisos_log for select using (user_id = (sele
 -- 5 ── Rol para los cálculos y avisos: respeta RLS ─────────────────────────────────────────────
 create role finanzas_calc nologin nobypassrls;
 grant finanzas_calc to postgres;
-grant usage on schema public, privado to finanzas_calc;
+grant usage, create on schema public, privado to finanzas_calc;  -- create: requisito para pasarle funciones (se quita abajo)
 grant select, insert, update, delete on all tables in schema public to finanzas_calc;
 grant execute on all functions in schema privado to finanzas_calc;
 grant execute on function public.resumen_hoy(text) to finanzas_calc;
@@ -107,6 +107,7 @@ alter function privado.avisos_extra(timestamp) owner to finanzas_calc;
 alter function privado.aviso_gasto() owner to finanzas_calc;
 alter function privado.aviso_sueldo() owner to finanzas_calc;
 revoke execute on function public.resumen_hoy(text) from public, anon, authenticated;
+revoke create on schema public, privado from finanzas_calc;
 
 -- aviso_gasto / aviso_sueldo: la cuenta es la del registro (sirve también para lo que entra sin clave)
 create or replace function privado.fijar_uid(u uuid) returns void
@@ -224,7 +225,7 @@ grant execute on function public.anotar_atajo(text, text, text) to anon, authent
 -- 10 ── Alta de una cuenta nueva (solo la llama acceso_google con service role) ───────────────────
 create or replace function public.crear_cuenta(p_email text, p_nombre text default null)
 returns text language plpgsql security definer set search_path = public as $$
-DECLARE k text := replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', ''); u uuid;
+DECLARE k text; u uuid;
 BEGIN
   SELECT clave INTO k FROM cuentas WHERE lower(email) = lower(p_email);
   IF FOUND THEN RETURN k; END IF;

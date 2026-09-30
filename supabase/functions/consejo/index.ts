@@ -9,6 +9,15 @@ const cors = { 'Access-Control-Allow-Origin': ORIGIN, 'Access-Control-Allow-Head
 const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, 'Content-Type': 'application/json' } });
 
+// Fase 2: cada persona tiene su clave. La cuenta sale del hash de x-app-key (tabla `cuentas`, solo service role).
+async function cuentaDe(req: Request) {
+  const k = req.headers.get('x-app-key') || '';
+  if (!k) return null;
+  const h = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(k)))).map((b) => b.toString(16).padStart(2, '0')).join('');
+  const { data } = await db.from('cuentas').select('id, nombre, email, legado').eq('clave_hash', h).maybeSingle();
+  return data as { id: string; nombre: string | null; email: string | null; legado: boolean } | null;
+}
+
 const SISTEMA = `Eres el CFO personal de Vicho: 26 años, Santiago, sueldo base ~$2.000.000 líquido. Se describe como procrastinador, desordenado y gastador. Su meta: gastar con control, ahorrar todos los meses en Fintual/APV y llegar a millonario.
 
 Cómo funciona su plata (la app ya hizo las cuentas, vienen en DATOS):
@@ -31,11 +40,17 @@ Cómo responder:
 - Usa solo los números de DATOS; si falta algo, dilo en vez de inventar.
 - Si pregunta de inversiones, impuestos o APV, responde con sentido común y cierra con "(no soy asesor financiero)".`;
 
+// Para las demás cuentas: mismas reglas de CFO, sin los datos personales de Vicho (sueldo, cartas, PULLDEX).
+const sistemaPara = (nombre: string) => SISTEMA
+  .replace(/^Eres el CFO personal de Vicho:[^\n]*/, `Eres el CFO personal de ${nombre}. Su meta: gastar con control, ahorrar todos los meses y llegar a su meta de ahorro.`)
+  .split('\n').filter((l) => !/PULLDEX|Coleccionables \(cartas\)/.test(l)).join('\n')
+  .replaceAll('Vicho', nombre);
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   try {
-    const { data: sec } = await db.from('secretos').select('valor').eq('clave', 'app_key').single();
-    if (!sec || req.headers.get('x-app-key') !== sec.valor) return json({ error: 'clave' }, 401);
+    const cta = await cuentaDe(req);
+    if (!cta) return json({ error: 'clave' }, 401);
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
     if (!apiKey) return json({ error: 'sin_api' }, 503);
 
@@ -56,7 +71,7 @@ Deno.serve(async (req) => {
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
       system: [
-        { type: 'text', text: SISTEMA },
+        { type: 'text', text: cta.legado ? SISTEMA : sistemaPara(cta.nombre || 'la persona') },
         { type: 'text', text: 'DATOS (JSON):\n' + JSON.stringify(datos ?? {}).slice(0, 20000) },
       ],
       messages: [...previos, { role: 'user', content: q }],
