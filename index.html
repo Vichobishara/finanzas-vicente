@@ -331,6 +331,9 @@ body.ready .toast{bottom:calc(84px + max(14px,var(--safe-b)))}
 const SB='https://caaewoxfvmdizzziyvfz.supabase.co';
 const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYWV3b3hmdm1kaXp6eml5dmZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2ODk0ODUsImV4cCI6MjEwNjI2NTQ4NX0.mUu3EZuLUe_jpSLFpU5lkUaoDIQFZdXZqZkwac03EXY';
 const H={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'};
+const VAPID='BCrrrDy_RP3DwIaaieLoxUWx43wQV_kgsYs2ls1fvaLqXn1Wu-n9kgYC_Zz_M6t-K22HvpWfYZHkMOE4fVA3cjg';
+const pushOk=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 const getKey=()=>{try{return localStorage.getItem('app-key')||''}catch(e){return ''}};
 (()=>{const m=location.hash.match(/[#&]k=([\w-]+)/);if(m){try{localStorage.setItem('app-key',m[1])}catch(e){}history.replaceState(null,'',location.pathname)}})();
 const CAT={
@@ -370,6 +373,8 @@ function cuotasDe(per){return S.cuotas.map(c=>{if(c.recurrente)return{...c,label
 function guess(desc){const d=(desc||'').toLowerCase();const r=S.reglas.find(x=>d.includes(x.palabra.toLowerCase()));return r?{cat:r.categoria_clave,neg:r.negocio}:{cat:'otros',neg:false}}
 const getEv=()=>((S.aj.evitado||{})[S.actual])||0;
 const addEv=x=>saveAj('evitado',{...(S.aj.evitado||{}),[S.actual]:getEv()+x});
+// Pausa de Fintual (ajustes.fintual_pausa.hasta): meses en que primero se pagan las tarjetas.
+const pausaFin=()=>{const p=S.aj&&S.aj.fintual_pausa;return!!(p&&p.hasta&&p.hasta>=hoyISO())};
 const apvOk=()=>!!(S.aj.apv&&S.aj.apv.abierto);
 const $v=n=>n>0?'$'+Math.round(n).toLocaleString('es-CL'):'';
 function openSheet(h){const sh=$('sheet');sh.classList.remove('busy');sh.style.transform='';sh.innerHTML='<div class="handle"></div><button class="x" onclick="closeSheet()" aria-label="Cerrar">×</button>'+h;sh.scrollTop=0;$('sheet-bg').classList.add('on');document.body.classList.add('lock')}
@@ -504,7 +509,7 @@ function render(){
     lbl='Hoy puedes gastar';amt=fmt(diario);
     if(com>tc*.8){cls='warn';msg=`<span>Comida va al ${Math.round(com/tc*100)}%. Cero delivery y restoranes hasta el 22.</span>`;}
     else if(cupoHoy<15000){cls='warn';msg='<span>Margen justo. Cocina en casa y posterga cualquier compra.</span>';}
-    else{cls='ok';msg=`<span>Vas bien. Si te mantienes, fin de mes van <b>${fmt(fin)}</b> a Fintual.</span>`;}
+    else{cls='ok';msg=pausaFin()?`<span>Vas bien. Este mes lo que sobre es para pagar tus tarjetas.</span>`:`<span>Vas bien. Si te mantienes, fin de mes van <b>${fmt(fin)}</b> a Fintual.</span>`;}
   }
   $('hero-w').innerHTML=`<div class="hero ${cls}"><div class="h-lbl">${lbl}</div><div class="h-amt">${amt}</div>${esActual&&queda>=0?`${gastHoy>0&&diario>=0?`<div class="h-l2" style="margin:-6px 0 10px">De ${fmt(cupoHoy)} para hoy, ya usaste ${fmt(gastHoy)}</div>`:''}<div class="h-sum"><div class="t" style="border:none;margin:0 0 6px;padding:0"><span>${semana>=0?`Esta semana te quedan${diasSem>1?` <small style="opacity:.75;font-weight:500">(${diasSem} días)</small>`:''}`:'Esta semana te pasaste por'}</span><span>${fmt(Math.abs(semana))}</span></div><div><span>Plata del mes</span><span>${fmt(S.ppto)}</span></div><div><span>− Cuotas y fijos</span><span>${fmt(cuo)}</span></div><div><span>− Ya gastaste</span><span>${fmt(gast)}</span></div><div class="t"><span>Te quedan (${dias} días)</span><span>${fmt(queda)}</span></div></div>`:`<div class="h-l1">${l1}</div><div class="h-l2">Incluye ${fmt(cuo)} de cuotas y fijos</div>`}<div class="h-bar"><div style="width:${p}%"></div></div><div class="h-msg">${HICO(cls,queda)}${msg}</div></div>`;
 
@@ -513,10 +518,11 @@ function render(){
   let nz='';const rev=items.otros||[],tr=S.revisar||[];
   if(tr.length)nz+=`<div class="nudge"><div>🔁 <b>${tr.length} transferencia${tr.length>1?'s':''} por revisar</b> · no cuentan hasta que me digas</div><button onclick="openRev()">Revisar</button></div>`;
   if(esActual){const dd=hoy.getDate(),u=S.ahorros[0],dsA=u?Math.round((hoy-new Date(u.fecha+'T00:00:00'))/864e5):99;
-    if((dd>=27||dd<=10)&&dsA>15)nz+=`<div class="nudge"><div>💰 <b>¿Ya mandaste a Fintual?</b> Anota cuánto y queda tu ahorro real</div><button onclick="openAhorro()">Anotar</button></div>`;}
+    if((dd>=27||dd<=10)&&dsA>15&&!pausaFin())nz+=`<div class="nudge"><div>💰 <b>¿Ya mandaste a Fintual?</b> Anota cuánto y queda tu ahorro real</div><button onclick="openAhorro()">Anotar</button></div>`;}
   if(rev.length)nz+=`<div class="nudge"><div>❓ <b>${rev.length} gasto${rev.length>1?'s':''} sin categoría</b></div><button onclick="openCat('otros')">Ordenar</button></div>`;
   if(esActual){const man=S.gastos.filter(g=>g.tarjeta==='scotiabank'||g.tarjeta==='efectivo').map(g=>g.fecha).sort().pop();const ds=man?Math.round((hoy-new Date(man+'T00:00:00'))/864e5):null;
     if(ds===null||ds>=2)nz+=`<div class="nudge"><div>✍️ ${ds===null?'No has anotado gastos de Scotia':`Llevas <b>${ds} días</b> sin anotar lo de Scotia`}</div><button onclick="openAdd()">Anotar</button></div>`;}
+  if(esActual&&pushOk()&&Notification.permission==='default'&&(standalone||!esIOS)&&!localStorage.getItem('no-push'))nz+=`<div class="nudge"><div>🔔 <b>Activa los avisos:</b> te aviso cuando te pases, el lunes y cuando llegue el sueldo</div><button onclick="activarPush()">Activar</button></div>`;
   if(esActual&&esIOS&&!standalone&&!localStorage.getItem('no-inicio'))nz+=`<div class="nudge"><div>📲 <b>Úsala como app:</b> toca Compartir ⬆️ y luego "Agregar a inicio"</div><button onclick="localStorage.setItem('no-inicio',1);this.parentNode.remove()">Listo</button></div>`;
   $('nudges').innerHTML=nz;
 
@@ -565,7 +571,7 @@ function habitos(){
   const nuevas=S.cuotas.filter(c=>!c.recurrente&&c.primer_periodo&&c.primer_periodo>=S.actual);
   H.push({ok:!nuevas.length,t:'Cero cuotas nuevas',s:nuevas.length?`Nueva: ${nuevas.map(c=>c.nombre).join(', ')}`:`Tus cuotas y fijos son el ${Math.round(V.cuo/S.ppto*100)}% del presupuesto`});
   const pv=addM(S.actual,-1),hecho=S.ahorros.filter(a=>a.periodo===pv).reduce((s,a)=>s+a.monto,0),espera=!hecho&&dd>=23&&dd<27;
-  H.push({ok:hecho?true:espera?null:false,t:'Mandaste plata a Fintual',s:hecho?`Del sueldo de ${MESL[+pv.slice(5)-1]}: ${fmt(hecho)} 💪`:espera?'Toca cuando llegue el sueldo, a fin de mes':`Del sueldo de ${MESL[+pv.slice(5)-1]} todavía no anotas nada`,b:hecho||espera?null:['Anotar','openAhorro()']});
+  if(pausaFin())H.push({ok:null,t:'Pagar todas las tarjetas',s:'Este mes Fintual está en pausa: primero las tarjetas'});else H.push({ok:hecho?true:espera?null:false,t:'Mandaste plata a Fintual',s:hecho?`Del sueldo de ${MESL[+pv.slice(5)-1]}: ${fmt(hecho)} 💪`:espera?'Toca cuando llegue el sueldo, a fin de mes':`Del sueldo de ${MESL[+pv.slice(5)-1]} todavía no anotas nada`,b:hecho||espera?null:['Anotar','openAhorro()']});
   H.push({ok:apvOk(),t:'APV abierto',s:apvOk()?`Este año llevas ${fmt(ahorradoAnio('apv'))}`:`El Estado te regala hasta ${fmt(APV_BONO)} al año`,b:apvOk()?null:['Ver cómo',"tab('plata')"]});
   return H;
 }
@@ -592,7 +598,7 @@ function renderNext(){if(!S.V.esActual){$('next').innerHTML='';return}const[i,b,
 // ---------- Plata: la meta, el plan de ahorro, el APV y los impuestos, todo a la vista ----------
 const ahorroDe=per=>S.ahorros.filter(a=>a.periodo===per).reduce((s,a)=>s+a.monto,0);
 // El sueldo llega a fin de mes: del 27 al 10 toca mandar el ahorro si aún no lo anotas.
-const tocaMandar=()=>{const d=new Date().getDate();return S.periodo===S.actual&&(d>=27||d<=10)&&!ahorroDe(addM(S.actual,-1))};
+const tocaMandar=()=>{const d=new Date().getDate();return S.periodo===S.actual&&(d>=27||d<=10)&&!ahorroDe(addM(S.actual,-1))&&!pausaFin()};
 function reparto(libre){const fin=Math.round(libre/2),apv=apvOk()?Math.min(fin,APV_MES):0;
   return colLleno()?{apv,fintual:libre-apv,colchon:0}:{apv,fintual:fin-apv,colchon:libre-fin}}
 function filasReparto(r){const f=(ic,t,s,v)=>`<div class="money"><div class="ic">${ic}</div><div class="cm"><b>${t}</b><small>${s}</small></div><div class="ca">${fmt(v)}</div></div>`;
@@ -603,6 +609,8 @@ function renderPlata(){
   const V=S.V,pv=addM(S.actual,-1),pvN=MESL[+pv.slice(5)-1],hecho=ahorroDe(pv);
   let h;
   if(!V.esActual)h=`<div class="card-h"><h2>📈 Ahorro de ${V.mes}</h2></div><div class="lead">Con lo que gastaste en ${V.mes} quedaban <b>${fmt(V.proy.libre)}</b> para ahorrar.</div>`;
+  else if(pausaFin())h=`<div class="card-h"><h2>💳 Este mes: primero las tarjetas</h2><span class="pill warn">Fintual en pausa</span></div>
+    <div class="lead">Paga <b>todas</b> las tarjetas del mes pasado. Lo que te quede libre después lo vemos juntos. Fintual vuelve con el próximo sueldo.</div>`;
   else if(tocaMandar()){const s=sugAhorro();
     h=`<div class="card-h"><h2>💰 Toca mandar tu ahorro</h2><span class="pill warn">Pendiente</span></div>
     <div class="lead">Llegó el sueldo de ${pvN}. <b>Antes de gastar nada</b>, transfiere esto (sale de lo que gastaste en ${pvN}):</div>${filasReparto(s)}
@@ -722,7 +730,8 @@ function openAvisos(){
     icsEvt('renta','20270406T100000','🧾 Operación Renta: pide la reliquidación (art. 47)','sii.cl → Operación Renta → revisa la propuesta. Si no trae la devolución, marca la reliquidación anual del impuesto único.','FREQ=YEARLY'),
     'END:VCALENDAR'].join('\r\n');
   const href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics);
-  openSheet(`<h3>📅 Avisos</h3><p>Toca el botón y el iPhone te ofrece agregarlos a tu calendario. Te van a llegar como notificación.</p>
+  openSheet(`<h3>🔔 Avisos</h3>${pushBox()}
+  <h3 style="margin-top:22px">📅 Recordatorios en tu calendario</h3><p>Toca el botón y el iPhone te ofrece agregarlos a tu calendario.</p>
   <div class="card">
    <div class="lever"><i style="font-style:normal">💰</i><div><b>Fin de cada mes · 9:00</b><br>Llegó el sueldo: APV y Fintual primero</div></div>
    <div class="lever"><i style="font-style:normal">🧾</i><div><b>Todos los lunes · 9:00</b><br>5 minutos para anotar lo de Scotia</div></div>
@@ -732,6 +741,37 @@ function openAvisos(){
   </div>
   <a class="cal" href="${href}" download="avisos-finanzas.ics">📅 Agregar todos a mi calendario</a>
   <p class="fine" style="margin-top:10px">Si no se abre el calendario, abre la app desde Safari (no desde la pantalla de inicio) y toca el botón de nuevo.</p>`);
+}
+
+// Avisos push: el celular se suscribe y la base decide qué mandar (ver supabase/migrations/20260930_avisos_push.sql).
+const AVISOS=[['💳','Cada compra BCI o transferencia','Cuánto te queda hoy, delivery repetido, compras de noche'],['🔁','Suscripciones','Cuando se cobran, y si llevas 3 meses pagando algo'],
+  ['📅','Lunes 9:00','Cuánto tienes esta semana'],['🍻','Viernes 18:00','Cuánto te queda para el finde'],['🏁','Día 23','Cómo cerraste el mes, cuotas que terminaron y las del mes nuevo'],
+  ['💰','Sueldo','Qué hacer apenas llega, y si pasan días sin mandar a Fintual'],['🔥','21:00','Rachas sin pasarte y cosas por ordenar'],['🚀','Patrimonio','Cada vez que pasas otros $5 millones']];
+function pushBox(){
+  const lista=`<div class="card">${AVISOS.map(([i,t,d])=>`<div class="lever"><i style="font-style:normal">${i}</i><div><b>${t}</b><br>${d}</div></div>`).join('')}</div>`;
+  if(!pushOk())return`<p>${esIOS&&!standalone?'Para recibir avisos, primero agrega la app a tu pantalla de inicio (Compartir ⬆️ → "Agregar a inicio") y ábrela desde ahí.':'Este navegador no puede recibir avisos.'}</p>${lista}`;
+  if(Notification.permission==='denied')return`<p>Bloqueaste las notificaciones. Actívalas en Ajustes → Notificaciones → Finanzas.</p>${lista}`;
+  const on=Notification.permission==='granted'&&localStorage.getItem('push-on');
+  return`<p>${on?'✅ Este celular recibe los avisos.':'Te aviso al celular cuando pase algo con tu plata. Máximo unos pocos al día.'}</p>
+  <button class="btn p" style="margin:0 0 14px" onclick="${on?'probarPush()':'activarPush()'}">${on?'Mandarme un aviso de prueba':'🔔 Activar avisos en este celular'}</button>${lista}
+  ${pausaFin()?`<p class="fine" style="margin-top:10px">💳 Fintual en pausa hasta el ${S.aj.fintual_pausa.hasta.split('-').reverse().slice(0,2).join('-')}: mientras pagas las tarjetas no te pido mandar plata.</p>`:''}`;
+}
+const b64u=s=>{const p='='.repeat((4-s.length%4)%4),b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0))};
+async function activarPush(){
+  if(!pushOk())return openAvisos();
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted'){localStorage.setItem('no-push',1);toast('Sin permiso, no te puedo avisar');render();return}
+    const reg=await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;
+    const sub=(await reg.pushManager.getSubscription())||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(VAPID)});
+    const j=sub.toJSON();
+    await api('push_subs?on_conflict=endpoint',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth,ua:navigator.userAgent.slice(0,200)}});
+    localStorage.setItem('push-on',1);await probarPush();render();if(sheetOn())openAvisos();
+  }catch(e){console.error(e);toast('❌ No se pudo activar. Ábrela desde la pantalla de inicio.')}
+}
+async function probarPush(){
+  try{const r=await fetch(SB+'/functions/v1/push',{method:'POST',headers:{...H,'x-app-key':getKey()},body:'{}'}).then(r=>r.json());
+    toast(r.enviados?'🔔 Te mandé un aviso de prueba':'❌ No llegó: reintenta activar')}catch(e){toast('❌ Error')}
 }
 
 function catRow(k){

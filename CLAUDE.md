@@ -76,6 +76,13 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   sobre el tope, cartas bloqueadas y "vas gastando muy rápido" (% gastado > % del mes + 15). Cada una se muestra una vez
   (por día, semana o mes) con `localStorage['alertas-vistas']`. La notificación del atajo Apple Pay trae la misma alerta:
   `anotar_atajo` le agrega `resumen_hoy(categoria)` (función interna, sin grant a anon).
+- **Avisos push** (Web Push, app instalada en inicio): `sw.js` los muestra; la app guarda la suscripción en `push_subs`
+  (con x-app-key). La base decide qué mandar: trigger `trg_aviso_gasto` (BCI/transferencias), `trg_aviso_sueldo`, y pg_cron
+  `avisos` cada hora → `privado.avisos_programados(p_ahora)` (lunes 9, viernes 18, día 23 10:00, 10:00 Fintual, 21:00 racha
+  y pendientes, hitos de $5M). `privado.push()` deja cada aviso en `avisos_log` (clave única = se manda una vez) y llama a la
+  edge function `push` vía pg_net con `x-avisos-token`. VAPID y token en `secretos`. Probar lógica: llamar
+  `privado.avisos_programados('2026-10-23 10:00')` dentro de un DO que termina en RAISE (se revierte) y leer `avisos_log`.
+- `ajustes.fintual_pausa` {hasta}: mientras esté vigente, ni la app ni los avisos piden mandar plata a Fintual.
 - Sueldo base esperado: $2.000.000. Lo que no se gasta del presupuesto se reparte 50% Fintual / 50% colchón.
 - APV régimen A: 40 UTM/año ($239k/mes) → bono 15%, tope 6 UTM. UTM hardcodeada en 71.649: **actualizar cada año**.
 - Reliquidación anual del impuesto único (art. 47, un empleador): se estima con base_tributable e impuesto de `ingresos`.
