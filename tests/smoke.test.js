@@ -160,6 +160,11 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval('S.admin=false;renderCoach()');const invOff=d.getElementById('m-inv').style.display==='none';
  w.eval('S.admin=true;renderCoach()');await w.eval('openInvitar()');
  checks['invitar: solo admin y abre la hoja']=invOff&&d.getElementById('m-inv').style.display===''&&t('sheet').includes('Invitar a alguien');w.eval('closeSheet()');
+ // Cuadrar con la cartola: salta las compras en cuotas y ofrece agregar las que faltan
+ await w.eval("cuadrar({compras:[{fecha:'2026-09-29',comercio:'Tienda Rara XYZ',monto:4817,en_cuotas:false},{fecha:'2026-09-28',comercio:'Falabella TV',monto:99990,en_cuotas:true}]},'scotiabank')");
+ checks['cuadrar: muestra lo que falta y salta cuotas']=t('sheet').includes('Tienda Rara XYZ')&&!t('sheet').includes('Falabella TV')&&t('sheet').includes('Agregar 1');
+ w.CALLS=[];await w.eval('guardarCuadrar()');await new Promise(r=>setTimeout(r,50));
+ checks['cuadrar: guarda lo marcado']=w.CALLS.some(c=>c.m==='POST'&&c.u.includes('gastos')&&c.b.includes('Tienda Rara XYZ')&&c.b.includes('scotiabank'));
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();

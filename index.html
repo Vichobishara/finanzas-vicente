@@ -482,6 +482,7 @@ body:not(.ready) .mes-b .chev{display:none}
   </div>
   <div class="card menu">
     <button class="crow" onclick="openCuotas()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg></div><div class="cm"><b>Cuotas y fijos</b><small id="m-cuo">—</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="openCuadrar()"><div class="ic" style="font-size:18px">🧮</div><div class="cm"><b>Cuadrar con la cartola</b><small>Sube la cartola y agrego lo que se te pasó anotar</small></div><span class="chev">›</span></button>
     <button class="crow" id="m-neg-b" onclick="openNeg()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 22V12h6v10"/></svg></div><div class="cm"><b>Negocio (PULLDEX)</b><small>Gastos y ventas: ¿gana o pierde plata?</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openMeses()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg></div><div class="cm"><b>Meses anteriores</b><small>Compara cómo te fue</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="editPpto()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></div><div class="cm"><b>Presupuesto del mes</b><small id="m-ppto">—</small></div><span class="chev">›</span></button>
@@ -1283,6 +1284,38 @@ function openCuotas(){const per=S.periodo,Q=S.cuotas.map(c=>({...c,...infoCuota(
   <button class="btn p" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);box-shadow:none" onclick="openCuota()">✍️ Agregar una a mano</button>
   <p class="fine" style="margin-top:10px">Con la cartola leo tus compras en cuotas y te muestro la lista para que revises antes de guardar.</p>`)}
 // Cartola → función `cartola` (Claude lee el PDF o la foto) → revisas → se guardan en `cuotas`.
+// ---------- Cuadrar la tarjeta con la cartola: lee TODAS las compras (cartola, modo 'compras'), las compara con lo
+// anotado (mismo monto ±$1, fecha ±3 días) y ofrece agregar las que faltan. Las compras en cuotas se saltan: van en Cuotas. ----------
+function openCuadrar(){openSheet(`<h3>🧮 Cuadrar con la cartola</h3><p>Sube la cartola de tu tarjeta (el PDF que manda el banco o una foto). Comparo cada compra con lo que tienes anotado y te muestro <b>lo que se te pasó</b>.</p>
+  <label>¿De qué tarjeta es?</label>${cardChips()}
+  <button class="btn p" onclick="pickCuadrar()">Subir cartola</button>
+  <p class="fine" style="margin-top:10px">Ideal una vez al mes, cuando llega el estado de cuenta. Nada se guarda sin que lo revises.</p>`)}
+function pickCuadrar(){const tj=S.card;const i=document.createElement('input');i.type='file';i.accept='application/pdf,image/*';i.onchange=()=>i.files[0]&&leerCuadrar(i.files[0],tj);i.click()}
+async function leerCuadrar(f,tj){
+  if(f.size>10e6)return toast('Muy pesado: máximo 10 MB. Prueba con una foto');
+  const tipo=f.type==='application/pdf'?f.type:/^image\/(jpeg|png|webp|gif)$/.test(f.type)?f.type:null;
+  if(!tipo)return toast('Sube un PDF o una foto (JPG o PNG)');
+  openSheet(`<h3>🧮 Revisando tu cartola…</h3><p>Leo cada compra y la busco en lo que anotaste. Toma unos segundos.</p><div class="ia-a" style="max-width:100%"><span class="dots"><i></i><i></i><i></i></span></div>`);
+  try{const r=await fetch(SB+'/functions/v1/cartola',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json','x-app-key':getKey()},body:JSON.stringify({tipo,datos:await aB64(f),modo:'compras'})});
+    const j=await r.json();if(j.error)throw new Error(j.error);await cuadrar(j,tj)}
+  catch(e){console.error(e);openSheet(`<h3>🧮 No pude leerla</h3><p>${({clave:'Tu sesión venció. Vuelve a entrar.',limite:'Muchos intentos seguidos. Espera un minuto.',grande:'El archivo es muy pesado.',larga:'La cartola es muy larga: prueba con fotos de cada página.'}[e.message]||'Prueba con el PDF que manda el banco o con una foto derecha y con buena luz.')}</p><button class="btn p" onclick="openCuadrar()">Intentar de nuevo</button>`)}}
+async function cuadrar(j,tj){const C=(j.compras||[]).filter(c=>!c.en_cuotas&&c.monto>0);
+  if(!C.length)return openSheet(`<h3>🧮 No encontré compras</h3><p>${j.nota||'En esa cartola no aparecen compras al contado.'}</p><button class="btn p" onclick="openCuadrar()">Probar con otra</button>`);
+  const fs=C.map(c=>c.fecha).sort(),d0=addD(fs[0],-3),d1=addD(fs[fs.length-1],3);
+  const G=(await api(`gastos?select=id,fecha,monto&fecha=gte.${d0}&fecha=lte.${d1}`))||[],usados=new Set();
+  const dias=(a,b)=>Math.abs(new Date(a+'T12:00:00')-new Date(b+'T12:00:00'))/864e5;
+  S.cuad={tj,items:C.map(c=>{const g=G.find(g=>!usados.has(g.id)&&Math.abs(g.monto-c.monto)<=1&&dias(g.fecha,c.fecha)<=3);if(g)usados.add(g.id);return{...c,ok:!!g,on:!g}})};
+  pintaCuadrar()}
+const addD=(f,n)=>{const d=new Date(f+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
+function pintaCuadrar(){const I=S.cuad.items,F=I.filter(c=>!c.ok),n=F.filter(c=>c.on).length,tot=F.filter(c=>c.on).reduce((s,c)=>s+c.monto,0);
+  openSheet(`<h3>🧮 ${F.length?`Te faltan ${F.length}`:'¡Todo cuadrado! 🎉'}</h3><p>De ${I.length} compras de la cartola, <b>${I.length-F.length} ya estaban anotadas</b>.${F.length?' Marca las que quieres agregar:':''}</p>
+  ${F.length?`<div class="card">${I.map((c,i)=>c.ok?'':`<button class="chk ${c.on?'on':''}" onclick="S.cuad.items[${i}].on=!S.cuad.items[${i}].on;pintaCuadrar()"><span class="bx">${c.on?'✓':''}</span><div class="cm" style="flex:1"><b>${c.comercio}</b><small>${fechaL(c.fecha)}</small></div><b>${fmt(c.monto)}</b></button>`).join('')}</div>
+  <button class="btn p" ${n?'':'disabled style="opacity:.5"'} onclick="guardarCuadrar()">Agregar ${n} (${fmt(tot)})</button>
+  <p class="fine" style="margin-top:10px">La categoría se pone sola. Si alguna ya la tenías con otro monto, desmárcala.</p>`:`<button class="btn p" onclick="closeSheet()">Listo</button>`}`)}
+async function guardarCuadrar(){const Q=S.cuad,A=Q.items.filter(c=>!c.ok&&c.on);if(!A.length)return;
+  try{await api('gastos',{m:'POST',b:A.map(c=>({fecha:c.fecha,descripcion:c.comercio,monto:c.monto,tarjeta:Q.tj,fuente:'app'}))});
+    closeSheet();toast(`✅ ${A.length} compra${A.length>1?'s':''} agregada${A.length>1?'s':''}`);loadAll()}catch(e){toast('❌ No se guardó');console.error(e)}}
+
 function pickCartola(){const i=document.createElement('input');i.type='file';i.accept='application/pdf,image/*';i.onchange=()=>i.files[0]&&leerCartola(i.files[0]);i.click()}
 const aB64=f=>new Promise((ok,mal)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(',')[1]);r.onerror=mal;r.readAsDataURL(f)});
 async function leerCartola(f){

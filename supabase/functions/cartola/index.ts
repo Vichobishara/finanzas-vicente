@@ -1,5 +1,5 @@
 // "Subir cartola": lee el estado de cuenta de una tarjeta de crédito (PDF o foto) y devuelve las compras en cuotas
-// que siguen vivas. La app muestra la lista para que la persona revise antes de guardar en `cuotas`; esto no guarda nada.
+// que siguen vivas (o, con modo 'compras', todas las compras del período para cuadrar con lo anotado). La app muestra la lista para que la persona revise antes de guardar en `cuotas`; esto no guarda nada.
 // Misma seguridad que `consejo`: exige la x-app-key de una cuenta. La API key de Anthropic es el secreto ANTHROPIC_API_KEY de finanzas-vicho.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import Anthropic from 'npm:@anthropic-ai/sdk';
@@ -59,6 +59,29 @@ const ESQUEMA = {
   additionalProperties: false,
 };
 
+// Modo "compras": todas las compras del estado de cuenta, para cuadrar con lo anotado en la app (lo que falta se agrega).
+const INSTR_COMPRAS = `Te paso el estado de cuenta (cartola) de una tarjeta de crédito chilena.
+Extrae TODAS las compras y cargos del período (una fila por cada una):
+- fecha: fecha de la compra en formato YYYY-MM-DD (si no aparece el año, usa el del estado de cuenta).
+- comercio: nombre corto y legible del comercio (ej: "Jumbo", "Uber", "Colombo Cafe"). Sin códigos ni números de operación.
+- monto: lo que se cobra en pesos chilenos en ESTE estado de cuenta, entero sin puntos. Si es en dólares y aparece el equivalente en pesos, usa los pesos; si no aparece, pon 0.
+- en_cuotas: true si es una compra en cuotas (ej: "03/12"), false si es al contado.
+NO incluyas pagos a la tarjeta, abonos, reversas, intereses, comisiones, impuestos ni seguros.
+En "banco" pon el banco o emisor (ej: "Scotiabank", "BCI"), si no aparece "". En "desde" y "hasta" las fechas del período (YYYY-MM-DD) si aparecen, si no "".
+Si el archivo no es una cartola o no se lee, devuelve compras vacío y explica en "nota" en una línea, en español chileno simple.`;
+const ESQ_COMPRAS = {
+  type: 'object',
+  properties: {
+    banco: { type: 'string' }, desde: { type: 'string' }, hasta: { type: 'string' },
+    compras: { type: 'array', items: { type: 'object', properties: {
+      fecha: { type: 'string' }, comercio: { type: 'string' }, monto: { type: 'integer' }, en_cuotas: { type: 'boolean' },
+    }, required: ['fecha', 'comercio', 'monto', 'en_cuotas'], additionalProperties: false } },
+    nota: { type: 'string' },
+  },
+  required: ['banco', 'desde', 'hasta', 'compras', 'nota'],
+  additionalProperties: false,
+};
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   try {
@@ -66,7 +89,8 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
     if (!apiKey) return json({ error: 'sin_api' }, 503);
 
-    const { tipo, datos } = await req.json();
+    const { tipo, datos, modo } = await req.json();
+    const compras = modo === 'compras';
     if (!TIPOS.includes(tipo) || typeof datos !== 'string' || !datos) return json({ error: 'archivo' }, 400);
     if (datos.length > MAX_B64) return json({ error: 'grande' }, 413);
 
@@ -78,17 +102,21 @@ Deno.serve(async (req) => {
     // deno-lint-ignore no-explicit-any
     const r: any = await client.beta.messages.create({
       model: 'claude-opus-5-5',
-      max_tokens: 8000,
+      max_tokens: compras ? 16000 : 8000,
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
-      output_config: { effort: 'low', format: { type: 'json_schema', schema: ESQUEMA } },
-      messages: [{ role: 'user', content: [archivo, { type: 'text', text: INSTRUCCIONES }] }],
+      output_config: { effort: 'low', format: { type: 'json_schema', schema: compras ? ESQ_COMPRAS : ESQUEMA } },
+      messages: [{ role: 'user', content: [archivo, { type: 'text', text: compras ? INSTR_COMPRAS : INSTRUCCIONES }] }],
     // deno-lint-ignore no-explicit-any
     } as any);
-    if (r.stop_reason === 'refusal') return json({ cuotas: [], nota: 'No pude leer ese archivo. Prueba con otra foto o el PDF.' });
+    if (r.stop_reason === 'refusal') return json({ cuotas: [], compras: [], nota: 'No pude leer ese archivo. Prueba con otra foto o el PDF.' });
     if (r.stop_reason === 'max_tokens') return json({ error: 'larga' }, 422);
     const texto = (r.content || []).filter((b: { type: string }) => b.type === 'text').map((b: { text: string }) => b.text).join('');
     const out = JSON.parse(texto);
+    if (compras) {
+      out.compras = (out.compras || []).filter((c: { fecha: string; monto: number }) => /^\d{4}-\d{2}-\d{2}$/.test(c.fecha) && c.monto > 0);
+      return json(out);
+    }
     // Solo lo que tiene sentido: la app igual deja revisar cada una antes de guardar.
     out.cuotas = (out.cuotas || []).filter((c: { monto_cuota: number; cuota_actual: number; total_cuotas: number }) =>
       c.monto_cuota > 0 && c.total_cuotas > 1 && c.cuota_actual >= 1 && c.cuota_actual <= c.total_cuotas);
