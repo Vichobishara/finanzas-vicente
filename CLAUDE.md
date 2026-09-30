@@ -19,6 +19,8 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - `supabase/functions/consejo`: edge function "Pregúntale a Claude" (chat en la pestaña Coach; en ¿Me alcanza? da una "segunda opinión" dentro de la misma hoja: recibe `veredicto_app` y no lo contradice, y se puede seguir la conversación en Coach). Exige x-app-key; usa el secreto
   `ANTHROPIC_API_KEY` de finanzas-vicho (workspace Anthropic aparte de TCG). La app le manda los números ya calculados
   (`ctxIA()`); las reglas de CFO van en el prompt de la función. Guía: `docs/preguntale_a_claude.md`.
+- `supabase/functions/cartola`: lee una cartola de tarjeta (PDF o foto) con Claude y devuelve las compras en cuotas vigentes
+  (JSON con esquema fijo). No guarda nada: la app muestra la lista, la persona revisa y la app inserta en `cuotas`. Exige x-app-key.
 - `docs/atajo_apple_pay.md`: cómo armar el atajo de iOS que anota solo las compras Apple Pay con Scotia.
 - `tests/smoke.test.js`: prueba con jsdom y datos falsos. Correr antes de cada push: `npm i jsdom && node tests/smoke.test.js`
 
@@ -46,7 +48,9 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - `presupuestos` (periodo, monto): presupuesto total del mes, **incluye cuotas y fijos**. Default $1.000.000.
 - `ingresos` (fecha, monto, tipo, descripcion, base_tributable, impuesto): liquidaciones Toku.
 - `ajustes` (clave, valor jsonb): `patrimonio` {fintual, colchon, cartas, eth, fecha} (colchon = parte de Fintual en
-  Moderate Pitt), `perfil` {nacimiento, meta, sueldo}, `apv` {abierto, fecha}, `evitado` {periodo: monto}.
+  Moderate Pitt), `perfil` {nacimiento, meta, sueldo}, `apv` {abierto, fecha}, `evitado` {periodo: monto},
+  `deseos` [{id, que, monto, desde, estado espera|aguantado|comprado}] (lista de deseos, regla de 72 horas: aguantarse suma a
+  `evitado`), `fondo` {que, meta, ahorrado, mensual} (fondo gadgets: lo comprado con el fondo queda como gasto `ignorado`).
 - `ingresos` también tiene `ref_externa` (único, id del correo) y `fuente` (manual | app | toku_auto). El script importa
   los abonos de TOKU SPA y no duplica si ya hay uno manual con el mismo monto (±5 días).
 - `ahorros` (fecha, monto, destino fintual|apv|colchon, periodo): lo que Vicho **de verdad** transfirió. `periodo` = mes del sueldo.

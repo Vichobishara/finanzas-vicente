@@ -5,7 +5,7 @@ const hoy=new Date(),HOY=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart
 const DB={
  categorias:[{clave:'comida',techo:250000},{clave:'fijo',techo:200000},{clave:'tech',techo:100000},{clave:'coleccionables',techo:0}],
  periodos:[{periodo:per}],
- cuotas:[{nombre:'Santander',monto_cuota:160000,recurrente:true,tarjeta:'santander'},{nombre:'Crossfit',monto_cuota:100000,recurrente:true,tarjeta:'scotiabank'},{nombre:'TOUS',monto_cuota:80800,total_cuotas:3,primer_periodo:per,tarjeta:'scotiabank'}],
+ cuotas:[{nombre:'Santander',monto_cuota:160000,recurrente:true,tarjeta:'santander'},{nombre:'Crossfit',monto_cuota:100000,recurrente:true,tarjeta:'scotiabank'},{id:7,nombre:'TOUS',monto_cuota:80800,total_cuotas:3,primer_periodo:per,tarjeta:'scotiabank'}],
  reglas:[{palabra:'jumbo',categoria_clave:'comida',negocio:false},{palabra:'cartas',categoria_clave:'coleccionables',negocio:false}],
  ajustes:[{clave:'patrimonio',valor:{fintual:13000000,colchon:2700000,cartas:5000000,eth:1400000}},{clave:'perfil',valor:{nacimiento:'1999-12-03',meta:100000000,sueldo:1900000}}],
  gastos:[{id:1,fecha:HOY,descripcion:'Jumbo',monto:50000,categoria_clave:'comida',tarjeta:'scotiabank',periodo:per,pulldex:false,fuente:'app',estado:'ok'},
@@ -20,7 +20,7 @@ const DB={
 function run(url,claveOk){return new Promise(res=>{const heads=[];
  const dom=new JSDOM(html,{url,runScripts:'dangerously',pretendToBeVisual:true,beforeParse(w){
   w.scrollTo=()=>{};w.AbortController=AbortController;
-  w.fetch=async(u,o)=>{heads.push(o&&o.headers);(w.CALLS=w.CALLS||[]).push({u,m:o&&o.method,b:o&&o.body});if(u.includes('functions/v1/acceso_google')){const t=(o.headers.Authorization||'').split(' ')[1];return{ok:true,json:async()=>t==='tok-vicho'?{clave:'test123',nombre:'Vicente Bishara'}:{error:'no_invitado',email:'amigo@gmail.com'}}}if(u.includes('functions/v1/consejo')){w.__ia=JSON.parse(o.body);return{ok:true,json:async()=>({respuesta:'🔴 **No**, cero cuotas nuevas'})}}if(u.includes('rpc/clave_ok'))return{ok:true,text:async()=>JSON.stringify(claveOk)};
+  w.fetch=async(u,o)=>{heads.push(o&&o.headers);(w.CALLS=w.CALLS||[]).push({u,m:o&&o.method,b:o&&o.body});if(u.includes('functions/v1/cartola')){w.__cart=JSON.parse(o.body);return{ok:true,json:async()=>({fecha_cartola:'',nota:'',cuotas:[{nombre:'Falabella iPhone',monto_cuota:95000,cuota_actual:4,total_cuotas:12,banco:'Scotiabank'},{nombre:'TOUS',monto_cuota:80800,cuota_actual:1,total_cuotas:3,banco:'Scotiabank'}]})}}if(u.includes('functions/v1/acceso_google')){const t=(o.headers.Authorization||'').split(' ')[1];return{ok:true,json:async()=>t==='tok-vicho'?{clave:'test123',nombre:'Vicente Bishara'}:{error:'no_invitado',email:'amigo@gmail.com'}}}if(u.includes('functions/v1/consejo')){w.__ia=JSON.parse(o.body);return{ok:true,json:async()=>({respuesta:'🔴 **No**, cero cuotas nuevas'})}}if(u.includes('rpc/clave_ok'))return{ok:true,text:async()=>JSON.stringify(claveOk)};
    const k=u.includes('ahorros')?'ahorros':u.includes('categorias')?'categorias':u.includes('select=periodo')?'periodos':u.includes('cuotas')?'cuotas':u.includes('presupuestos')?null:u.includes('reglas')?'reglas':u.includes('ajustes')?'ajustes':u.includes('estado=eq.revisar')?'revisar':u.includes('gastos')?'gastos':u.includes('ingresos')?'ingresos':null;
    const rows=k?DB[k]:[];return{ok:true,text:async()=>JSON.stringify(u.includes('pulldex=eq.true')?rows.filter(g=>g.pulldex):rows)}};
  }});setTimeout(()=>res({dom,heads}),1200)})}
@@ -70,7 +70,12 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['ignoradas y por revisar no descuentan']=w.eval('S.V.gast')===50000;
  w.eval('openRev()');checks['lista por revisar']=t('sheet').includes('Gustavo');
  w.eval('openRevTx(5)');checks['botón no cuenta']=t('sheet').includes('No cuenta');
- w.eval('openCuotas()');checks['cuotas editables']=t('sheet').includes('Agregar cuota');
+ w.eval('openCuotas()');checks['cuotas: cuántas quedan y cuánto falta']=t('sheet').includes('te quedan 2 después de esta')&&t('sheet').includes('por pagar en cuotas')&&t('sheet').includes('$242.400')&&t('sheet').includes('Fijos todos los meses')&&t('sheet').includes('a mano');
+ w.eval("revisarCartola({fecha_cartola:'',cuotas:[{nombre:'Falabella iPhone',monto_cuota:95000,cuota_actual:4,total_cuotas:12,banco:'Scotiabank'},{nombre:'TOUS',monto_cuota:80800,cuota_actual:1,total_cuotas:3,banco:'Scotiabank'}]})");
+ checks['cartola: revisar, la repetida viene desmarcada']=t('sheet').includes('Encontré 2')&&t('sheet').includes('ya la tienes')&&t('sheet').includes('Guardar 1 cuota');
+ w.CALLS=[];await w.eval('guardarCartola()');{const c=w.CALLS.find(c=>c.m==='POST'&&c.u.includes('/cuotas'));const b=c&&JSON.parse(c.b);
+  checks['cartola: guarda solo la nueva con su primer mes']=!!b&&b.length===1&&b[0].nombre==='Falabella iPhone'&&b[0].tarjeta==='scotiabank'&&b[0].primer_periodo===w.eval("addM(S.actual,-3)");}
+ w.eval('closeSheet()');
  w.eval('openCuota()');checks['formulario de cuota']=!!d.getElementById('q-n');
  w.eval("openCheck()");d.getElementById('a-monto').value='30000';w.eval("fmtIn($('a-monto'))");d.getElementById('a-desc').value='cartas';w.eval('evalCheck()');
  checks['¿Me alcanza? bloquea cartas']=t('verdict').includes('bloqueadas');
@@ -113,6 +118,18 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval('closeSheet()');checks['cerrar hoja']=!d.getElementById('sheet-bg').classList.contains('on')&&!d.body.classList.contains('lock');
  d.querySelector('.mes-b').click();checks['tocar el mes abre el selector con fechas']=d.getElementById('sheet').textContent.includes('23 ')&&d.getElementById('sheet').textContent.includes('este mes');w.eval('closeSheet()');
  checks['fecha de hoy arriba']=/\d/.test(t('greet'));
+ // Lista de deseos: anotar desde ¿Me alcanza?, preguntar a las 72 horas, aguantarse suma a "te aguantaste"
+ w.eval('openCheck()');d.getElementById('a-monto').value='$300.000';d.getElementById('a-desc').value='iPad';w.eval('evalCheck()');
+ w.CALLS=[];d.querySelector('[onclick="desear()"]').click();await new Promise(r=>setTimeout(r,50));
+ {const c=w.CALLS.find(c=>c.m==='POST'&&c.u.includes('ajustes'));const b=c&&JSON.parse(c.b);checks['deseos: se anota con 72 horas']=!!b&&b.clave==='deseos'&&b.valor[0].que==='iPad'&&b.valor[0].estado==='espera';}
+ w.eval("S.aj.deseos=[{id:1,que:'Audífonos',monto:120000,desde:new Date(Date.now()-80*36e5).toISOString(),estado:'espera'},{id:2,que:'Polera',monto:20000,desde:new Date().toISOString(),estado:'espera'}];renderCoach()");
+ checks['deseos: pregunta a las 72 horas']=t('deseos-c').includes('¿Todavía lo quieres?')&&t('deseos-c').includes('Te pregunto en')&&t('coach').includes('Pasaron 72 horas');
+ w.CALLS=[];await w.eval('deseoNo(1)');await new Promise(r=>setTimeout(r,50));
+ checks['deseos: aguantarse suma a te aguantaste']=w.CALLS.some(c=>c.b&&c.b.includes('"evitado"')&&c.b.includes('120000'))&&w.eval("S.aj.deseos.find(x=>x.id===1).estado")==='aguantado';
+ // Fondo gadgets
+ w.eval("S.aj.fondo={que:'iPad',meta:600000,ahorrado:150000,mensual:50000};renderFondo()");
+ checks['fondo gadgets: cuánto falta y cuándo llegas']=t('fondo-c').includes('Te faltan $450.000')&&t('fondo-c').includes('Apartando $50.000 al mes llegas en');
+ w.eval("S.aj.fondo=null;renderFondo()");checks['fondo gadgets: invita a crearlo']=t('fondo-c').includes('Crear mi fondo');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();

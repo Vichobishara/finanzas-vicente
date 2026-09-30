@@ -300,6 +300,40 @@ body:not(.ready) .mes-b .chev{display:none}
 .toast{transition:opacity .25s,transform .45s cubic-bezier(.3,1.5,.5,1)!important}
 .toast:not(.on){transform:translate(-50%,16px) scale(.92)!important}
 @media (prefers-reduced-motion:reduce){.sk,.enter>*,.dots i,.tab-in>*,.sheet>*,.sheet-bg,.sheet-bg .sheet,.bar div,.h-bar div,.hero.bump,.chip.on{animation:none!important}}
+/* Cuotas: cuántas quedan de cada una y cómo se libera la plata mes a mes */
+.cq{padding:12px 0;border-bottom:1px solid var(--border);width:100%;background:none;border-left:none;border-right:none;border-top:none;text-align:left;display:block}
+.cq:last-child{border-bottom:none}
+.cq:active{opacity:.6}
+.cq .t{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.cq .t b{font-size:14.5px}
+.cq .t span{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+.cq small{display:block;font-size:12.5px;color:var(--sec);margin-top:2px}
+.cq .pts{display:flex;gap:3px;margin-top:8px}
+.cq .pts i{flex:1;height:6px;border-radius:99px;background:#EDEDF2}
+.cq .pts i.p{background:var(--green)}
+.cq .pts i.h{background:var(--amber)}
+.mes6{display:flex;align-items:flex-end;gap:6px;height:92px;margin:6px 0 2px}
+.mes6 div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:10px;color:var(--sec);gap:4px}
+.mes6 div i{width:100%;border-radius:7px 7px 3px 3px;background:var(--ac);min-height:3px;transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.9,.3,1) both}
+.mes6 div.b i{background:var(--green)}
+.mes6 div em{font-style:normal;font-weight:700;color:var(--text);font-size:9.5px}
+.chk{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);width:100%;background:none;border-left:none;border-right:none;border-top:none;text-align:left}
+.chk .bx{width:24px;height:24px;border-radius:8px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0}
+.chk.on .bx{background:var(--green);border-color:var(--green)}
+.chk .cm small{display:block;font-size:12.5px;color:var(--sec)}
+.chk.dup{opacity:.55}
+/* Lista de deseos */
+.dz{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.dz:last-child{border-bottom:none}
+.dz .cm{flex:1;min-width:0}
+.dz .cm b{display:block;font-size:14.5px;white-space:normal;overflow:visible}
+.dz .cm small{font-size:12.5px;color:var(--sec)}
+.dz .ya{display:flex;gap:6px;margin-top:8px}
+.dz .ya button{flex:1;padding:9px 10px;border-radius:99px;border:none;font-size:13px;font-weight:700}
+.dz .ya .no{background:var(--green);color:#fff}
+.dz .ya .si{background:var(--bg3);color:var(--text)}
+.reloj{width:42px;height:42px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+.reloj span{width:34px;height:34px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center}
 /* Pantalla de entrada: mismo lenguaje que la app (fondo claro, negro, sin adornos) */
 .login{position:fixed;inset:0;z-index:150;display:none;flex-direction:column;justify-content:space-between;padding:calc(var(--safe-t) + 56px) 24px calc(var(--safe-b) + 24px);color:var(--text);background:var(--bg);overflow-y:auto}
 .login.on{display:flex;animation:lgIn .35s ease-out}
@@ -376,6 +410,7 @@ body:not(.ready) .mes-b .chev{display:none}
   <button class="meta" id="meta" onclick="openMeta()"></button>
   <div id="next"></div>
   <div class="card" id="fin"></div>
+  <div class="card" id="fondo-c"></div>
   <div class="card" id="apv-c"></div>
   <div class="card" id="tax-c"></div>
   <div class="card menu">
@@ -390,6 +425,7 @@ body:not(.ready) .mes-b .chev{display:none}
   <section class="tab" data-tab="coach" hidden>
   <h2 class="tab-t">Coach</h2>
   <div id="coach-hab"></div>
+  <div class="card" id="deseos-c"></div>
   <div class="card ia"><h4>🤖 Pregúntale a Claude</h4><p>Con tus números de este mes. Pregunta como le hablarías a un amigo.</p>
     <div class="ia-log" id="ia-log"></div>
     <div class="chips" id="ia-sug"></div>
@@ -712,7 +748,8 @@ function render(){
   document.body.classList.add('ready');salirLogin();navPill();
 
   $('m-movs').textContent=S.gastos.length?`Ver todos (${S.gastos.length})`:'Ver todos';
-  $('m-cuo').textContent=`${fmt(cuo)} al mes · se suman solas`;
+  {const vivas=S.cuotas.filter(c=>!c.recurrente&&c.primer_periodo&&(infoCuota(c,S.periodo).por||0)>0),fin=vivas.map(c=>addM(c.primer_periodo,c.total_cuotas-1)).sort().pop();
+   $('m-cuo').textContent=`${fmt(cuo)} al mes`+(fin?` · libre de cuotas en ${perL(fin)}`:' · se suman solas');}
   if(!(S.iaH||[]).length&&!$('ia-log').children.length)$('ia-sug').innerHTML=IA_SUG.map(q=>`<button class="chip" onclick="askIA(this.textContent)">${q}</button>`).join('');
   $('m-ppto').textContent=`${fmt(S.ppto)} (incluye cuotas)`;
   renderGastos();renderCoach();renderPlata();entrar();
@@ -755,6 +792,7 @@ function habitos(){
   return H;
 }
 function renderCoach(){
+  renderDeseos();
   const el=$('coach-hab');
   if(!S.V.esActual)el.innerHTML=`<div class="nudge"><div>👀 Estás viendo <b>${perL(S.periodo)}</b>. Tus hábitos son del mes de hoy.</div><button onclick="setPer(S.actual)">Volver a hoy</button></div>`;
   else{const H=habitos(),cu=H.filter(h=>h.ok!==null),n=cu.filter(h=>h.ok).length,t=cu.length,f=t-n,pc=Math.round(n/t*100);
@@ -819,7 +857,7 @@ function renderPlata(){
    :`<div class="card-h"><h2>🧾 Impuestos</h2><span class="pill ok">Al día</span></div><div class="lead">Este año vas pagando más o menos lo justo: no hay devolución grande que pedir. Si te llega un bono, vuelve a mirar aquí.</div>`;
   const pf=PAT().fecha,dp=pf?Math.round((new Date()-new Date(pf+'T12:00:00'))/864e5):null;
   $('m-pat').textContent=dp===null?'Fintual, cartas y ETH':dp<1?'Lo actualizaste hoy':`Lo actualizaste hace ${dp} día${dp>1?'s':''}${dp>35?' ⚠️':''}`;
-  renderNext();renderMeta();
+  renderNext();renderMeta();renderFondo();
 }
 
 function openPlata(){
@@ -985,7 +1023,110 @@ function openVenta(){openSheet(`<h3>💵 Anotar venta</h3><p>Plata que entró po
 async function saveVenta(){const m=val('v-monto');if(!m){toast('Pon el monto');return}const d=($('v-desc').value||'').trim();
   try{await api('gastos',{m:'POST',b:{fecha:hoyISO(),monto:-m,descripcion:'Venta'+(d?': '+d:''),tarjeta:'otro',fuente:'app',pulldex:true,categoria_clave:'coleccionables'}});closeSheet();toast(`💵 Venta de ${fmt(m)} anotada`);await loadAll();openNeg()}catch(e){toast('❌ Error');console.error(e)}}
 function openMovs(){openSheet(`<h3>Todos los gastos</h3><p>${perL(S.periodo)} · toca uno para editarlo o borrarlo.</p><div class="card">${S.gastos.map(txHtml).join('')||'<div class="empty">Sin gastos</div>'}</div>`)}
-function openCuotas(){const V=S.V;openSheet(`<h3>💳 Cuotas y fijos</h3><p>${fmt(V.cuo)} al mes que se descuentan solos. No tienes que anotarlos. Toca uno para corregirlo.</p><div class="card">${V.CQ.map(c=>`<button class="crow" onclick="openCuota(${c.id})"><div class="cm"><b>${c.nombre}</b><small>${c.label}${c.fin?' · termina en '+perL(c.fin):''}</small></div><div class="ca">${fmt(c.monto_cuota)}</div></button>`).join('')||'<div class="empty">Sin cuotas este mes 🎉</div>'}</div><button class="btn p" style="margin-top:0" onclick="openCuota()">+ Agregar cuota o fijo</button>`)}
+// Cuotas: cuántas te quedan de cada una, cuánto falta pagar y cuándo se libera la plata.
+// $387k, $1,2M: montos cortos para las barras
+const kCLP=v=>!v?'$0':v>=1e6?'$'+(Math.round(v/1e5)/10).toString().replace('.',',')+'M':'$'+Math.round(v/1000)+'k';
+function infoCuota(c,per){if(c.recurrente)return{fijo:true};if(!c.primer_periodo)return{sin:true};
+  const n=mdiff(c.primer_periodo,per)+1,fin=addM(c.primer_periodo,c.total_cuotas-1),por=Math.max(0,c.total_cuotas-Math.max(n,1)+1);
+  return{n,fin,quedan:Math.max(0,c.total_cuotas-Math.max(n,1)),por,falta:c.monto_cuota*por,parte:n<1}}
+function openCuotas(){const per=S.periodo,Q=S.cuotas.map(c=>({...c,...infoCuota(c,per)}));
+  const cq=Q.filter(c=>!c.fijo&&!c.sin&&c.por>0).sort((a,b)=>a.fin<b.fin?-1:1),fijos=Q.filter(c=>c.fijo),sin=Q.filter(c=>c.sin);
+  const falta=cq.reduce((s,c)=>s+c.falta,0),libre=cq.length?cq[cq.length-1].fin:null,mCuo=cq.filter(c=>!c.parte).reduce((s,c)=>s+c.monto_cuota,0);
+  const M=[...Array(6)].map((_,i)=>{const p=addM(per,i);return{p,v:cuotasDe(p).reduce((s,c)=>s+c.monto_cuota,0)}}),mx=Math.max(1,...M.map(m=>m.v));
+  const pts=c=>c.total_cuotas<=24?`<div class="pts">${[...Array(c.total_cuotas)].map((_,k)=>`<i class="${k<c.n-1?'p':k===c.n-1?'h':''}"></i>`).join('')}</div>`:`<div class="bar"><div style="width:${Math.max(0,(c.n-1)/c.total_cuotas*100)}%;background:var(--green)"></div></div>`;
+  const fila=c=>`<button class="cq" onclick="openCuota(${c.id})"><div class="t"><b>${c.nombre}</b><span>${fmt(c.monto_cuota)}</span></div>
+    <small>${c.parte?`Parte en ${perL(c.primer_periodo)} · ${c.total_cuotas} cuotas`:c.quedan?`Cuota ${c.n} de ${c.total_cuotas} · te quedan <b>${c.quedan}</b> después de esta · termina en ${perL(c.fin)}`:`Cuota ${c.n} de ${c.total_cuotas} · <b>¡es la última! 🎉</b>`}</small>
+    ${c.parte?'':pts(c)}<small style="margin-top:6px">Te faltan <b>${fmt(c.falta)}</b>${c.parte?'':' contando la de este mes'}</small></button>`;
+  openSheet(`<h3>💳 Tus cuotas</h3><p>Cuántas te quedan de cada una y cuándo se te libera la plata.</p>
+  ${cq.length?`<div class="card"><div class="sum" style="padding:4px 0 0"><div class="v">${fmt(falta)} <span>por pagar en cuotas</span></div></div>
+    <div class="lead" style="padding-top:6px">${fmt(mCuo)} al mes en ${cq.length} compra${cq.length>1?'s':''}. ${libre?`Quedas <b>libre de cuotas en ${perL(libre)}</b> si no sumas nuevas.`:''}</div>
+    <div class="mes6">${M.map((m,i)=>`<div class="${i&&m.v<M[i-1].v?'b':''}"><em>${kCLP(m.v)}</em><i style="height:${Math.max(3,m.v/mx*62)}px"></i>${MESL[+m.p.slice(5)-1].slice(0,3)}</div>`).join('')}</div>
+    <p class="fine" style="margin:0 0 6px">Cuotas y fijos de los próximos 6 meses. En verde, los meses en que baja.</p></div>
+  <h3 class="sec-t" style="margin-left:2px">Una por una</h3><div class="card">${cq.map(fila).join('')}</div>`:`<div class="card"><div class="empty">No tienes compras en cuotas 🎉</div></div>`}
+  ${sin.length?`<div class="card"><div class="lead" style="padding-top:12px">Sin fecha de inicio: tócalas para decirme en qué cuota vas.</div>${sin.map(c=>`<button class="crow" onclick="openCuota(${c.id})"><div class="cm"><b>${c.nombre}</b><small>${c.total_cuotas} cuotas</small></div><div class="ca">${fmt(c.monto_cuota)}</div></button>`).join('')}</div>`:''}
+  ${fijos.length?`<h3 class="sec-t" style="margin-left:2px">Fijos todos los meses</h3><div class="card">${fijos.map(c=>`<button class="crow" onclick="openCuota(${c.id})"><div class="cm"><b>${c.nombre}</b><small>Todos los meses</small></div><div class="ca">${fmt(c.monto_cuota)}</div></button>`).join('')}</div>`:''}
+  <button class="btn p" onclick="pickCartola()">📄 Subir mi cartola (PDF o foto)</button>
+  <button class="btn p" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);box-shadow:none" onclick="openCuota()">✍️ Agregar una a mano</button>
+  <p class="fine" style="margin-top:10px">Con la cartola leo tus compras en cuotas y te muestro la lista para que revises antes de guardar.</p>`)}
+// Cartola → función `cartola` (Claude lee el PDF o la foto) → revisas → se guardan en `cuotas`.
+function pickCartola(){const i=document.createElement('input');i.type='file';i.accept='application/pdf,image/*';i.onchange=()=>i.files[0]&&leerCartola(i.files[0]);i.click()}
+const aB64=f=>new Promise((ok,mal)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(',')[1]);r.onerror=mal;r.readAsDataURL(f)});
+async function leerCartola(f){
+  if(f.size>10e6)return toast('Muy pesado: máximo 10 MB. Prueba con una foto');
+  const tipo=f.type==='application/pdf'?f.type:/^image\/(jpeg|png|webp|gif)$/.test(f.type)?f.type:null;
+  if(!tipo)return toast('Sube un PDF o una foto (JPG o PNG)');
+  openSheet(`<h3>📄 Leyendo tu cartola…</h3><p>Busco las compras en cuotas. Toma unos segundos.</p><div class="ia-a" style="max-width:100%"><span class="dots"><i></i><i></i><i></i></span></div>`);
+  try{const r=await fetch(SB+'/functions/v1/cartola',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json','x-app-key':getKey()},body:JSON.stringify({tipo,datos:await aB64(f)})});
+    const j=await r.json();if(j.error)throw new Error(j.error);revisarCartola(j)}
+  catch(e){console.error(e);openSheet(`<h3>📄 No pude leerla</h3><p>${({clave:'Tu sesión venció. Vuelve a entrar.',sin_api:'Falta conectar la API de Anthropic.',limite:'Muchos intentos seguidos. Espera un minuto.',grande:'El archivo es muy pesado.'}[e.message]||'Prueba con el PDF que manda el banco o con una foto derecha y con luz.')}</p><button class="btn p" onclick="pickCartola()">Intentar de nuevo</button><button class="btn p" style="margin-top:8px;background:var(--bg3);color:var(--text);box-shadow:none" onclick="openCuota()">Mejor la anoto a mano</button>`)}}
+function revisarCartola(j){
+  const base=j.fecha_cartola&&/^\d{4}-\d{2}-\d{2}$/.test(j.fecha_cartola)?addM(periodoDe(j.fecha_cartola,/bci/i.test((j.cuotas[0]||{}).banco||'')?'bci':'scotiabank'),1):S.actual;
+  const tj=b=>/scotia/i.test(b)?'scotiabank':/bci/i.test(b)?'bci':/santander/i.test(b)?'santander':'otro';
+  S.cart=(j.cuotas||[]).map(c=>{const pp=addM(base,-(c.cuota_actual-1)),dup=S.cuotas.some(q=>!q.recurrente&&q.total_cuotas===c.total_cuotas&&Math.abs(q.monto_cuota-c.monto_cuota)<=Math.max(500,c.monto_cuota*.02));
+    return{...c,pp,tarjeta:tj(c.banco||''),dup,on:!dup}});
+  if(!S.cart.length)return openSheet(`<h3>📄 No encontré cuotas</h3><p>${j.nota||'En esa cartola no aparecen compras en cuotas vigentes.'}</p><button class="btn p" onclick="openCuotas()">Volver a mis cuotas</button>`);
+  pintaCartola()}
+function pintaCartola(){const C=S.cart,n=C.filter(c=>c.on).length;
+  openSheet(`<h3>📄 Encontré ${C.length} en cuotas</h3><p>Marca las que quieres guardar. Las que ya tenías vienen desmarcadas.</p>
+  <div class="card">${C.map((c,i)=>`<button class="chk ${c.on?'on':''} ${c.dup?'dup':''}" onclick="S.cart[${i}].on=!S.cart[${i}].on;pintaCartola()"><span class="bx">${c.on?'✓':''}</span><div class="cm" style="flex:1"><b>${c.nombre}</b><small>Cuota ${c.cuota_actual} de ${c.total_cuotas} · termina en ${perL(addM(c.pp,c.total_cuotas-1))}${c.dup?' · ya la tienes':''}</small></div><div class="ca">${fmt(c.monto_cuota)}</div></button>`).join('')}</div>
+  <button class="btn p" ${n?'':'disabled style="opacity:.5"'} onclick="guardarCartola()">Guardar ${n} cuota${n===1?'':'s'}</button>
+  <p class="fine" style="margin-top:10px">Revisa los montos: si alguno está mal, lo corriges después tocándolo en tus cuotas.</p>`)}
+async function guardarCartola(){const C=S.cart.filter(c=>c.on);if(!C.length)return;
+  try{await api('cuotas',{m:'POST',b:C.map(c=>({nombre:c.nombre.slice(0,80),monto_cuota:c.monto_cuota,total_cuotas:c.total_cuotas,tarjeta:c.tarjeta,activa:true,recurrente:false,primer_periodo:c.pp}))});
+    toast(`✅ ${C.length} cuota${C.length>1?'s':''} guardada${C.length>1?'s':''}`);await loadAll();openCuotas()}catch(e){toast('❌ Error');console.error(e)}}
+
+// ---------- Lista de deseos: antes de comprar, esperar 72 horas ----------
+// ajustes.deseos = [{id, que, monto, desde (ISO), estado: espera | aguantado | comprado}]
+const ESPERA=72*36e5,DES=()=>S.aj.deseos||[];
+const listo=d=>Date.now()-new Date(d.desde)>=ESPERA;
+function desear(){const x=val('a-monto'),que=($('a-desc').value||'').trim()||'Algo que quiero';if(!x)return $('a-monto').focus();
+  const L=[{id:Date.now(),que,monto:x,desde:new Date().toISOString(),estado:'espera'},...DES()].slice(0,40);
+  closeSheet();saveAj('deseos',L);const d=new Date(Date.now()+ESPERA);toast(`⏳ Anotado. El ${d.toLocaleDateString('es-CL',{weekday:'long'})} te pregunto si todavía lo quieres`)}
+async function deseoNo(id){const d=DES().find(x=>x.id===id);if(!d)return;
+  await saveAj('deseos',DES().map(x=>x.id===id?{...x,estado:'aguantado'}:x),true);addEv(d.monto);toast(`💪 Te aguantaste ${fmt(d.monto)}: en 10 años serían ${fmt(d.monto*Math.pow(1+RENT,10))}`)}
+async function deseoSi(id){const d=DES().find(x=>x.id===id);if(!d)return;
+  await saveAj('deseos',DES().map(x=>x.id===id?{...x,estado:'comprado'}:x));openAdd({m:d.monto,d:d.que})}
+async function deseoBorrar(id){await saveAj('deseos',DES().filter(x=>x.id!==id))}
+function renderDeseos(){const el=$('deseos-c');if(!el)return;const L=DES(),E=L.filter(d=>d.estado==='espera'),ag=L.filter(d=>d.estado==='aguantado').reduce((s,d)=>s+d.monto,0),F=S.aj.fondo;
+  const fila=d=>{const ok=listo(d),pc=Math.min(100,(Date.now()-new Date(d.desde))/ESPERA*100),h=Math.max(1,Math.ceil((ESPERA-(Date.now()-new Date(d.desde)))/36e5));
+    return`<div class="dz"><div class="reloj" style="background:conic-gradient(${ok?'var(--green)':'var(--amber)'} ${pc}%,var(--bg3) 0)"><span>${ok?'✓':h>24?Math.round(h/24)+'d':h+'h'}</span></div>
+    <div class="cm"><b>${d.que} · ${fmt(d.monto)}</b><small>${ok?'Pasaron las 72 horas. ¿Todavía lo quieres?':`Te pregunto en ${h>36?Math.round(h/24)+' días':h+' horas'}. Invertido serían ${fmt(d.monto*Math.pow(1+RENT,10))} en 10 años.`}${ok&&F&&F.ahorrado>=d.monto?' Tu fondo gadgets lo cubre.':''}</small>
+    ${ok?`<div class="ya"><button class="no" onclick="deseoNo(${d.id})">💪 Ya no lo quiero</button><button class="si" onclick="deseoSi(${d.id})">Sí, lo compro</button></div>`:''}</div>
+    ${ok?'':`<button class="x" style="position:static;margin:0;float:none" onclick="deseoBorrar(${d.id})" aria-label="Quitar">×</button>`}</div>`};
+  el.innerHTML=`<div class="card-h"><h2>⏳ Lista de deseos</h2>${ag?`<span class="pill ok">Te aguantaste ${fmt(ag)}</span>`:''}</div>
+  ${E.length?E.map(fila).join(''):`<div class="lead">¿Viste algo que quieres? Anótalo aquí en vez de comprarlo. En 72 horas te pregunto si todavía lo quieres: la mayoría de las veces se te pasa.</div>`}
+  <button class="btn p" style="margin:10px 0 14px" onclick="openCheck()">+ Algo que quiero comprar</button>`}
+
+// ---------- Fondo gadgets: plata apartada para tecnología, así no sale del mes ----------
+// ajustes.fondo = {que, meta, ahorrado, mensual}
+function renderFondo(){const el=$('fondo-c');if(!el)return;const F=S.aj.fondo;
+  if(!F){el.innerHTML=`<div class="card-h"><h2>🎧 Fondo gadgets</h2></div><div class="lead">Te encanta probar tecnología nueva: está bien, pero que salga de plata que <b>ya apartaste</b>, no del mes. Pones una meta, apartas un poco cada mes y compras sin culpa cuando llegas.</div><button class="btn p" style="margin:4px 0 14px" onclick="editFondo()">Crear mi fondo</button>`;return}
+  const falta=Math.max(0,F.meta-F.ahorrado),pc=Math.min(100,F.ahorrado/F.meta*100),m=F.mensual?Math.ceil(falta/F.mensual):null;
+  el.innerHTML=`<div class="card-h"><h2>🎧 Fondo gadgets</h2><span class="pill ${falta?'':'ok'}">${falta?Math.round(pc)+'%':'¡Llegaste! 🎉'}</span></div>
+  <div class="sum" style="padding:4px 0 0"><div class="v">${fmt(F.ahorrado)} <span>de ${fmt(F.meta)} para ${F.que}</span></div></div>
+  <div class="bar"><div style="width:${pc}%;background:var(--green)"></div></div>
+  <div class="lead" style="padding-top:10px">${falta?`Te faltan <b>${fmt(falta)}</b>.${m?` Apartando ${fmt(F.mensual)} al mes llegas en <b>${perL(addM(S.actual,m))}</b>.`:''}`:`Ya tienes la plata: cómpralo sin culpa y no sale de tu mes.`}</div>
+  <div class="chips" style="margin-bottom:14px"><button class="chip" onclick="aporteFondo()">+ Aparté plata</button>${!falta?`<button class="chip on" onclick="compreFondo()">Lo compré 🎉</button>`:''}<button class="chip" onclick="editFondo()">Editar</button></div>`}
+function editFondo(){const F=S.aj.fondo||{que:'',meta:0,ahorrado:0,mensual:50000};
+  openSheet(`<h3>🎧 Fondo gadgets</h3><p>¿Qué quieres comprarte? Lo vas juntando de a poco.</p>
+  <label>¿Qué es?</label><input id="f-que" value="${(F.que||'').replace(/"/g,'&quot;')}" placeholder="ej: iPad, audífonos, cámara">
+  <label>¿Cuánto cuesta?</label><input id="f-meta" inputmode="numeric" oninput="fmtIn(this)" value="${F.meta?'$'+F.meta.toLocaleString('es-CL'):''}">
+  <label>¿Cuánto apartas al mes?</label><div class="chips" id="f-men">${[30000,50000,80000,100000].map(v=>`<button class="chip ${v===F.mensual?'on':''}" data-v="${v}" onclick="this.parentNode.querySelectorAll('.chip').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${fmt(v)}</button>`).join('')}</div>
+  <label>¿Cuánto tienes ya apartado?</label><input id="f-aho" inputmode="numeric" oninput="fmtIn(this)" value="${F.ahorrado?'$'+F.ahorrado.toLocaleString('es-CL'):''}" placeholder="$0">
+  <button class="btn p" onclick="saveFondo()">Guardar</button>
+  <p class="fine" style="margin-top:10px">Tip: sepáralo en una cuenta aparte o un objetivo de Fintual, así no se mezcla con la plata del mes. Lo que apartas cuenta como parte de tu presupuesto.</p>
+  ${S.aj.fondo?`<button class="btn d" onclick="borrarFondo()">Borrar fondo</button>`:''}`)}
+async function borrarFondo(){if(!confirm('¿Borrar tu fondo gadgets?'))return;try{await api('ajustes?clave=eq.fondo',{m:'DELETE'});delete S.aj.fondo;closeSheet();render()}catch(e){toast('❌ Error')}}
+function saveFondo(){const que=$('f-que').value.trim(),meta=val('f-meta'),on=$('f-men').querySelector('.chip.on');
+  if(!que||!meta)return toast('Pon qué es y cuánto cuesta');
+  closeSheet();saveAj('fondo',{que,meta,ahorrado:val('f-aho'),mensual:on?+on.dataset.v:0});toast('🎧 Fondo listo')}
+function aporteFondo(){const F=S.aj.fondo;openSheet(`<h3>+ Aparté plata</h3><p>Para ${F.que}. Anótalo cuando lo muevas a tu cuenta aparte o a Fintual.</p>
+  <input id="f-ap" class="amt-in" inputmode="numeric" oninput="fmtIn(this)" placeholder="$0" value="${F.mensual?'$'+F.mensual.toLocaleString('es-CL'):''}">
+  <button class="btn g" onclick="const x=val('f-ap');if(!x)return;closeSheet();saveAj('fondo',{...S.aj.fondo,ahorrado:S.aj.fondo.ahorrado+x});toast('🎧 +'+fmt(x)+' al fondo')">Guardar</button>`)}
+async function compreFondo(){const F=S.aj.fondo;if(!confirm(`¿Te compraste ${F.que}? Lo dejo anotado sin tocar tu mes.`))return;
+  // Queda en el historial como gasto de tecnología, pero no cuenta en el presupuesto (se pagó con el fondo).
+  try{await api('gastos',{m:'POST',b:{fecha:hoyISO(),monto:F.meta,descripcion:F.que+' (fondo gadgets)',tarjeta:'otro',fuente:'app',categoria_clave:'tech',estado:'ignorado'}});
+    await saveAj('fondo',{...F,ahorrado:Math.max(0,F.ahorrado-F.meta),que:'tu próximo gadget',meta:F.meta});toast('🎉 Disfrútalo: salió del fondo, no de tu mes');editFondo()}catch(e){toast('❌ Error');console.error(e)}}
 function openCuota(id){
   const c=S.cuotas.find(x=>x.id===id)||{nombre:'',monto_cuota:0,total_cuotas:12,recurrente:false,tarjeta:'otro'};
   const n=c.primer_periodo?mdiff(c.primer_periodo,S.periodo)+1:1;
@@ -1034,6 +1175,7 @@ async function saveRev(id,cat){
 }
 function tipsList(){
   const V=S.V,T=[];if(!V.esActual)return T;
+  DES().filter(d=>d.estado==='espera'&&listo(d)).slice(0,2).forEach(d=>T.push(['⏳',`Pasaron 72 horas desde que quisiste <b>${d.que}</b> (${fmt(d.monto)}). ¿Todavía lo quieres?`,['💪 Ya no',`deseoNo(${d.id})`]]));
   const top=Object.entries(V.tot).filter(([k])=>k!=='otros').sort((a,b)=>b[1]-a[1])[0];
   if(top){const[k,v]=top,c=CAT[k]||CAT.otros,pv=V.ptot[k],baja=Math.round(v*.2/1000)*1000;
     T.push([c.ic,`<b>${c.n}</b> es donde más se te va: ${fmt(v)}${pv?` (en ${V.pvL} fueron ${fmt(pv)})`:''}. Si le bajas un 20% (${fmt(baja)} al mes) e inviertes eso, en 10 años son <b>${fmt(baja*12*(Math.pow(1+RENT,10)-1)/RENT)}</b>.`,['Ver gastos',`openCat('${k}')`]])}
@@ -1136,6 +1278,7 @@ function openCheck(){S.nc=1;
   <div id="chk-ia"></div>
   <div id="chk-btns" style="display:none">
     <button class="btn g" onclick="skipBuy()">💪 Mejor no lo compro</button>
+    <button class="btn p" style="margin-top:8px" onclick="desear()">⏳ Lo pienso 72 horas</button>
     <button class="btn p" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="boughtIt()">Lo compré igual → anotar</button>
     <button class="btn p" id="chk-ia-btn" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="askCheck()">🤖 Segunda opinión de Claude</button>
   </div>`);
