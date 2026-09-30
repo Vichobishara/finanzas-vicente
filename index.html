@@ -121,6 +121,7 @@ body.lock{overflow:hidden}
 .refresh.spin svg{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+.bk{position:sticky;top:0;float:left;margin:-2px 8px 0 -6px;width:34px;height:34px;border-radius:50%;border:none;background:var(--bg3);color:var(--sec);font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:2}
 .handle{width:40px;height:5px;background:#D6D6DE;border-radius:99px;margin:0 auto 16px;touch-action:none}
 .sheet h3{font-size:22px;font-weight:800;letter-spacing:-.4px;margin-bottom:4px}
 .sheet p{font-size:13.5px;color:var(--sec);margin-bottom:14px;line-height:1.5}
@@ -431,11 +432,21 @@ const addEv=x=>saveAj('evitado',{...(S.aj.evitado||{}),[S.actual]:getEv()+x});
 const pausaFin=()=>{const p=S.aj&&S.aj.fintual_pausa;return!!(p&&p.hasta&&p.hasta>=hoyISO())};
 const apvOk=()=>!!(S.aj.apv&&S.aj.apv.abierto);
 const $v=n=>n>0?'$'+Math.round(n).toLocaleString('es-CL'):'';
-let cierreT;function openSheet(h){clearTimeout(cierreT);$('sheet-bg').classList.remove('closing');const sh=$('sheet');sh.classList.remove('busy');sh.style.transform='';sh.innerHTML='<div class="handle"></div><button class="x" onclick="closeSheet()" aria-label="Cerrar">×</button>'+h;sh.scrollTop=0;$('sheet-bg').classList.add('on');document.body.classList.add('lock')}
+// Pila de hojas: si desde una hoja tocas algo que abre otra (Todo el mes → Comida), aparece ‹ para volver.
+// Solo se apila al tocar dentro de la hoja; si se abre después de guardar, no (así ‹ nunca vuelve a un formulario viejo).
+let cierreT,SH=[];
+const shTit=h=>(String(h).match(/<h3[^>]*>([\s\S]*?)<\/h3>/)||[])[1]||'';
+function openSheet(h){const sh=$('sheet'),ev=window.event,tit=shTit(h);
+  if(sheetOn()&&ev&&ev.type==='click'&&sh.contains(ev.target)){const c=sh.cloneNode(true);c.querySelectorAll(':scope>.handle,:scope>.x,:scope>.bk').forEach(n=>n.remove());
+    if(shTit(c.innerHTML)!==tit)SH.push({h:c.innerHTML,y:sh.scrollTop})}else if(!sheetOn())SH=[];
+  const i=SH.findIndex(e=>shTit(e.h)===tit);if(i>=0)SH=SH.slice(0,i);pintaSheet(h,0)}
+function pintaSheet(h,y){clearTimeout(cierreT);$('sheet-bg').classList.remove('closing');const sh=$('sheet');sh.classList.remove('busy');sh.style.transform='';
+  sh.innerHTML='<div class="handle"></div>'+(SH.length?'<button class="bk" onclick="backSheet()" aria-label="Volver">‹</button>':'')+'<button class="x" onclick="closeSheet()" aria-label="Cerrar">×</button>'+h;sh.scrollTop=y;$('sheet-bg').classList.add('on');document.body.classList.add('lock')}
+function backSheet(){const e=SH.pop();if(!e)return closeSheet();pintaSheet(e.h,e.y)}
 function closeSheet(){if(document.activeElement)document.activeElement.blur();const bg=$('sheet-bg');
   // Se va hacia abajo en vez de desaparecer de golpe (si ya la arrastraste con el dedo, no se repite)
   if(bg.classList.contains('on')&&!$('sheet').style.transform){bg.classList.add('closing');clearTimeout(cierreT);cierreT=setTimeout(()=>bg.classList.remove('closing'),230)}
-  bg.classList.remove('on');document.body.classList.remove('lock')}
+  SH=[];bg.classList.remove('on');document.body.classList.remove('lock')}
 const sheetOn=()=>$('sheet-bg').classList.contains('on');
 // Que se sienta app: sin zoom al pellizcar ni al tocar dos veces (Safari ignora user-scalable=no)
 const esIOS=/iP(hone|ad|od)/.test(navigator.userAgent),standalone=navigator.standalone||!!(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
