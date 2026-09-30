@@ -462,7 +462,7 @@ body:not(.ready) .mes-b .chev{display:none}
 <body>
 <div class="app">
   <div class="hdr">
-    <div class="who"><div class="avatar" id="avatar">🙂</div><div><small id="greet">Hola</small><button class="mes-b" onclick="openMeses()" aria-label="Elegir mes"><h1 id="mes-t">Hoy</h1><span class="chev"></span></button></div></div>
+    <div class="who"><div class="avatar" id="avatar">🙂</div><div><small id="greet" style="white-space:nowrap">Hola</small><button class="mes-b" onclick="openMeses()" aria-label="Elegir mes"><h1 id="mes-t">Hoy</h1><span class="chev"></span></button></div></div>
     <div class="hdr-r"><button class="isla" id="isla" onclick="openChat()" aria-label="Pregúntale a Claude"><i></i>Claude</button>
     <button class="refresh" id="refresh" onclick="refresh()" aria-label="Actualizar"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/></svg></button></div>
   </div>
@@ -914,7 +914,7 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
   const base=esActual?Math.max(total,S.ppto):total,libre=Math.max(0,SUELDO-base),fin=Math.round(libre/2);
   S.V={tot,items,ptot,nt,neg,mes,pvL,CQ,cuo,gast,total,queda,dias,esActual,diario,cupoHoy,gastHoy,manana,semana,semIni:ISO(w0),proy:{base,libre,fin,col:libre-fin,over:total>S.ppto}};
 
-  $('mes-t').textContent=mes;$('greet').textContent=esActual?hoyL():rangoL(S.periodo);
+  $('mes-t').textContent=mes;$('greet').textContent=esActual?(+S.periodo.slice(5)!==new Date().getMonth()+1?`Hoy ${new Date().getDate()} · hasta el 22 ${MESL[+S.periodo.slice(5)-1].slice(0,3).toLowerCase()}`:hoyL()):rangoL(S.periodo);
   $('viendo').innerHTML=esActual?'':`<div class="nudge"><div>👀 Estás viendo <b>${perL(S.periodo)}</b></div><button onclick="setPer(S.actual)">Volver a hoy</button></div>`;
 
   let cls,lbl,amt,l1,msg;
@@ -928,7 +928,7 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
     else if(cupoHoy<15000){cls='warn';msg='<span>Margen justo. Cocina en casa y posterga cualquier compra.</span>';}
     else{cls='ok';msg=pausaFin()?`<span>Vas bien. Este mes lo que sobre es para pagar tus tarjetas.</span>`:`<span>Vas bien. Si te mantienes, fin de mes van <b>${fmt(fin)}</b> a Fintual.</span>`;}
   }
-  const rch=esActual?racha():0;$('hero-w').innerHTML=`<div class="hero ${cls}"><div class="h-lbl">${lbl}${rch>=2?`<span class="racha">🔥 ${rch} días</span>`:''}</div><div class="h-amt">${amt}</div>${esActual&&queda>=0?`${gastHoy>0&&diario>=0?`<div class="h-l2" style="margin:-6px 0 10px">De ${fmt(cupoHoy)} para hoy, ya usaste ${fmt(gastHoy)}</div>`:''}<div class="h-sum"><div class="t" style="border:none;margin:0 0 6px;padding:0"><span>${semana>=0?`Esta semana te quedan${diasSem>1?` <small style="opacity:.75;font-weight:500">(${diasSem} días)</small>`:''}`:'Esta semana te pasaste por'}</span><span>${fmt(Math.abs(semana))}</span></div><div><span>Plata del mes</span><span>${fmt(S.ppto)}</span></div><div><span>− Cuotas y fijos</span><span>${fmt(cuo)}</span></div><div><span>− Ya gastaste</span><span>${fmt(gast)}</span></div><div class="t"><span>Te quedan (${dias} días)</span><span>${fmt(queda)}</span></div></div>`:`<div class="h-l1">${l1}</div><div class="h-l2">Incluye ${fmt(cuo)} de cuotas y fijos</div>`}<div class="h-bar"><div style="width:${p}%"></div></div><div class="h-msg">${HICO(cls,queda)}${msg}</div></div>`;
+  const rch=esActual?racha():0;$('hero-w').innerHTML=`<div class="hero ${cls}"><div class="h-lbl">${lbl}${rch>=2?`<span class="racha">🔥 ${rch} días</span>`:''}</div><div class="h-amt">${amt}</div>${esActual&&queda>=0?`${gastHoy>0&&diario>=0?`<div class="h-l2" style="margin:-6px 0 10px">De ${fmt(cupoHoy)} para hoy, ya usaste ${fmt(gastHoy)}</div>`:''}<div class="h-sum"><div class="t" style="border:none;margin:0 0 6px;padding:0"><span>${semana>=0?`Esta semana te quedan${diasSem>1?` <small style="opacity:.75;font-weight:500">(${diasSem} días)</small>`:''}`:'Esta semana te pasaste por'}</span><span>${fmt(Math.abs(semana))}</span></div><div class="t" onclick="tab('gastos')" style="cursor:pointer"><span>Hasta el 22 te quedan <small style="opacity:.75;font-weight:500">(${dias} días)</small></span><span>${fmt(queda)}</span></div></div>`:`<div class="h-l1">${l1}</div><div class="h-l2">Incluye ${fmt(cuo)} de cuotas y fijos</div>`}<div class="h-bar"><div style="width:${p}%"></div></div><div class="h-msg">${HICO(cls,queda)}${msg}</div></div>`;
   contar(lbl+S.periodo,esActual&&queda>=0&&diario>=0?diario:null);
 
   const ev=getEv();$('win').innerHTML=esActual&&ev?`<div class="win">💪 Este mes te aguantaste ${fmt(ev)} en compras</div>`:'';
