@@ -354,8 +354,28 @@ async function _loadAll(){
     try{if(localStorage.getItem('apv-abierto')==='1'&&!apvOk())saveAj('apv',{abierto:true,fecha:hoyISO()},true);
       const l=+localStorage.getItem('evitado-'+S.actual)||0;if(l&&!getEv())saveAj('evitado',{...(S.aj.evitado||{}),[S.actual]:l},true);}catch(e){}
     await loadPeriodo();loadIngresos();
+    if(S.periodo===S.actual&&!sheetOn())avisar();
   }catch(e){console.error(e);$('hero-w').innerHTML=`<div class="hero bad"><div class="h-lbl">${navigator.onLine===false?'Sin internet':'No pude cargar tus datos'}</div><div class="h-l1" style="margin:8px 0 14px">${navigator.onLine===false?'Revisa tu conexión y reintenta.':'Puede ser la señal. Reintenta en un rato.'}</div><button class="btn p" style="margin-top:0;background:#fff;color:#0B1B3A" onclick="refresh()">Reintentar</button></div>`;}
 }
+// Alertas: se muestran una sola vez (hoy: una vez al día, semana: una vez por semana, mes y categorías: una vez al mes).
+function alertas(){const V=S.V,A=[],per=S.actual,H=hoyISO();if(!V||!V.esActual)return A;
+  if(V.queda<0)A.push({k:'mes-'+per,ic:'🔴',t:`Te pasaste del mes por ${fmt(-V.queda)}`,b:'Lo que gastes hasta el 22 sale de tu ahorro. Freno total: solo súper y transporte.'});
+  else if(V.diario<0)A.push({k:'hoy-'+H,ic:'🟠',t:`Hoy te pasaste por ${fmt(-V.diario)}`,b:`Tenías ${fmt(V.cupoHoy)} para hoy. Desde mañana tienes ${fmt(V.manana)} por día.`});
+  if(V.queda>=0&&V.semana<0)A.push({k:'sem-'+V.semIni,ic:'📅',t:`Esta semana te pasaste por ${fmt(-V.semana)}`,b:'Lo que queda de la semana: cocina en casa y nada de compras.'});
+  Object.entries(V.tot).forEach(([c,g])=>{const t=S.techos[c],n=(CAT[c]||CAT.otros).n;
+    if(c==='coleccionables'&&!t&&g>0)A.push({k:`cat-${c}-0-${per}`,ic:'🃏',t:'Compraste cartas y estaban bloqueadas',b:`Llevas ${fmt(g)} en cartas este mes. Si era para PULLDEX, márcalo como negocio.`});
+    if(!t||c==='otros')return;
+    if(g>t)A.push({k:`cat-${c}-100-${per}`,ic:(CAT[c]||CAT.otros).ic,t:`${n}: te pasaste del tope`,b:`Llevas ${fmt(g)} de ${fmt(t)}. Hasta el 22, cero ${n.toLowerCase()}.`});
+    else if(g>t*.8)A.push({k:`cat-${c}-80-${per}`,ic:(CAT[c]||CAT.otros).ic,t:`${n} va al ${Math.round(g/t*100)}%`,b:`Te quedan ${fmt(t-g)} para ${n.toLowerCase()} hasta el 22.`});});
+  // Ritmo: gastar más rápido que el paso de los días (aviso temprano, antes de estar en rojo)
+  const libre=S.ppto-V.cuo,[y,m]=per.split('-').map(Number),largo=Math.round((new Date(y,m-1,22)-new Date(y,m-2,22))/864e5),pas=(largo-V.dias+1)/largo;
+  if(V.queda>=0&&libre>0&&V.gast/libre>pas+.15&&pas<.85)A.push({k:'ritmo-'+V.semIni,ic:'🏃',t:`Vas gastando muy rápido`,b:`Llevas el ${Math.round(V.gast/libre*100)}% de tu plata y va solo el ${Math.round(pas*100)}% del mes.`});
+  return A}
+function avisar(){let vis={};try{vis=JSON.parse(localStorage.getItem('alertas-vistas')||'{}')}catch(e){}
+  const nuevas=alertas().filter(a=>!vis[a.k]);if(!nuevas.length)return false;
+  nuevas.forEach(a=>vis[a.k]=hoyISO());const ks=Object.keys(vis).sort((a,b)=>vis[b].localeCompare(vis[a])).slice(0,80);
+  try{localStorage.setItem('alertas-vistas',JSON.stringify(Object.fromEntries(ks.map(k=>[k,vis[k]]))))}catch(e){}
+  openSheet(`<h3>🚨 Ojo, Vicho</h3>${nuevas.map(a=>`<div class="lever"><i style="font-style:normal">${a.ic}</i><div><b>${a.t}</b><br>${a.b}</div></div>`).join('')}<button class="btn p" onclick="closeSheet()">Entendido</button><button class="btn" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="openCheck()">Abrir ¿Me alcanza?</button>`);return true}
 function setPer(p){S.periodo=p;closeSheet();loadAll();window.scrollTo(0,0)}
 
 async function loadPeriodo(){
@@ -390,7 +410,7 @@ function render(){
   const gastSem=pers.filter(g=>g.fecha>=ISO(w0)).reduce((s,g)=>s+g.monto,0),D0=Math.max(1,Math.round((cierre-w0)/864e5)+1),Wd=Math.round((w1-w0)/864e5)+1;
   const semana=(queda+gastSem)*Wd/D0-gastSem,diasSem=Math.round((w1-hoy)/864e5)+1;
   const base=esActual?Math.max(total,S.ppto):total,libre=Math.max(0,SUELDO-base),fin=Math.round(libre/2);
-  S.V={tot,items,ptot,nt,neg,mes,pvL,CQ,cuo,gast,total,queda,dias,esActual,diario,cupoHoy,gastHoy,manana,semana,proy:{base,libre,fin,col:libre-fin,over:total>S.ppto}};
+  S.V={tot,items,ptot,nt,neg,mes,pvL,CQ,cuo,gast,total,queda,dias,esActual,diario,cupoHoy,gastHoy,manana,semana,semIni:ISO(w0),proy:{base,libre,fin,col:libre-fin,over:total>S.ppto}};
 
   $('mes-t').textContent=mes;
   $('viendo').innerHTML=esActual?'':`<div class="nudge"><div>👀 Estás viendo <b>${perL(S.periodo)}</b></div><button onclick="setPer(S.actual)">Volver a hoy</button></div>`;
@@ -712,7 +732,7 @@ async function saveAdd(){
     // Siempre vuelve al mes de hoy (antes saltaba al mes siguiente si la tarjeta ya había cerrado).
     S.periodo=S.actual;await loadAll();
     toast(g.pulldex?`✅ ${fmt(monto)} anotado como negocio`:g.periodo!==S.actual?`✅ ${c.ic} ${fmt(monto)} · va en la boleta de ${MESL[+g.periodo.slice(5)-1]}`:`✅ ${c.ic} ${fmt(monto)} · ${S.V.diario>=0?`hoy te quedan ${fmt(S.V.diario)}`:`desde mañana ${fmt(S.V.manana)} al día`}`);
-    if(g.categoria_clave==='otros'&&g.periodo===S.actual)setTimeout(()=>openTx(g.id),400);
+    if(g.categoria_clave==='otros'&&g.periodo===S.actual&&!sheetOn())setTimeout(()=>openTx(g.id),400);
   }catch(e){toast('❌ No se pudo guardar');console.error(e)}
 }
 

@@ -34,6 +34,9 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  // Clave buena por link
  const {dom,heads}=await run('https://finanzas-vicente.vercel.app/#k=test123',true);
  const w=dom.window,d=w.document,t=id=>(d.getElementById(id)||{}).textContent||'';
+ checks['alerta al abrir si te pasaste hoy']=t('sheet').includes('Ojo')&&t('sheet').includes('Hoy te pasaste');
+ checks['la alerta no se repite']=w.eval('avisar()')===false;
+ w.eval('closeSheet()');
  checks['link guarda la clave y limpia la URL']=w.localStorage.getItem('app-key')==='test123'&&!w.location.hash;
  checks['manda x-app-key']=heads.every(h=>h&&h['x-app-key']==='test123');
  checks['hero muestra monto']=/\$/.test(t('hero-w'));
