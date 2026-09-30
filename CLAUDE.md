@@ -69,8 +69,14 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   El cron llama `privado.avisos_todos()` que recorre las cuentas. `privado.push` manda `user_id` y la edge function `push`
   solo manda a los celulares de esa cuenta.
 - Alta: `acceso_google` deja entrar a los correos de `secretos.google_emails` (o a quien ya tiene cuenta) y llama
-  `crear_cuenta(email, nombre)` → cuenta vacía con sus categorías. En la app, sin `ajustes.perfil` se abre la bienvenida
-  (nombre, edad, sueldo, presupuesto sugerido 80%) y después la guía para ponerla en inicio y Face ID.
+  `crear_cuenta(email, nombre)` → cuenta vacía con sus categorías. En la app, sin `ajustes.perfil` se abre la **bienvenida
+  de 6 pasos** (`bienvenida()` … `bvGuardar()`): 1) nombre y edad, 2) sueldo y día de pago, 3) fijos (arriendo, cuentas,
+  celular, gym, apps, estudios → cuotas `recurrente`), 4) cuotas (total aprox. o subir cartola), 5) cómo está hoy (ahorrado →
+  `patrimonio.fintual`, cuenta → `perfil.caja`, deuda tarjetas → `ajustes.deudas`, gastado desde el 23 → se descuenta del
+  presupuesto de este mes), 6) resumen (sueldo − fijos − cuotas − día a día = ahorro; presupuesto sugerido). Guarda
+  `perfil` {nombre, sueldo, nacimiento, meta, ppto, dia_pago, caja} y escala los topes de categorías. Después, "Arma tu app".
+- Presupuesto de un mes sin fila en `presupuestos`: `perfil.ppto` → último mes guardado → $1.000.000 (JS `S.ppto` y
+  `privado.ppto_de(per)` en la base, usada por estado_mes y los avisos).
 - Para invitar a alguien: Coach → **Invitar a alguien** (solo la cuenta de Vicho: `rpc/es_admin`, `rpc/invitados`,
   `rpc/invitar(p_email, p_quitar)`), que maneja `secretos.google_emails`.
 - Coach → **Conecta Apple Pay**: guía que copia el código de la persona (`rpc/mi_token_atajo`) y abre el atajo de iCloud

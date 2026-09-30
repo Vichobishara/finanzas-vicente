@@ -142,9 +142,14 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  // Bienvenida de cuenta nueva
  w.eval("bienvenida()");d.getElementById('bv-nom').value='Pedro Pérez';d.getElementById('bv-edad').value='58';w.eval('bv1()');
  d.getElementById('bv-sue').value='$1.500.000';w.eval('bv2()');
- checks['bienvenida: sugiere presupuesto 80% y dice cuánto ahorra']=d.getElementById('bv-ppto').value==='$1.200.000'&&t('sheet').includes('Ahorrarías $300.000')&&t('sheet').includes('Paso 3 de 3');
- w.CALLS=[];await w.eval('bv3()');await new Promise(r=>setTimeout(r,80));
- {const c=w.CALLS.find(c=>c.u.includes('ajustes')&&c.b&&c.b.includes('perfil'));checks['bienvenida: guarda perfil y presupuesto']=!!c&&c.b.includes('Pedro')&&c.b.includes('1500000')&&w.CALLS.some(c=>c.u.includes('presupuestos')&&c.b.includes('1200000'));}
+ checks['bienvenida: paso 3 de 6 pregunta los fijos']=t('sheet').includes('Paso 3 de 6')&&t('sheet').includes('Arriendo');
+ d.getElementById('bvf-arriendo').value='$400.000';d.getElementById('bvf-cel').value='$25.000';w.eval('bv3()');
+ d.getElementById('bv-cuo').value='$80.000';w.eval('bv4()');
+ d.getElementById('bv-aho').value='$2.000.000';d.getElementById('bv-caja').value='$150.000';d.getElementById('bv-deu').value='$300.000';d.getElementById('bv-ya').value='$200.000';w.eval('bv5()');
+ checks['bienvenida: resumen con fijos, cuotas, día a día y ahorro']=d.getElementById('bv-ppto').value==='$1.200.000'&&t('sheet').includes('Ahorras')&&t('sheet').includes('$425.000')&&t('sheet').includes('pagar la tarjeta va primero');
+ w.CALLS=[];await w.eval('bvGuardar()');await new Promise(r=>setTimeout(r,80));
+ {const B=w.CALLS.map(c=>c.u+' '+(c.b||'')).join('\n');
+  checks['bienvenida: guarda perfil, presupuesto menos lo gastado, fijos, ahorro y deuda']=/ajustes[^\n]*perfil[^\n]*Pedro[^\n]*1500000/.test(B)&&/presupuestos[^\n]*1000000/.test(B)&&/cuotas[^\n]*Arriendo[^\n]*400000/.test(B)&&/ajustes[^\n]*patrimonio[^\n]*2000000/.test(B)&&/ajustes[^\n]*deudas[^\n]*300000/.test(B);}
  w.eval('closeSheet()');
  // El chat recuerda la conversación en este aparato
  checks['chat: se guarda y se puede empezar de nuevo']=JSON.parse(w.localStorage.getItem('chat-h')||'[]').length===2&&(w.eval('nuevoChat()'),w.eval('S.iaH.length')===0&&d.querySelectorAll('#ia-sug .chip').length===5);
