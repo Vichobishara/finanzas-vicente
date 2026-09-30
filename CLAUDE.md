@@ -76,7 +76,10 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - Coach → **Conecta Apple Pay**: guía que copia el código de la persona (`rpc/mi_token_atajo`) y abre el atajo de iCloud
   (`secretos.atajo_url`, `rpc/atajo_url`). Cómo se arma el atajo maestro: `docs/atajo_amigos.md`.
 - `anotar_atajo(monto_txt, comercio, token)`: con token (`cuentas.token_atajo`, `rpc/mi_token_atajo`) anota en esa cuenta.
-  Cada llamada queda en `atajo_log` (diagnóstico). La automatización de iOS debe estar en **Ejecutar inmediatamente**.
+  Cada llamada queda en `atajo_log` (con `user_id`; la persona ve la última con `rpc/mi_ultimo_atajo`). La automatización de iOS
+  debe estar en **Ejecutar inmediatamente** y `monto_txt`/`comercio` deben salir de **Entrada del atajo** (si no, llegan vacíos).
+- **Arma tu app** (`armaApp()`, después de la bienvenida y como aviso en Hoy): 1) Face ID en Safari, 2) ponerla en inicio y entrar
+  desde el ícono con Face ID (el ícono no comparte sesión con Safari), 3) Conecta Apple Pay (solo iPhone).
 
 ## Metas, hábitos y extras (30-09-2026)
 - `ajustes.casa` {arriendo, muebles, ahorrado, mensual}: meta **Independizarme** (Plata). Necesitas = arriendo × 2,5
