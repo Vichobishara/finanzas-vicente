@@ -102,6 +102,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
   w.eval("S.gastos.push({id:9,fecha:hoyISO(),descripcion:'Zapatillas',monto:Math.round(S.V.cupoHoy*10),categoria_clave:'otros',tarjeta:'scotiabank',periodo:S.actual,pulldex:false});render()");
   checks['gasto grande: te pasaste hoy y desde mañana']=w.eval('S.V').dias>1?t('hero-w').includes('Hoy te pasaste')&&t('hero-w').includes('desde mañana'):true;
   checks['hero muestra la semana']=t('hero-w').includes('Esta semana');
+  checks['hero corto: semana y hasta el 22, sin desglose']=t('hero-w').includes('Hasta el 22 te quedan')&&!t('hero-w').includes('Plata del mes');
   w.eval('S.gastos.pop();render()');}
  w.eval('openAdd()');checks['anotar: sugerencias']=d.querySelectorAll('#sheet .sugs button').length>=5;
  d.getElementById('a-monto').value='$5.000';w.CALLS=[];await w.eval('saveAdd()');await new Promise(r=>setTimeout(r,1400));
