@@ -48,6 +48,12 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .h-sum div.t{border-top:1px solid rgba(255,255,255,.25);margin-top:4px;padding-top:7px;color:#fff;font-weight:700;font-size:15px}
 .h-bar{height:6px;background:rgba(255,255,255,.2);border-radius:99px;margin:18px 0 16px;overflow:hidden;position:relative}
 .h-bar div{height:100%;background:#fff;border-radius:99px;width:0;transition:width .6s}
+.racha{float:right;font-size:12.5px;font-weight:700;background:rgba(255,255,255,.2);padding:3px 9px;border-radius:99px;letter-spacing:0}
+.cmp-in{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cmp-in input{margin-bottom:8px}
+.cmp .row{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:8px;font-size:13.5px}.cmp .row b{text-align:right}
+.logro{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}.logro:last-child{border:none}
+.logro i{font-style:normal;font-size:22px;width:40px;height:40px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logro.no{opacity:.45}.logro.no i{filter:grayscale(1)}.logro b{display:block;font-size:14.5px}.logro small{color:var(--sec);font-size:12.5px}
 .h-msg svg.i{width:18px;height:18px;margin-top:1px}
 .h-msg{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.16);border:none;border-radius:18px;padding:11px 13px;font-size:13px;line-height:1.45;position:relative;z-index:1;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:16px 0}
@@ -484,6 +490,7 @@ body:not(.ready) .mes-b .chev{display:none}
   </div>
   <div class="card menu">
     <button class="crow" onclick="openCuotas()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg></div><div class="cm"><b>Cuotas y fijos</b><small id="m-cuo">—</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="openSubs()"><div class="ic" style="font-size:18px">🔁</div><div class="cm"><b>Suscripciones</b><small>Todo lo que pagas cada mes, y cuánto es al año</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openCuadrar()"><div class="ic" style="font-size:18px">🧮</div><div class="cm"><b>Cuadrar con la cartola</b><small>Sube la cartola y agrego lo que se te pasó anotar</small></div><span class="chev">›</span></button>
     <button class="crow" id="m-neg-b" onclick="openNeg()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 22V12h6v10"/></svg></div><div class="cm"><b>Negocio (PULLDEX)</b><small>Gastos y ventas: ¿gana o pierde plata?</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openMeses()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg></div><div class="cm"><b>Meses anteriores</b><small>Compara cómo te fue</small></div><span class="chev">›</span></button>
@@ -512,6 +519,7 @@ body:not(.ready) .mes-b .chev{display:none}
   <h2 class="tab-t">Coach</h2>
   <div id="coach-hab"></div>
   <div class="card" id="deseos-c"></div>
+  <div class="card" id="logros-c"></div>
   <div class="card ia"><h4>🤖 Pregúntale a Claude</h4><p>Con tus números, tus cuotas, tu fondo y tus deudas. Pregunta como le hablarías a un amigo.</p>
     <button class="btn p" style="margin:4px 0 14px" onclick="openChat()">Abrir el chat</button>
   </div>
@@ -520,6 +528,7 @@ body:not(.ready) .mes-b .chev{display:none}
   <div class="card menu" style="margin-top:6px">
     <button class="crow" onclick="openRevision()"><div class="ic" style="font-size:18px">🗓</div><div class="cm"><b>Revisión de la semana</b><small>2 minutos los domingos: cierras la semana ordenado</small></div><span class="chev">›</span></button>
     <button class="crow" id="m-inv" onclick="openInvitar()" style="display:none"><div class="ic" style="font-size:18px">👥</div><div class="cm"><b>Invitar a alguien</b><small>Tu papá, tus amigos: cada uno con su app y sus datos privados</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="openWidget()"><div class="ic" style="font-size:18px">📱</div><div class="cm"><b>Widget en tu inicio</b><small>Tu número de hoy sin abrir la app</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="guiaAP(0)"><div class="ic" style="font-size:18px">💳</div><div class="cm"><b>Conecta Apple Pay</b><small id="ap-est">Tus compras se anotan solas. Te guío en 2 minutos</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openAvisos()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div class="cm"><b>Avisos en tu calendario</b><small>Que el celular te recuerde qué hacer y cuándo</small></div><span class="chev">›</span></button>
   </div>
@@ -880,7 +889,7 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
     else if(cupoHoy<15000){cls='warn';msg='<span>Margen justo. Cocina en casa y posterga cualquier compra.</span>';}
     else{cls='ok';msg=pausaFin()?`<span>Vas bien. Este mes lo que sobre es para pagar tus tarjetas.</span>`:`<span>Vas bien. Si te mantienes, fin de mes van <b>${fmt(fin)}</b> a Fintual.</span>`;}
   }
-  $('hero-w').innerHTML=`<div class="hero ${cls}"><div class="h-lbl">${lbl}</div><div class="h-amt">${amt}</div>${esActual&&queda>=0?`${gastHoy>0&&diario>=0?`<div class="h-l2" style="margin:-6px 0 10px">De ${fmt(cupoHoy)} para hoy, ya usaste ${fmt(gastHoy)}</div>`:''}<div class="h-sum"><div class="t" style="border:none;margin:0 0 6px;padding:0"><span>${semana>=0?`Esta semana te quedan${diasSem>1?` <small style="opacity:.75;font-weight:500">(${diasSem} días)</small>`:''}`:'Esta semana te pasaste por'}</span><span>${fmt(Math.abs(semana))}</span></div><div><span>Plata del mes</span><span>${fmt(S.ppto)}</span></div><div><span>− Cuotas y fijos</span><span>${fmt(cuo)}</span></div><div><span>− Ya gastaste</span><span>${fmt(gast)}</span></div><div class="t"><span>Te quedan (${dias} días)</span><span>${fmt(queda)}</span></div></div>`:`<div class="h-l1">${l1}</div><div class="h-l2">Incluye ${fmt(cuo)} de cuotas y fijos</div>`}<div class="h-bar"><div style="width:${p}%"></div></div><div class="h-msg">${HICO(cls,queda)}${msg}</div></div>`;
+  const rch=esActual?racha():0;$('hero-w').innerHTML=`<div class="hero ${cls}"><div class="h-lbl">${lbl}${rch>=2?`<span class="racha">🔥 ${rch} días</span>`:''}</div><div class="h-amt">${amt}</div>${esActual&&queda>=0?`${gastHoy>0&&diario>=0?`<div class="h-l2" style="margin:-6px 0 10px">De ${fmt(cupoHoy)} para hoy, ya usaste ${fmt(gastHoy)}</div>`:''}<div class="h-sum"><div class="t" style="border:none;margin:0 0 6px;padding:0"><span>${semana>=0?`Esta semana te quedan${diasSem>1?` <small style="opacity:.75;font-weight:500">(${diasSem} días)</small>`:''}`:'Esta semana te pasaste por'}</span><span>${fmt(Math.abs(semana))}</span></div><div><span>Plata del mes</span><span>${fmt(S.ppto)}</span></div><div><span>− Cuotas y fijos</span><span>${fmt(cuo)}</span></div><div><span>− Ya gastaste</span><span>${fmt(gast)}</span></div><div class="t"><span>Te quedan (${dias} días)</span><span>${fmt(queda)}</span></div></div>`:`<div class="h-l1">${l1}</div><div class="h-l2">Incluye ${fmt(cuo)} de cuotas y fijos</div>`}<div class="h-bar"><div style="width:${p}%"></div></div><div class="h-msg">${HICO(cls,queda)}${msg}</div></div>`;
   contar(lbl+S.periodo,esActual&&queda>=0&&diario>=0?diario:null);
 
   const ev=getEv();$('win').innerHTML=esActual&&ev?`<div class="win">💪 Este mes te aguantaste ${fmt(ev)} en compras</div>`:'';
@@ -970,7 +979,25 @@ function openRevision(){const V=S.V,l=semanaDe(),dom=ISOd(new Date(new Date(l+'T
   <button class="btn p" onclick="cerrarSemana()">${nr||no||ds?'Cerrar igual':'Listo, semana cerrada ✅'}</button>`)}
 function cerrarSemana(){LS('revision-'+semanaDe(),'1');closeSheet();toast('✅ Semana cerrada. El lunes parte limpio');render()}
 
-function renderCoach(){
+// ---------- Racha: días seguidos sin pasarte del cupo del día (misma regla que privado.racha en la base) ----------
+function racha(){const[y,m]=S.actual.split('-').map(Number),cierre=new Date(y,m-1,22,12),ini=new Date(y,m-2,23,12),base=S.ppto-S.V.cuo;
+  const G=S.gastos.filter(g=>!g.pulldex&&(g.estado||'ok')==='ok');let n=0;const d=new Date();d.setHours(12,0,0,0);
+  while(d>=ini&&n<62){const f=ISOd(d);let antes=0,ese=0;G.forEach(g=>{if(g.fecha<f)antes+=g.monto;else if(g.fecha===f)ese+=g.monto});
+    if(ese>(base-antes)/Math.max(1,Math.round((cierre-d)/864e5)+1))break;n++;d.setDate(d.getDate()-1)}
+  try{if(n>(+localStorage.getItem('racha-max')||0))localStorage.setItem('racha-max',n)}catch(e){}
+  return n}
+// ---------- Logros (Coach): se desbloquean con hábitos, no con gastar ----------
+function renderLogros(){const el=$('logros-c');if(!el)return;let rmax=0,sem=false;
+  try{rmax=+localStorage.getItem('racha-max')||0;sem=Object.keys(localStorage).some(k=>k.startsWith('revision-'))}catch(e){}
+  const ev=Object.values(S.aj.evitado||{}).reduce((s,v)=>s+(+v||0),0),K=S.aj.casa;
+  const L=[['🔥','7 días seguidos sin pasarte',rmax>=7,`Tu mejor racha: ${rmax} día${rmax===1?'':'s'}`],['🏆','30 días seguidos sin pasarte',rmax>=30,'Un mes entero con el número a raya'],
+    ['💪','Te aguantaste $100.000',ev>=100000,`Llevas ${fmt(ev)} en compras que no hiciste`],['💰','Anotaste tu primer ahorro',S.ahorros.length>0,'Lo que de verdad mandaste a Fintual'],
+    ['🗓','Cerraste una semana',sem,'La revisión de los domingos'],['🏠','Empezaste a juntar para irte',!!(K&&K.ahorrado>0),'Plata apartada para independizarte'],
+    ['🧮','Cuadraste tu tarjeta',LS('cuadre-ok')==='1','Subiste la cartola y no se te escapó nada']];
+  const n=L.filter(x=>x[2]).length;
+  el.innerHTML=`<div class="card-h"><h2>🏅 Logros</h2><span class="pill ${n===L.length?'ok':''}">${n} de ${L.length}</span></div>${L.map(([i,t,ok,sub])=>`<div class="logro ${ok?'':'no'}"><i>${i}</i><div><b>${t}</b><small>${sub}</small></div></div>`).join('')}<div style="height:6px"></div>`}
+
+function renderCoach(){renderLogros();
   renderDeseos();
   const mi=$('m-inv');if(mi)mi.style.display=S.admin?'':'none';
   const ap=$('ap-est');if(ap&&apConectado())ap.textContent='✅ Conectado: tus compras con Apple Pay entran solas';
@@ -1046,11 +1073,40 @@ function renderPlata(){
 const VISTA={'fondo-c':'🎧 Fondo gadgets','deudas-c':'🧾 Por pagar','apv-c':'🎯 APV','tax-c':'🧾 Impuestos'};
 function cardSin(id){const c=$(id).cloneNode(true);c.querySelectorAll('.card-h h2').forEach(n=>n.remove());return c.innerHTML}
 function verCard(id){openSheet(`<h3>${VISTA[id]}</h3><div data-vista="${id}">${cardSin(id)}</div>`)}
+// ---------- Meta "Independizarme" (ajustes.casa {arriendo, muebles, ahorrado, mensual}) ----------
+// Necesitas = garantía (1 arriendo) + primer mes + corretaje (medio arriendo) + lo básico para amoblar.
+const casaNecesitas=K=>Math.round((K.arriendo||0)*2.5+(K.muebles||0));
+function openCasa(){const K=S.aj.casa||{arriendo:450000,muebles:800000,ahorrado:0,mensual:100000},sue=SUELDO||0;
+  const n=casaNecesitas(K),falta=Math.max(0,n-(K.ahorrado||0)),m=K.mensual?Math.ceil(falta/K.mensual):null,vivir=Math.round(K.arriendo*1.15+60000),pc=sue?Math.round(vivir/sue*100):0;
+  openSheet(`<h3>🏠 Independizarme</h3><p>Lo que necesitas <b>para irte</b> y lo que te va a costar <b>cada mes</b> después.</p>
+  <label>¿Cuánto arriendo buscas?</label><input id="k-arr" inputmode="numeric" oninput="fmtIn(this)" value="$${(K.arriendo||0).toLocaleString('es-CL')}">
+  <label>Para amoblar lo básico (cama, refri, lavadora…)</label><input id="k-mue" inputmode="numeric" oninput="fmtIn(this)" value="$${(K.muebles||0).toLocaleString('es-CL')}">
+  <label>¿Cuánto tienes ya apartado para esto?</label><input id="k-aho" inputmode="numeric" oninput="fmtIn(this)" value="$${(K.ahorrado||0).toLocaleString('es-CL')}">
+  <label>¿Cuánto apartas al mes?</label><div class="chips" id="k-men">${[50000,100000,150000,250000].map(v=>`<button class="chip ${v===K.mensual?'on':''}" data-v="${v}" onclick="this.parentNode.querySelectorAll('.chip').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${fmt(v)}</button>`).join('')}</div>
+  <div class="card" style="margin-top:14px">
+    <div class="row"><span>Garantía (1 mes)</span><b>${fmt(K.arriendo)}</b></div>
+    <div class="row"><span>Primer mes de arriendo</span><b>${fmt(K.arriendo)}</b></div>
+    <div class="row"><span>Corretaje (medio mes)</span><b>${fmt(K.arriendo/2)}</b></div>
+    <div class="row"><span>Amoblar lo básico</span><b>${fmt(K.muebles)}</b></div>
+    <div class="row" style="border-top:1px solid var(--border)"><span><b>Necesitas para irte</b></span><b>${fmt(n)}</b></div>
+  </div>
+  <div class="lead" style="padding:12px 0">${falta?`Te faltan <b>${fmt(falta)}</b>.${m?` Apartando ${fmt(K.mensual)} al mes te vas en <b>${perL(addM(S.actual,m))}</b>.`:''}`:'🎉 Ya tienes la plata para irte.'}<br>
+    Viviendo solo, cada mes se te van ≈ <b>${fmt(vivir)}</b> (arriendo + gastos comunes + cuentas)${sue?`: el <b>${pc}%</b> de tu sueldo. ${pc>35?'⚠️ Es harto: busca un arriendo más barato o compartir.':'Bien: está bajo el 35%.'}`:'.'}</div>
+  <button class="btn p" onclick="saveCasa()">Guardar y calcular</button>
+  ${S.aj.casa?`<button class="btn" style="margin-top:8px;background:var(--bg3)" onclick="aporteCasa()">+ Aparté plata para esto</button>`:''}
+  <p class="fine" style="margin-top:10px">Tip: ponlo en un objetivo aparte en Fintual (conservador), así no se mezcla con tu mes ni con el largo plazo.</p>`)}
+function saveCasa(){const on=$('k-men').querySelector('.chip.on');const K={arriendo:val('k-arr'),muebles:val('k-mue'),ahorrado:val('k-aho'),mensual:on?+on.dataset.v:0};
+  if(K.arriendo<100000)return toast('Pon cuánto arriendo buscas');saveAj('casa',K,true).then(()=>{renderMetas();openCasa();toast('🏠 Meta guardada')})}
+function aporteCasa(){openSheet(`<h3>+ Aparté plata para irme</h3><p>Anótalo cuando lo muevas a tu cuenta aparte o a Fintual.</p>
+  <input id="k-ap" class="amt-in" inputmode="numeric" oninput="fmtIn(this)" placeholder="$0" value="${S.aj.casa.mensual?'$'+S.aj.casa.mensual.toLocaleString('es-CL'):''}">
+  <button class="btn g" onclick="const x=val('k-ap');if(!x)return;saveAj('casa',{...S.aj.casa,ahorrado:(S.aj.casa.ahorrado||0)+x},true).then(()=>{renderMetas();openCasa();toast('🏠 +'+fmt(x)+' para irte')})">Guardar</button>`)}
+
 function renderMetas(){const el=$('metas');if(!el)return;const F=S.aj.fondo,D=DEU(),tot=D.reduce((s,x)=>s+x.monto,0),T=S.tax;
   const a=ahorradoAnio('apv'),dev=T?Math.round(T.dev/10000)*10000:0;
   const fila=(id,ic,t,sub,der)=>`<button class="crow" onclick="verCard('${id}')"><div class="ic">${ic}</div><div class="cm"><b>${t}</b><small>${sub}</small></div>${der||''}<span class="chev">›</span></button>`;
-  el.innerHTML=
-    fila('fondo-c','🎧',F?F.que:'Fondo gadgets',F?`${fmt(F.ahorrado)} de ${fmt(F.meta)}`:'Junta para tu próximo gadget sin tocar el mes',
+  const K=S.aj.casa,kn=K?casaNecesitas(K):0;
+  el.innerHTML=`<button class="crow" onclick="openCasa()"><div class="ic">🏠</div><div class="cm"><b>Independizarme</b><small>${K?`${fmt(K.ahorrado||0)} de ${fmt(kn)}${K.mensual?` · llegas en ${perL(addM(S.actual,Math.ceil(Math.max(0,kn-(K.ahorrado||0))/K.mensual)))}`:''}`:'Calcula cuánto necesitas para irte a vivir solo'}</small></div>${K?`<span class="mini"><i style="width:${Math.min(100,(K.ahorrado||0)/kn*100)}%"></i></span>`:''}<span class="chev">›</span></button>`
+   +fila('fondo-c','🎧',F?F.que:'Fondo gadgets',F?`${fmt(F.ahorrado)} de ${fmt(F.meta)}`:'Junta para tu próximo gadget sin tocar el mes',
       F?`<span class="mini"><i style="width:${Math.min(100,F.ahorrado/F.meta*100)}%"></i></span>`:'')
    +fila('deudas-c','🧾','Por pagar',D.length?D.map(x=>x.que).join(', '):'No le debes a nadie 🙌',tot?`<b class="m-der">${fmt(tot)}</b>`:'')
    +fila('apv-c','🎯',apvOk()?`APV ${new Date().getFullYear()}`:'APV: plata gratis del Estado',apvOk()?`${fmt(a)} de ${fmt(APV_ANUAL)}`:'Pendiente: abrirlo en Fintual')
@@ -1201,6 +1257,47 @@ async function invitar(){const m=$('inv-mail').value.trim().toLowerCase();if(!/^
 async function quitarInv(m){if(!confirm(`¿Quitar a ${m}? Si ya tiene cuenta, la conserva; solo deja de poder entrar si nunca entró.`))return;
   try{await api('rpc/invitar',{m:'POST',b:{p_email:m,p_quitar:true}});openInvitar()}catch(e){toast('❌ Error')}}
 
+// ---------- Widget de inicio con Scriptable: la app arma el script con el código personal (rpc/mi_token_atajo)
+// y la función rpc/widget(token) devuelve el número de hoy, el color y la racha. Solo lectura. ----------
+const widgetJS=cod=>`// Finanzas: "Hoy puedes gastar" en tu pantalla de inicio (widget de Scriptable). Solo lee, no cambia nada.
+const CODIGO = "${cod}";
+const KEY = "${KEY}";
+const req = new Request("${SB}/rest/v1/rpc/widget");
+req.method = "POST";
+req.headers = { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json" };
+req.body = JSON.stringify({ token: CODIGO });
+let d; try { d = await req.loadJSON(); } catch (e) { d = { error: "red" }; }
+const clp = n => "$" + Math.round(Math.abs(n)).toLocaleString("es-CL");
+const COL = { verde: "#12B76A", amarillo: "#F79009", rojo: "#F04438" };
+const w = new ListWidget();
+w.backgroundColor = new Color("#0B0B0F");
+w.url = "${APP_URL}";
+w.setPadding(14, 14, 14, 14);
+const t = (s, size, color, bold) => { const x = w.addText(s); x.font = bold ? Font.boldSystemFont(size) : Font.systemFont(size); x.textColor = new Color(color); x.minimumScaleFactor = 0.6; return x; };
+if (d.error) { t("Finanzas", 13, "#A3A3AE", true); w.addSpacer(); t(d.error === "red" ? "Sin conexión" : "Código no válido", 14, "#FFFFFF", true); }
+else {
+  t(d.hoy >= 0 ? "Hoy puedes gastar" : "Hoy te pasaste", 12, "#A3A3AE", true);
+  w.addSpacer(4);
+  t(clp(d.hoy), 30, COL[d.color] || "#FFFFFF", true);
+  w.addSpacer();
+  t(d.semana >= 0 ? "Semana: " + clp(d.semana) : "Semana: -" + clp(d.semana), 12, "#FFFFFF", false);
+  if (d.racha >= 2) t("🔥 " + d.racha + " días sin pasarte", 12, "#FFFFFF", false);
+}
+w.refreshAfterDate = new Date(Date.now() + 15 * 60 * 1000);
+Script.setWidget(w); Script.complete();
+if (config.runsInApp) await w.presentSmall();
+`;
+function openWidget(){openSheet(`<h3>📱 Widget en tu inicio</h3><p>Tu número de <b>hoy puedes gastar</b> en la pantalla de inicio, con su color. Sin abrir la app.</p>
+  <div class="step"><div class="n">1</div><div><b>Instala Scriptable</b><small>Es gratis, de la App Store.</small><button class="chip" style="margin-top:8px" onclick="location.href='https://apps.apple.com/app/scriptable/id1405459188'">Abrir App Store</button></div></div>
+  <div class="step"><div class="n">2</div><div><b>Copia tu widget y pégalo en Scriptable</b><small>Abre Scriptable → toca <b>+</b> → mantén el dedo → <b>Pegar</b>. Arriba, ponle de nombre <b>Finanzas</b> → <b>Listo</b>.</small><button class="btn p" style="margin-top:8px" onclick="copiarWidget()">Copiar mi widget</button></div></div>
+  <div class="step"><div class="n">3</div><div><b>Agrégalo a tu inicio</b><small>Mantén el dedo en la pantalla de inicio → <b>Editar</b> → <b>Añadir widget</b> → <b>Scriptable</b> → el chico → <b>Añadir</b>. Tócalo y en <b>Script</b> elige <b>Finanzas</b>.</small></div></div>
+  <p class="fine" style="margin-top:10px">El widget solo lee tu número con tu código personal: no puede ver tus gastos ni cambiar nada. Se actualiza cada ~15 minutos.</p>`)}
+async function copiarWidget(){
+  // Safari solo deja copiar dentro del toque: ClipboardItem recibe la promesa con el script ya armado.
+  const js=api('rpc/mi_token_atajo',{m:'POST',b:{}}).then(c=>new Blob([widgetJS(typeof c==='string'?c:'')],{type:'text/plain'}));
+  try{await navigator.clipboard.write([new ClipboardItem({'text/plain':js})]);toast('✅ Widget copiado: pégalo en Scriptable')}
+  catch(e){try{const c=await api('rpc/mi_token_atajo',{m:'POST',b:{}});await navigator.clipboard.writeText(widgetJS(c||''));toast('✅ Widget copiado')}catch(e2){toast('No pude copiarlo. Intenta de nuevo')}}}
+
 function guiaAPFin(){closeSheet();toast(apConectado()?'✅ Apple Pay conectado':'Cuando pagues con Apple Pay, el gasto aparece solo')}
 function openAvisos(){
   const y=new Date().getFullYear(),ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Finanzas Vicho//ES',
@@ -1315,6 +1412,24 @@ function openCuotas(){const per=S.periodo,Q=S.cuotas.map(c=>({...c,...infoCuota(
 // Cartola → función `cartola` (Claude lee el PDF o la foto) → revisas → se guardan en `cuotas`.
 // ---------- Cuadrar la tarjeta con la cartola: lee TODAS las compras (cartola, modo 'compras'), las compara con lo
 // anotado (mismo monto ±$1, fecha ±3 días) y ofrece agregar las que faltan. Las compras en cuotas se saltan: van en Cuotas. ----------
+// ---------- Suscripciones: gastos "fijo" de los últimos 3 meses agrupados por nombre + fijos recurrentes de Cuotas ----------
+// "La di de baja" queda en ajustes.bajas [{d, monto, fecha}] y se muestra como ahorro al año.
+const subK=t=>String(t||'').toLowerCase().replace(/[^a-záéíóúñ ]/g,' ').replace(/\s+/g,' ').trim().split(' ').slice(0,2).join(' ');
+async function openSubs(){const desde=ISOd(new Date(Date.now()-95*864e5));let G=[];
+  try{G=await api(`gastos?select=descripcion,monto,fecha&categoria_clave=eq.fijo&estado=neq.ignorado&fecha=gte.${desde}&order=fecha.desc`)||[]}catch(e){}
+  const bajas=S.aj.bajas||[],M={};
+  G.filter(g=>g.monto>0).forEach(g=>{const k=subK(g.descripcion);if(!k)return;(M[k]=M[k]||{d:g.descripcion,n:0,tot:0,meses:new Set()});M[k].n++;M[k].tot+=g.monto;M[k].meses.add(g.fecha.slice(0,7))});
+  const L=Object.entries(M).map(([k,v])=>({k,d:v.d,mes:Math.round(v.tot/Math.max(1,v.meses.size)),meses:v.meses.size}))
+    .concat(S.cuotas.filter(c=>c.recurrente).map(c=>({k:subK(c.nombre),d:c.nombre,mes:c.monto_cuota,meses:3,fijo:1})))
+    .filter(x=>!bajas.some(b=>b.k===x.k)).sort((a,b)=>b.mes-a.mes);
+  S.subs=L;const tot=L.reduce((s,x)=>s+x.mes,0),ah=bajas.reduce((s,b)=>s+b.monto,0);
+  openSheet(`<h3>🔁 Suscripciones</h3><p>Lo que se cobra solo todos los meses. Mira el <b>costo al año</b> y date de baja lo que no usas.</p>
+  <div class="card sum"><div class="k">Pagas al mes</div><div class="v">${fmt(tot)} <span>= ${fmt(tot*12)} al año</span></div>${ah?`<div class="lead" style="padding:4px 0 12px">💪 Ya te diste de baja de ${bajas.length}: te ahorras ${fmt(ah*12)} al año.</div>`:''}</div>
+  ${L.length?`<div class="card">${L.map((x,i)=>`<div class="crow" style="cursor:default"><div class="ic">${x.fijo?'📌':'🔁'}</div><div class="cm"><b>${x.d}</b><small>${fmt(x.mes)} al mes · <b>${fmt(x.mes*12)}</b> al año${x.meses<2&&!x.fijo?' · visto 1 vez':''}</small></div><button class="chip" onclick="darBaja(${i})">La di de baja</button></div>`).join('')}</div>`:`<div class="lead">No encontré cobros fijos en los últimos 3 meses. Cuando algo quede en la categoría "Suscripciones", aparece aquí.</div>`}
+  <p class="fine" style="margin-top:10px">Pregúntate por cada una: ¿la usé esta semana? Si no, date de baja hoy (no el mes que viene).</p>`)}
+async function darBaja(i){const x=S.subs[i];if(!x||!confirm(`¿Te diste de baja de ${x.d}? Te ahorras ${fmt(x.mes*12)} al año.`))return;
+  await saveAj('bajas',[...(S.aj.bajas||[]),{k:x.k,d:x.d,monto:x.mes,fecha:hoyISO()}],true);toast(`💪 ${fmt(x.mes*12)} al año que no se van`);openSubs()}
+
 function openCuadrar(){openSheet(`<h3>🧮 Cuadrar con la cartola</h3><p>Sube la cartola de tu tarjeta (el PDF que manda el banco o una foto). Comparo cada compra con lo que tienes anotado y te muestro <b>lo que se te pasó</b>.</p>
   <label>¿De qué tarjeta es?</label>${cardChips()}
   <button class="btn p" onclick="pickCuadrar()">Subir cartola</button>
@@ -1338,12 +1453,12 @@ async function cuadrar(j,tj){const C=(j.compras||[]).filter(c=>!c.en_cuotas&&c.m
 const addD=(f,n)=>{const d=new Date(f+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
 function pintaCuadrar(){const I=S.cuad.items,F=I.filter(c=>!c.ok),n=F.filter(c=>c.on).length,tot=F.filter(c=>c.on).reduce((s,c)=>s+c.monto,0);
   openSheet(`<h3>🧮 ${F.length?`Te faltan ${F.length}`:'¡Todo cuadrado! 🎉'}</h3><p>De ${I.length} compras de la cartola, <b>${I.length-F.length} ya estaban anotadas</b>.${F.length?' Marca las que quieres agregar:':''}</p>
-  ${F.length?`<div class="card">${I.map((c,i)=>c.ok?'':`<button class="chk ${c.on?'on':''}" onclick="S.cuad.items[${i}].on=!S.cuad.items[${i}].on;pintaCuadrar()"><span class="bx">${c.on?'✓':''}</span><div class="cm" style="flex:1"><b>${c.comercio}</b><small>${fechaL(c.fecha)}</small></div><b>${fmt(c.monto)}</b></button>`).join('')}</div>
+  ${F.length?'':(LS('cuadre-ok','1'),'')}${F.length?`<div class="card">${I.map((c,i)=>c.ok?'':`<button class="chk ${c.on?'on':''}" onclick="S.cuad.items[${i}].on=!S.cuad.items[${i}].on;pintaCuadrar()"><span class="bx">${c.on?'✓':''}</span><div class="cm" style="flex:1"><b>${c.comercio}</b><small>${fechaL(c.fecha)}</small></div><b>${fmt(c.monto)}</b></button>`).join('')}</div>
   <button class="btn p" ${n?'':'disabled style="opacity:.5"'} onclick="guardarCuadrar()">Agregar ${n} (${fmt(tot)})</button>
   <p class="fine" style="margin-top:10px">La categoría se pone sola. Si alguna ya la tenías con otro monto, desmárcala.</p>`:`<button class="btn p" onclick="closeSheet()">Listo</button>`}`)}
 async function guardarCuadrar(){const Q=S.cuad,A=Q.items.filter(c=>!c.ok&&c.on);if(!A.length)return;
   try{await api('gastos',{m:'POST',b:A.map(c=>({fecha:c.fecha,descripcion:c.comercio,monto:c.monto,tarjeta:Q.tj,fuente:'app'}))});
-    closeSheet();toast(`✅ ${A.length} compra${A.length>1?'s':''} agregada${A.length>1?'s':''}`);loadAll()}catch(e){toast('❌ No se guardó');console.error(e)}}
+    LS('cuadre-ok','1');closeSheet();toast(`✅ ${A.length} compra${A.length>1?'s':''} agregada${A.length>1?'s':''}`);loadAll()}catch(e){toast('❌ No se guardó');console.error(e)}}
 
 function pickCartola(){const i=document.createElement('input');i.type='file';i.accept='application/pdf,image/*';i.onchange=()=>i.files[0]&&leerCartola(i.files[0]);i.click()}
 const aB64=f=>new Promise((ok,mal)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(',')[1]);r.onerror=mal;r.readAsDataURL(f)});
@@ -1375,6 +1490,27 @@ async function guardarCartola(){const C=S.cart.filter(c=>c.on);if(!C.length)retu
 // ajustes.deseos = [{id, que, monto, desde (ISO), estado: espera | aguantado | comprado}]
 const ESPERA=72*36e5,DES=()=>S.aj.deseos||[];
 const listo=d=>Date.now()-new Date(d.desde)>=ESPERA;
+// ---------- ¿Cuál me compro? Dos opciones lado a lado: costo real (lo que pagas − lo que recuperas vendiéndolo en 2 años),
+// cuánto atrasa tu fondo o tu mudanza y lo que sería invertido en 10 años. Recomienda una. ----------
+function openComparar(){const C=S.cmp||{a:'',pa:0,b:'',pb:0,rev:40};
+  openSheet(`<h3>🤔 ¿Cuál me compro?</h3><p>Pon las dos opciones. Te digo cuál conviene con tus números.</p>
+  <div class="cmp-in"><div><label>Opción A</label><input id="c-a" placeholder="ej: AirPods Pro" value="${C.a.replace(/"/g,'&quot;')}"><input id="c-pa" inputmode="numeric" oninput="fmtIn(this)" placeholder="$0" value="${C.pa?'$'+C.pa.toLocaleString('es-CL'):''}"></div>
+  <div><label>Opción B</label><input id="c-b" placeholder="ej: AirPods 4" value="${C.b.replace(/"/g,'&quot;')}"><input id="c-pb" inputmode="numeric" oninput="fmtIn(this)" placeholder="$0" value="${C.pb?'$'+C.pb.toLocaleString('es-CL'):''}"></div></div>
+  <label>¿Cuánto recuperas vendiéndolo en 2 años?</label><div class="chips" id="c-rev">${[[0,'Nada'],[25,'Poco (25%)'],[40,'Tech normal (40%)'],[55,'Apple (55%)']].map(([v,t])=>`<button class="chip ${v===C.rev?'on':''}" data-v="${v}" onclick="this.parentNode.querySelectorAll('.chip').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${t}</button>`).join('')}</div>
+  <button class="btn p" onclick="comparar()">Comparar</button><div id="c-out"></div>`)}
+function comparar(){const on=$('c-rev').querySelector('.chip.on'),C={a:$('c-a').value.trim()||'Opción A',pa:val('c-pa'),b:$('c-b').value.trim()||'Opción B',pb:val('c-pb'),rev:on?+on.dataset.v:40};
+  if(!C.pa||!C.pb)return toast('Pon el precio de las dos');S.cmp=C;
+  const F=S.aj.fondo,K=S.aj.casa,V=S.V,R=x=>Math.round(x*(1-C.rev/100)),dia=Math.max(1,V.cupoHoy||V.diario||1);
+  const at=x=>K&&K.mensual?`${Math.round(x/K.mensual*4.3)} sem. la mudanza`:F&&F.mensual?`${Math.round(x/F.mensual*4.3)} sem. tu fondo`:`${Math.round(x/dia)} días de tu plata`;
+  const fila=(t,va,vb,bold)=>`<div class="row"><span>${t}</span><b style="${bold?'':'font-weight:500'}">${va}</b><b style="${bold?'':'font-weight:500'}">${vb}</b></div>`;
+  const ra=R(C.pa),rb=R(C.pb),bar=ra<=rb?'a':'b',dif=Math.abs(ra-rb),caro=Math.max(ra,rb),parecido=dif<=caro*.15;
+  $('c-out').innerHTML=`<div class="card cmp" style="margin-top:14px">${fila('',C.a,C.b,1)}${fila('Precio',fmt(C.pa),fmt(C.pb))}${C.rev?fila(`Recuperas (${C.rev}%)`,fmt(C.pa-ra),fmt(C.pb-rb)):''}
+    ${fila('Costo real',fmt(ra),fmt(rb),1)}${fila('Te atrasa',at(C.pa),at(C.pb))}${fila('Invertido en 10 años',fmt(C.pa*Math.pow(1+RENT,10)),fmt(C.pb*Math.pow(1+RENT,10)))}</div>
+    <div class="verdict on ${parecido?'warn':'ok'}" style="margin-top:12px"><b class="vt">${parecido?'⚖️ Casi lo mismo':`👉 ${bar==='a'?C.a:C.b}`}</b>${parecido?`Cuestan parecido de verdad (${fmt(dif)} de diferencia). Elige la que vas a usar todos los días, y si dudas, la más barata.`:`Te sale ${fmt(dif)} más barata de verdad. Esa diferencia invertida serían ${fmt(dif*Math.pow(1+RENT,10))} en 10 años.`}</div>
+    <button class="btn p" style="margin-top:10px" onclick="desearCmp('${bar}')">⏳ Lo pienso 72 horas (${bar==='a'?C.a:C.b})</button>`}
+function desearCmp(k){const C=S.cmp,que=k==='a'?C.a:C.b,monto=k==='a'?C.pa:C.pb;
+  saveAj('deseos',[{id:Date.now(),que,monto,desde:new Date().toISOString(),estado:'espera'},...DES()].slice(0,40));closeSheet();toast(`⏳ ${que} a tu lista. En 72 horas te pregunto`)}
+
 function desear(){const x=val('a-monto'),que=($('a-desc').value||'').trim()||'Algo que quiero';if(!x)return $('a-monto').focus();
   const L=[{id:Date.now(),que,monto:x,desde:new Date().toISOString(),estado:'espera'},...DES()].slice(0,40);
   closeSheet();saveAj('deseos',L);const d=new Date(Date.now()+ESPERA);toast(`⏳ Anotado. El ${d.toLocaleDateString('es-CL',{weekday:'long'})} te pregunto si todavía lo quieres`)}
@@ -1592,6 +1728,7 @@ function openCheck(){S.nc=1;
   <div id="chk-btns" style="display:none">
     <button class="btn g" onclick="skipBuy()">💪 Mejor no lo compro</button>
     <button class="btn p" style="margin-top:8px" onclick="desear()">⏳ Lo pienso 72 horas</button>
+    <button class="chip" style="margin:10px 0 0" onclick="openComparar()">🤔 ¿Dudas entre dos? Compáralos</button>
     <button class="btn p" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="boughtIt()">Lo compré igual → anotar</button>
     <button class="btn p" id="chk-ia-btn" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="askCheck()">🤖 Segunda opinión de Claude</button>
   </div>`);
@@ -1615,6 +1752,7 @@ function evalCheck(){
   else if(catN&&t&&s+x>t){c='warn';h=`⚠️ Te alcanza, pero te pasas en ${catN}`;b=`Quedarías ${fmt(s+x-t)} sobre el tope de ${catN}. Son ${eq} días de tu plata diaria: desde mañana tendrías ${fmt(d2)} al día (hoy es ${fmt(V.cupoHoy)}).`}
   else{c='warn';h='⚠️ Te alcanza, pero te aprieta';b=`Son <b>${eq} días</b> de tu plata diaria${x<=V.semana?', pero cabe en lo que te queda esta semana':''}. Desde mañana tendrías ${fmt(d2)} al día (hoy es ${fmt(V.cupoHoy)}).`}
   if(nc>1&&!(c==='bad'&&cuoP>=30))b+=`<br>💳 ${nc} cuotas de ${fmt(mc)}: te amarras hasta ${perL(addM(S.actual,nc))} y tus cuotas pasan al ${cuoP2}% del presupuesto.`;
+  {const K=S.aj.casa;if(!neg&&K&&K.mensual>0&&X>=20000){const sem=Math.round(X/K.mensual*4.3);if(sem>=1)b+=`<br>🏠 Te atrasa la mudanza ~${sem} semana${sem>1?'s':''}.`}}
   if(!neg)b+=`<br><span style="color:var(--sec);font-size:13px">💡 Invertidos, esos ${fmt(X)} serían ${fmt(X*Math.pow(1.06,10))} en 10 años.</span>`;
   el.className='verdict on '+c;el.innerHTML=`<b class="vt">${h}</b>${b}`;
 }

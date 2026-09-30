@@ -172,6 +172,18 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  // Revisión de la semana
  w.eval('openRevision()');checks['revisión de la semana: resumen, pendientes y meta']=t('sheet').includes('Tu semana en 2 minutos')&&t('sheet').includes('Gastaste esta semana')&&t('sheet').includes('Para la próxima semana');
  w.eval('cerrarSemana()');checks['revisión: se marca hecha']=w.localStorage.getItem('revision-'+w.eval('semanaDe()'))==='1';
+ // Widget de Scriptable: el script generado es JS válido y lleva el código
+ {const js=w.eval("widgetJS('abc123')");let okjs=true;try{new (Object.getPrototypeOf(async function(){}).constructor)(js)}catch(e){okjs=false;console.log(e.message)}
+  checks['widget: script válido con el código']=okjs&&js.includes('"abc123"')&&js.includes('/rest/v1/rpc/widget');}
+ // Meta independizarme: calcula lo que necesitas
+ checks['independizarme: garantía + mes + corretaje + muebles']=w.eval("casaNecesitas({arriendo:400000,muebles:800000})")===1800000;
+ w.eval("S.aj.casa={arriendo:400000,muebles:800000,ahorrado:300000,mensual:100000};openCasa()");checks['independizarme: hoja con fecha']=t('sheet').includes('Te faltan $1.500.000')&&t('sheet').includes('te vas en');w.eval('closeSheet()');
+ // ¿Cuál me compro?
+ w.eval("openComparar()");d.getElementById('c-a').value='AirPods Pro';d.getElementById('c-pa').value='$250.000';d.getElementById('c-b').value='AirPods 4';d.getElementById('c-pb').value='$150.000';w.eval('comparar()');
+ checks['cuál me compro: recomienda la más barata']=t('c-out').includes('👉 AirPods 4')&&t('c-out').includes('Costo real');w.eval('closeSheet()');
+ // Suscripciones y logros
+ await w.eval('openSubs()');checks['suscripciones: abre con total al año']=t('sheet').includes('Pagas al mes')&&t('sheet').includes('al año');w.eval('closeSheet()');
+ w.eval('renderLogros()');checks['logros: se muestran']=t('logros-c').includes('Logros')&&t('logros-c').includes('7 días seguidos');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();
