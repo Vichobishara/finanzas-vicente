@@ -511,6 +511,7 @@ body:not(.ready) .mes-b .chev{display:none}
     <button class="crow" onclick="openPlata()"><div class="ic">📍</div><div class="cm"><b>Dónde poner cada peso</b><small>Tu orden: APV, colchón, largo plazo</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openBono()"><div class="ic">🎁</div><div class="cm"><b>¿Te llegó un bono?</b><small>Te digo dónde va cada peso</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openFin()"><div class="ic">💼</div><div class="cm"><b>Sueldos y ahorro real</b><small>Lo que te entra y lo que de verdad ahorraste</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="openFintual()"><div class="ic">🔗</div><div class="cm"><b id="m-fin-t">Conectar Fintual</b><small id="m-fin">Tu saldo y tus aportes se anotan solos</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="editPat()"><div class="ic">✏️</div><div class="cm"><b>Actualizar mi patrimonio</b><small id="m-pat">Fintual, cartas y ETH</small></div><span class="chev">›</span></button>
   </div>
   <p class="fine" style="padding:0 6px">No soy asesor financiero ni tributario: son reglas generales aplicadas a tus números. Para la renta, confírmalo en sii.cl o con un contador.</p>
@@ -1105,8 +1106,10 @@ function renderPlata(){
     <div class="lever"><i style="font-style:normal">👉</i><div><b>Qué hacer:</b> en abril entra a sii.cl → Operación Renta. Si la propuesta no trae la devolución, marca la <b>reliquidación anual del impuesto único</b> (art. 47). Esa plata va directo a invertir.</div></div>`
    :`<div class="card-h"><h2>🧾 Impuestos</h2><span class="pill ok">Al día</span></div><div class="lead">Este año vas pagando más o menos lo justo: no hay devolución grande que pedir. Si te llega un bono, vuelve a mirar aquí.</div>`;
   const pf=PAT().fecha,dp=pf?Math.round((new Date()-new Date(pf+'T12:00:00'))/864e5):null;
+  const fz=FIN();$('m-fin-t').textContent=fz?'Fintual conectado':'Conectar Fintual';
+  $('m-fin').textContent=!fz?'Tu saldo y tus aportes se anotan solos':fz.error?'⚠️ Hay que volver a conectar':'Al día · '+haceTxt(fz.sync_at);
   $('m-pat').textContent=dp===null?'Fintual, cartas y ETH':dp<1?'Lo actualizaste hoy':`Lo actualizaste hace ${dp} día${dp>1?'s':''}${dp>35?' ⚠️':''}`;
-  renderNext();renderMeta();renderFondo();renderDeudas();renderMetas();
+  renderNext();renderMeta();renderFondo();renderDeudas();renderMetas();finAlAbrir();
 }
 
 // ---------- Plata compacta: fondo, deudas, APV e impuestos son filas cortas; el detalle se abre en una hoja ----------
@@ -1227,7 +1230,8 @@ function openMeta(){
   <p class="fine" style="margin-top:12px">*Supuesto: 6% anual sobre la inflación y dólar ~$950. Es una proyección, no una promesa: los mercados suben y bajan. Las cartas y ETH no se proyectan con crecimiento.</p>`);
 }
 async function saveAj(clave,valor,quiet){try{await api('ajustes',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{clave,valor}});S.aj[clave]=valor;if(!quiet)render();}catch(e){toast('❌ Error')}}
-function editPat(){const p=PAT();openSheet(`<h3>Tu patrimonio hoy</h3><p>Actualízalo una vez al mes (el día del sueldo va perfecto).</p>
+function editPat(){const p=PAT();openSheet(`<h3>Tu patrimonio hoy</h3><p>${finOk()?'Fintual y colchón se actualizan solos desde Fintual. Aquí solo cambias cartas y ETH.':'Actualízalo una vez al mes (el día del sueldo va perfecto).'}</p>
+  ${finOk()?'':`<button class="crow" style="width:100%;margin-bottom:6px" onclick="openFintual()"><div class="ic">🔗</div><div class="cm"><b>Mejor conecta Fintual</b><small>Y esto se actualiza solo</small></div><span class="chev">›</span></button>`}
   <label>Fintual (todo)</label><input id="p-f" inputmode="numeric" oninput="fmtIn(this)" value="$${p.fintual.toLocaleString('es-CL')}">
   <label>Cartas Pokémon (valor de venta)</label><input id="p-c" inputmode="numeric" oninput="fmtIn(this)" value="$${p.cartas.toLocaleString('es-CL')}">
   <label>De ese Fintual, ¿cuánto es colchón? (Moderate Pitt)</label><input id="p-col" inputmode="numeric" oninput="fmtIn(this)" value="$${(p.colchon||0).toLocaleString('es-CL')}">
@@ -1732,6 +1736,47 @@ async function saveIng(){const m=val('i-monto');if(!m){toast('Pon el monto');ret
 function editSueldo(){openSheet(`<h3>Tu sueldo fijo</h3><p>Lo que te llega seguro cada mes, sin comisiones. La app lo usa para calcular cuánto ahorras; las comisiones cuentan como bono.</p><input id="s-in" class="amt-in" inputmode="numeric" oninput="fmtIn(this)" value="$${SUELDO.toLocaleString('es-CL')}"><button class="btn p" onclick="saveSueldo()">Guardar</button>`)}
 async function saveSueldo(){const v=val('s-in');if(!v)return;SUELDO=v;await saveAj('perfil',{...PERF(),sueldo:v});toast('✅ Listo');openFin()}
 
+// ---------- Fintual conectado (edge function `fintual`): saldo y aportes solos. Estado en ajustes.fintual (sin token). ----------
+const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const FIN=()=>{const f=S.aj&&S.aj.fintual;return f&&(f.conectado||f.error)?f:null};
+const finOk=()=>{const f=FIN();return!!(f&&f.conectado)};
+function haceTxt(t){const m=Math.round((Date.now()-new Date(t))/6e4);return m<2?'recién':m<60?`hace ${m} min`:m<1440?`hace ${Math.round(m/60)} h`:`hace ${Math.round(m/1440)} día${m>=2880?'s':''}`}
+const FIN_D=[['fintual','📈 Inversión'],['colchon','🛟 Colchón'],['apv','🎯 APV'],['fuera','🚫 No contar']];
+async function finCall(b){const r=await plazo(fetch(SB+'/functions/v1/fintual',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json','x-app-key':getKey()},body:JSON.stringify(b)}).then(async r=>({st:r.status,...await r.json()})),25000);return r}
+function openFintual(){const f=FIN();
+  if(!f||f.error)return openSheet(`<h3>🔗 Conecta tu Fintual</h3><p>${f&&f.error?'Fintual cerró la conexión (pasa si cambias la contraseña). Vuelve a entrar y listo.':'Así tu saldo se actualiza solo todos los días y, cuando mandas plata, la app lo anota sola. No tienes que acordarte de nada.'}</p>
+    <label>Correo de Fintual</label><input id="fz-e" type="email" autocomplete="username" autocapitalize="off" value="${(f&&f.email)||''}">
+    <label>Contraseña de Fintual</label><input id="fz-p" type="password" autocomplete="current-password">
+    <button class="btn p" id="fz-b" onclick="conectarFintual()">Conectar</button>
+    <p class="fine" style="margin-top:12px">🔒 Tu contraseña <b>no se guarda</b>: se usa una sola vez para pedirle a Fintual un código de acceso, y guardamos solo ese código. Lo borras cuando quieras con "Desconectar".</p>`);
+  const tot=(f.metas||[]).filter(m=>m.destino!=='fuera').reduce((s,m)=>s+m.nav,0);
+  openSheet(`<h3>🔗 Fintual conectado</h3><p>Tienes <b style="color:var(--text)">${fmt(tot)}</b> en Fintual. Actualizado ${haceTxt(f.sync_at)}. Se revisa solo todos los días a las 21:00 y cuando abres la app.</p>
+   <div class="card">${(f.metas||[]).map(m=>`<div class="crow" style="cursor:default;flex-wrap:wrap"><div class="cm"><b>${esc(m.nombre)}</b><small>${fmt(m.nav)} · pusiste ${fmt(m.depositado)}</small></div>
+     <div class="chips" style="width:100%;margin:6px 0 0">${FIN_D.map(([k,l])=>`<button class="chip ${m.destino===k?'on':''}" style="padding:6px 10px;font-size:13px" onclick="destFintual('${esc(m.id)}','${k}')">${l}</button>`).join('')}</div></div>`).join('')||'<div class="lead">No encontré metas en tu Fintual.</div>'}</div>
+   <p class="fine">Marca qué es cada meta: el colchón y el APV se muestran aparte en tu plan. "No contar" la deja fuera de tu patrimonio.</p>
+   <button class="btn p" id="fz-s" onclick="syncFintual()">Revisar ahora</button>
+   <button class="btn" style="margin-top:8px;background:none;color:var(--red)" onclick="desconFintual()">Desconectar</button>`)}
+async function conectarFintual(){const e=($('fz-e').value||'').trim(),p=$('fz-p').value||'',b=$('fz-b');
+  if(!e||!p){toast('Pon tu correo y contraseña de Fintual');return}
+  b.disabled=true;b.textContent='Conectando…';
+  try{const r=await finCall({accion:'conectar',email:e,password:p});$('fz-p').value='';
+    if(r.st===401&&r.error==='credenciales'){toast('❌ Correo o contraseña no calzan con Fintual');b.disabled=false;b.textContent='Conectar';return}
+    if(!r.ok)throw new Error(r.error);
+    await loadAll();toast('✅ Fintual conectado');openFintual()}
+  catch(x){console.error(x);toast('❌ Fintual no respondió. Prueba en un rato');b.disabled=false;b.textContent='Conectar'}}
+async function syncFintual(quiet){const b=$('fz-s');if(b){b.disabled=true;b.textContent='Revisando…'}
+  try{const r=await finCall({accion:'sync'});if(!quiet){await loadAll();
+      toast(r.error==='token'?'⚠️ Vuelve a conectar Fintual':r.anotados?`💪 Detecté ${fmt(r.anotados)} nuevos en Fintual`:'✅ Fintual al día');if($('fz-s')||r.error)openFintual()}
+    return r}
+  catch(x){if(!quiet)toast('❌ Fintual no respondió');if(b){b.disabled=false;b.textContent='Revisar ahora'}}}
+async function destFintual(id,d){try{await finCall({accion:'destinos',destinos:{[id]:d}});await loadAll();openFintual()}catch(x){toast('❌ Error')}}
+async function desconFintual(){if(!confirm('¿Desconectar Fintual? Tu saldo vuelve a ser manual.'))return;
+  try{await finCall({accion:'desconectar'});delete S.aj.fintual;closeSheet();toast('Fintual desconectado');loadAll()}catch(x){toast('❌ Error')}}
+// Al abrir la app: si la última revisión tiene más de 6 horas, revisa en silencio y recarga si hubo cambios.
+let finAuto=false;
+function finAlAbrir(){const f=FIN();if(finAuto||!finOk()||Date.now()-new Date(f.sync_at)<6*36e5)return;finAuto=true;
+  syncFintual(true).then(r=>{if(r&&r.ok)loadAll()})}
+
 const metaCol=()=>3*(S.ppto||1000000);
 const colLleno=()=>(PAT().colchon||0)>=metaCol();
 const ahorradoAnio=d=>{const y=String(new Date().getFullYear());return S.ahorros.filter(a=>a.destino===d&&a.fecha.startsWith(y)).reduce((s,a)=>s+a.monto,0)};
@@ -1741,6 +1786,9 @@ function sugAhorro(){
   return{pv,...reparto(libre)};
 }
 function openAhorro(){const s=sugAhorro();
+  if(finOk())return openSheet(`<h3>💰 Tus aportes a Fintual</h3><p>Fintual está conectado: cuando mandas plata, la app lo detecta y lo anota sola (te llega un aviso). Si recién transferiste, puede tardar un día hábil en aparecer.</p>
+   <div class="lead">Este mes te toca: ${s.apv&&apvOk()?`🎯 APV <b>${fmt(s.apv)}</b> · `:''}📈 Inversión <b>${fmt(s.fintual)}</b> · 🛟 Colchón <b>${fmt(s.colchon)}</b></div>
+   <button class="btn p" id="fz-s" onclick="syncFintual()">Revisar ahora</button>`);
   openSheet(`<h3>💰 ¿Cuánto mandaste?</h3><p>Anota lo que transferiste de verdad, no lo que pensabas. Viene escrito lo que te toca según lo que gastaste en ${MESL[+s.pv.slice(5)-1]}.</p>
   ${apvOk()?`<label>🎯 APV (Fintual · Mi primera jubilación)</label><input id="h-apv" inputmode="numeric" oninput="fmtIn(this)" placeholder="$0" value="${$v(s.apv)}">`:''}
   <label>📈 Fintual largo plazo (Risky Norris)</label><input id="h-fin" inputmode="numeric" oninput="fmtIn(this)" placeholder="$0" value="${$v(s.fintual)}">
