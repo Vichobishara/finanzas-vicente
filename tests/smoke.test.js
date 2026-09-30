@@ -148,6 +148,9 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval('closeSheet()');
  // El chat recuerda la conversación en este aparato
  checks['chat: se guarda y se puede empezar de nuevo']=JSON.parse(w.localStorage.getItem('chat-h')||'[]').length===2&&(w.eval('nuevoChat()'),w.eval('S.iaH.length')===0&&d.querySelectorAll('#ia-sug .chip').length===4);
+ // Teclado abierto en iPhone: el chat se ajusta a la parte visible
+ w.eval("Object.defineProperty(window,'visualViewport',{value:{height:400,offsetTop:250,addEventListener(){}},configurable:true});Object.defineProperty(window,'innerHeight',{value:844,configurable:true});openChat();chatVV()");
+ {const c=d.getElementById('chat');checks['chat: con teclado queda arriba del teclado']=c.classList.contains('kb')&&c.style.top==='256px'&&c.style.height==='388px';}
  w.eval('closeChat()');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);

@@ -183,6 +183,7 @@ body.lock{overflow:hidden}
 .chat-b .ia-log:empty+.chips{margin-top:14px}
 .chat-in{margin:0;padding:10px 12px calc(10px + var(--safe-b));border-top:1px solid var(--border)}
 .chat-in button{width:46px;padding:0;font-size:20px;border-radius:50%}
+.chat.kb{border-radius:26px}.chat.kb .chat-in{padding-bottom:10px}
 
 .ia-in{display:flex;gap:8px;margin-top:10px}
 .ia-in input{flex:1;min-width:0;padding:13px 16px;border-radius:99px;border:1.5px solid transparent;background:var(--bg3);color:var(--text);font-size:16px;-webkit-appearance:none;outline:none}
@@ -482,7 +483,7 @@ body:not(.ready) .mes-b .chev{display:none}
   <div class="chat-h"><div class="chat-av"><i></i></div><div class="chat-t"><b>Claude</b><small>Tu CFO, con tus números</small></div>
     <button class="chat-n" onclick="nuevoChat()">Nuevo</button><button class="chat-x" onclick="closeChat()" aria-label="Cerrar">×</button></div>
   <div class="chat-b" id="chat-b"><div class="ia-log" id="ia-log"></div><div class="chips" id="ia-sug"></div></div>
-  <div class="ia-in chat-in"><input id="ia-in" placeholder="Escribe tu pregunta…" autocomplete="off" enterkeyhint="send" onkeydown="if(event.key==='Enter')askIA()"><button class="btn p" id="ia-btn" onclick="askIA()" aria-label="Enviar">↑</button></div>
+  <div class="ia-in chat-in"><input id="ia-in" placeholder="Escribe tu pregunta…" autocomplete="off" enterkeyhint="send" onfocus="setTimeout(chatVV,350)" onkeydown="if(event.key==='Enter')askIA()"><button class="btn p" id="ia-btn" onclick="askIA()" aria-label="Enviar">↑</button></div>
 </div>
 <div class="login" id="login"></div>
 <div class="sheet-bg" id="sheet-bg" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div>
@@ -1474,9 +1475,16 @@ function openChat(){const c=$('chat'),p=$('isla');if(c.classList.contains('on'))
     c.animate([{clipPath:`inset(${Math.max(0,r.top-k.top)}px ${Math.max(0,k.right-r.right)}px ${Math.max(0,k.bottom-r.bottom)}px ${Math.max(0,r.left-k.left)}px round 20px)`},{clipPath:'inset(0 0 0 0 round 34px)'}],{duration:420,easing:'cubic-bezier(.2,.9,.25,1)'})}catch(e){}
   setTimeout(()=>{if(!S.iaH.length)$('ia-in').focus()},430)}
 function closeChat(){const c=$('chat'),p=$('isla');if(!c.classList.contains('on'))return;if(document.activeElement)document.activeElement.blur();$('chat-bg').classList.remove('on');document.body.classList.remove('lock');
-  const fin=()=>c.classList.remove('on');
+  const fin=()=>{c.classList.remove('on','kb');c.style.top='';c.style.height=''};
   try{const r=p.getBoundingClientRect(),k=c.getBoundingClientRect();
     c.animate([{clipPath:'inset(0 0 0 0 round 34px)'},{clipPath:`inset(${Math.max(0,r.top-k.top)}px ${Math.max(0,k.right-r.right)}px ${Math.max(0,k.bottom-r.bottom)}px ${Math.max(0,r.left-k.left)}px round 20px)`}],{duration:300,easing:'cubic-bezier(.4,0,.6,1)'}).onfinish=fin}catch(e){fin()}}
+// Con el teclado abierto, iOS achica la parte visible y corre la pantalla: el chat se ajusta a lo que se ve
+// (visualViewport), así el encabezado, los mensajes y la caja de texto quedan todos arriba del teclado.
+function chatVV(){const c=$('chat'),vv=window.visualViewport;if(!c||!vv)return;
+  const kb=c.classList.contains('on')&&innerHeight-vv.height>120;c.classList.toggle('kb',kb);
+  if(kb){c.style.top=(vv.offsetTop+6)+'px';c.style.height=(vv.height-12)+'px';chatAbajo()}else{c.style.top='';c.style.height=''}}
+if(window.visualViewport){visualViewport.addEventListener('resize',chatVV);visualViewport.addEventListener('scroll',chatVV)}
+
 function nuevoChat(){S.iaH=[];chatGuardar();chatPintar();$('ia-in').focus()}
 
 async function callIA(q,datos,hist){try{const r=await fetch(SB+'/functions/v1/consejo',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json','x-app-key':getKey()},body:JSON.stringify({pregunta:q,datos,historial:hist})});
