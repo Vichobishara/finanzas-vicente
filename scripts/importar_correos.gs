@@ -106,7 +106,8 @@ function comprasBCI(dias) {
 
     const fecha = fechaDe(body.match(/Fecha\s*\|?\s*(\d{2})\/(\d{2})\/(\d{4})/), m);
 
-    const c = body.match(/Comercio\s*\|?\s*([^|]+?)\s*(\||Si no quieres|$)/i);
+    // Con mayúscula: "compra en comercio internacional" (minúscula) no es el nombre del comercio.
+    const c = body.match(/Comercio[\s|*]*([^|*]+?)\s*(\||\*|Si no quieres|$)/);
     let desc = c ? c[1].replace(/\+\d{6,}.*$/, '').trim() : 'Compra BCI';
     if (esUSD) desc += ` (USD ${montoMatch[2]})`;
 
