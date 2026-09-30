@@ -106,9 +106,16 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .cal{display:block;text-align:center;text-decoration:none;padding:16px;border-radius:16px;font-size:16px;font-weight:600;margin-top:14px;background:var(--ac);color:#fff;box-shadow:0 10px 24px -8px rgba(11,27,58,.5)}
 .sheet-bg{position:fixed;inset:0;background:rgba(16,24,40,.45);z-index:100;display:none;align-items:flex-end;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .sheet-bg.on{display:flex}
-.sheet{width:100%;max-width:440px;margin:0 auto;background:var(--bg2);border-radius:28px 28px 0 0;padding:10px 20px calc(20px + var(--safe-b));max-height:90vh;overflow-y:auto;animation:up .28s cubic-bezier(.2,.9,.3,1)}
+.sheet{width:100%;max-width:440px;margin:0 auto;background:var(--bg2);border-radius:28px 28px 0 0;padding:10px 20px calc(20px + var(--safe-b));max-height:90vh;max-height:90dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;animation:up .28s cubic-bezier(.2,.9,.3,1);position:relative}
+body.lock{overflow:hidden}
+.x{position:sticky;top:0;float:right;margin:-2px -6px 0 8px;width:34px;height:34px;border-radius:50%;border:none;background:var(--bg3);color:var(--sec);font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:2}
+.x:active{transform:scale(.9)}
+.sheet.busy{pointer-events:none}
+.sheet.busy .btn{opacity:.55}
+.refresh.spin svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
-.handle{width:40px;height:5px;background:#D0D5DD;border-radius:99px;margin:0 auto 16px}
+.handle{width:40px;height:5px;background:#D0D5DD;border-radius:99px;margin:0 auto 16px;touch-action:none}
 .sheet h3{font-size:21px;font-weight:700;letter-spacing:-.4px;margin-bottom:4px}
 .sheet p{font-size:13.5px;color:var(--sec);margin-bottom:14px;line-height:1.5}
 .sheet label{font-size:13px;color:var(--text);font-weight:600;display:block;margin:16px 0 8px}
@@ -164,7 +171,7 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 <div class="app">
   <div class="hdr">
     <div class="who"><div class="avatar">V</div><div><small id="greet">Hola</small><h1 id="mes-t">Vicho</h1></div></div>
-    <button class="refresh" onclick="loadAll()" aria-label="Actualizar"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/></svg></button>
+    <button class="refresh" id="refresh" onclick="refresh()" aria-label="Actualizar"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/></svg></button>
   </div>
   <div id="viendo"></div>
   <div id="hero-w"><div class="skel"></div></div>
@@ -223,10 +230,11 @@ const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Di
 const MESL=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 let S={periodo:null,actual:null,periodos:[],gastos:[],prev:[],cuotas:[],revisar:[],reglas:[],techos:{},pptos:{},ppto:1000000,card:'scotiabank',ing:{},ahorros:[],aj:{},nc:1,V:{}};
 
-const api=async(p,o={})=>{const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),12000);try{const r=await fetch(SB+'/rest/v1/'+p,{headers:{...H,'x-app-key':getKey(),...(o.h||{})},method:o.m||'GET',body:o.b?JSON.stringify(o.b):undefined,signal:ctl.signal});if(!r.ok)throw new Error(await r.text());const t=await r.text();return t?JSON.parse(t):null}finally{clearTimeout(to)}};
+let BUSY=0;
+const api=async(p,o={})=>{const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),12000);const w=o.m&&o.m!=='GET';if(w){BUSY++;$('sheet').classList.add('busy')}try{const r=await fetch(SB+'/rest/v1/'+p,{headers:{...H,'x-app-key':getKey(),...(o.h||{})},method:o.m||'GET',body:o.b?JSON.stringify(o.b):undefined,signal:ctl.signal});if(!r.ok)throw new Error(await r.text());const t=await r.text();return t?JSON.parse(t):null}finally{clearTimeout(to);if(w&&!--BUSY)$('sheet').classList.remove('busy')}};
 const $=s=>document.getElementById(s);
 const fmt=n=>(n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString('es-CL');
-const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2400)};
+let toastT;const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)};
 const perL=p=>{const[y,m]=p.split('-');return MESL[+m-1]+' '+y};
 const mdiff=(a,b)=>{const[ay,am]=a.split('-').map(Number),[by,bm]=b.split('-').map(Number);return(by-ay)*12+(bm-am)};
 const addM=(p,n)=>{let[y,m]=p.split('-').map(Number);m+=n;while(m>12){m-=12;y++}while(m<1){m+=12;y--}return y+'-'+String(m).padStart(2,'0')};
@@ -238,27 +246,44 @@ const getEv=()=>((S.aj.evitado||{})[S.actual])||0;
 const addEv=x=>saveAj('evitado',{...(S.aj.evitado||{}),[S.actual]:getEv()+x});
 const apvOk=()=>!!(S.aj.apv&&S.aj.apv.abierto);
 const $v=n=>n>0?'$'+Math.round(n).toLocaleString('es-CL'):'';
-function openSheet(h){$('sheet').innerHTML='<div class="handle"></div>'+h;$('sheet-bg').classList.add('on')}
-function closeSheet(){$('sheet-bg').classList.remove('on')}
+function openSheet(h){const sh=$('sheet');sh.classList.remove('busy');sh.style.transform='';sh.innerHTML='<div class="handle"></div><button class="x" onclick="closeSheet()" aria-label="Cerrar">×</button>'+h;sh.scrollTop=0;$('sheet-bg').classList.add('on');document.body.classList.add('lock')}
+function closeSheet(){if(document.activeElement)document.activeElement.blur();$('sheet-bg').classList.remove('on');document.body.classList.remove('lock')}
+const sheetOn=()=>$('sheet-bg').classList.contains('on');
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetOn())closeSheet()});
+// Deslizar hacia abajo para cerrar (desde la manija o con la hoja arriba del todo)
+(()=>{let y0=null,dy=0;const sh=()=>$('sheet');
+  document.addEventListener('touchstart',e=>{const s=sh();if(!sheetOn()||!s.contains(e.target)||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
+    if(e.target.classList.contains('handle')||s.scrollTop<=0){y0=e.touches[0].clientY;dy=0}},{passive:true});
+  document.addEventListener('touchmove',e=>{if(y0===null)return;dy=e.touches[0].clientY-y0;if(dy>0)sh().style.transform=`translateY(${dy}px)`;else{y0=null;sh().style.transform=''}},{passive:true});
+  document.addEventListener('touchend',()=>{if(y0===null)return;y0=null;const s=sh();s.style.transition='transform .2s';s.style.transform=dy>90?'translateY(100%)':'';
+    setTimeout(()=>{s.style.transition='';if(dy>90){closeSheet();s.style.transform=''}},200)});})();
 
 $('greet').textContent=(h=>h<12?'Buenos días ☀️':h<20?'Buenas tardes 🌤':'Buenas noches 🌙')(new Date().getHours());
 
-function lock(msg){$('hero-w').innerHTML=`<div class="hero"><div class="h-lbl">🔒 Tus finanzas están protegidas</div><div class="h-l1" style="margin:8px 0 14px">${msg||'Entra con tu cara, como en el banco.'}</div><button id="fid-btn" class="btn p" style="margin-top:0;background:#fff;color:#0B1B3A" onclick="faceId()">Entrar con Face ID</button><div id="k-box" style="display:none;margin-top:10px"><input id="k-in" placeholder="clave" autocomplete="off" autocapitalize="off" autocorrect="off" style="width:100%;padding:14px;border-radius:14px;border:none;font-size:16px;margin-bottom:10px"><button class="btn p" style="margin-top:0;background:rgba(255,255,255,.15);color:#fff" onclick="setKey()">Entrar con clave</button></div><div style="text-align:center;margin-top:12px"><button style="border:none;background:none;color:rgba(255,255,255,.7);font-size:12.5px;text-decoration:underline" onclick="$('k-box').style.display='block';this.style.display='none'">Usar una clave</button></div></div>`}
-function setKey(){const k=($('k-in').value||'').trim();if(!k)return;try{localStorage.setItem('app-key',k)}catch(e){}loadAll()}
+function lock(msg){$('hero-w').innerHTML=`<div class="hero"><div class="h-lbl">🔒 Tus finanzas están protegidas</div><div class="h-l1" style="margin:8px 0 14px">${msg||'Entra con tu cara, como en el banco.'}</div><button id="fid-btn" class="btn p" style="margin-top:0;background:#fff;color:#0B1B3A" onclick="faceId()">Entrar con Face ID</button><div id="k-box" style="display:none;margin-top:10px"><input id="k-in" placeholder="clave" autocomplete="off" autocapitalize="off" autocorrect="off" enterkeyhint="go" onkeydown="if(event.key==='Enter')setKey()" style="width:100%;padding:14px;border-radius:14px;border:none;font-size:16px;margin-bottom:10px"><button class="btn p" style="margin-top:0;background:rgba(255,255,255,.15);color:#fff" onclick="setKey()">Entrar con clave</button></div><div style="text-align:center;margin-top:12px"><button style="border:none;background:none;color:rgba(255,255,255,.7);font-size:12.5px;text-decoration:underline" onclick="$('k-box').style.display='block';this.style.display='none';$('k-in').focus()">Usar una clave</button></div></div>`}
+function setKey(){const k=($('k-in').value||'').trim();if(!k){$('k-in').focus();return}try{localStorage.setItem('app-key',k)}catch(e){}loadAll()}
+// Corta la espera si algo se cuelga (red lenta, CDN caído): así el botón nunca queda pegado.
+const plazo=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
+let enFaceId=false;
 async function faceId(){
+  if(enFaceId)return;enFaceId=true;
   const b=$('fid-btn');if(b){b.disabled=true;b.textContent='Abriendo Face ID…'}
   try{
-    const W=await import('https://esm.sh/@simplewebauthn/browser@13');
-    const fx=body=>fetch(SB+'/functions/v1/acceso',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',...(getKey()?{'x-app-key':getKey()}:{})},body:JSON.stringify(body)}).then(r=>r.json());
+    const W=await plazo(import('https://esm.sh/@simplewebauthn/browser@13'),15000);
+    const fx=body=>plazo(fetch(SB+'/functions/v1/acceso',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',...(getKey()?{'x-app-key':getKey()}:{})},body:JSON.stringify(body)}).then(r=>r.json()),15000);
     const ini=await fx({accion:'inicio'});if(ini.error)throw new Error(ini.error);
     const respuesta=ini.modo==='login'?await W.startAuthentication({optionsJSON:ini.opciones}):await W.startRegistration({optionsJSON:ini.opciones});
     const fin=await fx({accion:ini.modo,id:ini.id,respuesta});if(!fin.clave)throw new Error(fin.error||'sin clave');
     try{localStorage.setItem('app-key',fin.clave)}catch(e){}
     if(ini.modo==='registro')toast('✅ Listo: la próxima vez entras directo');
-    loadAll();
-  }catch(e){console.error(e);lock('No se pudo con Face ID. Toca el botón de nuevo.')}
+    enFaceId=false;loadAll();
+  }catch(e){console.error(e);enFaceId=false;
+    lock(e&&e.name==='NotAllowedError'?'Face ID se canceló. Toca el botón para intentar de nuevo.':e&&e.message==='timeout'?'Se demoró mucho (¿internet lento?). Toca el botón de nuevo.':'No se pudo con Face ID. Toca el botón de nuevo o usa tu clave.')}
 }
-async function loadAll(){
+let cargando=null;
+function loadAll(){if(!cargando)cargando=_loadAll().finally(()=>{cargando=null});return cargando}
+async function refresh(){const b=$('refresh');b.classList.add('spin');await loadAll();b.classList.remove('spin');if(S.V.mes&&getKey())toast('↻ Al día')}
+async function _loadAll(){
   if(!getKey())return lock();
   try{
     const [ok,ahorros,cats,pers,cuotas,pptos,reglas,aj]=await Promise.all([api('rpc/clave_ok',{m:'POST',b:{}}),api('ahorros?order=fecha.desc,id.desc'),
@@ -278,7 +303,7 @@ async function loadAll(){
     try{if(localStorage.getItem('apv-abierto')==='1'&&!apvOk())saveAj('apv',{abierto:true,fecha:hoyISO()},true);
       const l=+localStorage.getItem('evitado-'+S.actual)||0;if(l&&!getEv())saveAj('evitado',{...(S.aj.evitado||{}),[S.actual]:l},true);}catch(e){}
     await loadPeriodo();loadIngresos();
-  }catch(e){console.error(e);$('hero-w').innerHTML='<div class="hero bad"><div class="h-lbl">Sin conexión</div><div class="h-l1" style="margin-top:8px">Toca ↻ arriba para reintentar</div></div>';}
+  }catch(e){console.error(e);$('hero-w').innerHTML=`<div class="hero bad"><div class="h-lbl">${navigator.onLine===false?'Sin internet':'No pude cargar tus datos'}</div><div class="h-l1" style="margin:8px 0 14px">${navigator.onLine===false?'Revisa tu conexión y reintenta.':'Puede ser la señal. Reintenta en un rato.'}</div><button class="btn p" style="margin-top:0;background:#fff;color:#0B1B3A" onclick="refresh()">Reintentar</button></div>`;}
 }
 function setPer(p){S.periodo=p;closeSheet();loadAll();window.scrollTo(0,0)}
 
@@ -450,7 +475,7 @@ function openAvisos(){
 }
 
 function catRow(k){
-  const V=S.V,s=V.tot[k]||0,t=S.techos[k]||0,c=CAT[k];
+  const V=S.V,s=V.tot[k]||0,t=S.techos[k]||0,c=CAT[k]||CAT.otros;
   const pc=t?Math.min(100,Math.round(s/t*100)):(s?100:0);
   const col=t&&s>t?'#F04438':t&&s>t*.8?'#F79009':'var(--navy)',tcol=t&&s>t?'var(--red-d)':t&&s>t*.8?'var(--amber-d)':'var(--text)';
   const sub=!t?(s?'sin tope este mes':'bloqueado este mes 🚫'):s>t?`te pasaste por ${fmt(s-t)}`:`te quedan ${fmt(t-s)}`;
@@ -464,7 +489,7 @@ function openAll(){
   openSheet(`<h3>Todo ${V.mes}</h3><p>Toca una categoría para ver sus gastos.</p><div class="card">${ks.map(catRow).join('')}<button class="crow" onclick="openCuotas()"><div class="ic">💳</div><div class="cm"><b>Cuotas y fijos</b><small>se descuentan solas</small></div><div class="ca">${fmt(V.cuo)}</div></button></div>${V.nt?`<button class="crow" onclick="openNeg()" style="border:none"><div class="ic">🧩</div><div class="cm"><b>Negocio (TCG Logs / PULLDEX)</b><small>no cuenta en tu presupuesto</small></div><div class="ca">${fmt(V.nt)}</div></button>`:''}`);
 }
 function openCat(k){
-  const V=S.V,c=CAT[k],s=V.tot[k]||0,t=S.techos[k]||0,p=V.ptot[k],it=V.items[k]||[];
+  const V=S.V,c=CAT[k]||CAT.otros,s=V.tot[k]||0,t=S.techos[k]||0,p=V.ptot[k],it=V.items[k]||[];
   const info=k==='otros'?'Tócalos y elige la categoría. La app lo recuerda para la próxima.':`${fmt(s)}${t?' de '+fmt(t):''}${p?` · en ${V.pvL} fueron ${fmt(p)}`:''}`;
   openSheet(`<h3>${c.ic} ${c.n}</h3><p>${info}</p><div class="card">${it.map(txHtml).join('')||'<div class="empty">Nada por aquí 🎉</div>'}</div>`);
 }
@@ -524,7 +549,7 @@ async function saveRev(id,cat){
       await api('destinatarios?on_conflict=nombre',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{nombre:g.destinatario,accion:cat?'gasto':'ignorar',categoria_clave:cat}});
       await api('gastos?estado=eq.revisar&destinatario=eq.'+encodeURIComponent(g.destinatario),{m:'PATCH',b});
     }
-    toast(cat?`✅ ${CAT[cat].ic} ${fmt(g.monto)} cuenta como gasto`:'👌 No cuenta');
+    toast(cat?`✅ ${(CAT[cat]||CAT.otros).ic} ${fmt(g.monto)} cuenta como gasto`:'👌 No cuenta');
     await loadAll();S.revisar.length?openRev():closeSheet();
   }catch(e){toast('❌ Error');console.error(e)}
 }
@@ -532,7 +557,7 @@ function tipsList(){
   const V=S.V,T=[],d=new Date().getDate();
   if(V.esActual&&(d>=25||d<=5))T.push(['💰','<b>Llega el sueldo:</b> lo primero es transferir a Fintual, antes de gastar nada.']);
   const top=Object.entries(V.tot).filter(([k])=>k!=='otros').sort((a,b)=>b[1]-a[1])[0];
-  if(top){const[k,v]=top;T.push([CAT[k].ic,`<b>${CAT[k].n}</b> es donde más se te va: ${fmt(v)}${V.ptot[k]?` (en ${V.pvL}: ${fmt(V.ptot[k])})`:''}.`])}
+  if(top){const[k,v]=top,c=CAT[k]||CAT.otros;T.push([c.ic,`<b>${c.n}</b> es donde más se te va: ${fmt(v)}${V.ptot[k]?` (en ${V.pvL}: ${fmt(V.ptot[k])})`:''}.`])}
   const terminan=V.CQ.filter(c=>c.n&&c.n===c.total_cuotas);
   if(terminan.length)T.push(['🎉',`Este mes terminas <b>${terminan.map(c=>c.nombre).join(' y ')}</b>. Desde el próximo tienes ${fmt(terminan.reduce((s,c)=>s+c.monto_cuota,0))} más al mes.`]);
   T.push(['💳',`Antes de gastar un peso ya se fueron <b>${fmt(V.cuo)}</b> en cuotas y fijos. Cada cuota nueva achica tu "hoy puedes gastar".`]);
@@ -604,7 +629,7 @@ const SUGS=['Jumbo','Almuerzo','Café','Delivery','Uber','Metro','Farmacia','Tra
 
 function openAdd(pre){
   openSheet(`<h3>Anotar gasto</h3>
-  <input id="a-monto" class="amt-in" inputmode="numeric" placeholder="$0" autocomplete="off" oninput="fmtIn(this)" value="${pre&&pre.m?'$'+pre.m.toLocaleString('es-CL'):''}">
+  <input id="a-monto" class="amt-in" inputmode="numeric" placeholder="$0" autocomplete="off" enterkeyhint="next" onkeydown="if(event.key==='Enter')$('a-desc').focus()" oninput="fmtIn(this)" value="${pre&&pre.m?'$'+pre.m.toLocaleString('es-CL'):''}">
   <label>¿En qué?</label><input id="a-desc" placeholder="ej: almuerzo" autocomplete="off" enterkeyhint="done" onkeydown="if(event.key==='Enter')saveAdd()" value="${pre&&pre.d?pre.d.replace(/"/g,'&quot;'):''}">
   <div class="sugs">${SUGS.map(s=>`<button onclick="$('a-desc').value='${s}'">${s}</button>`).join('')}</div>
   <label>Pagaste con</label>${cardChips()}
@@ -617,10 +642,10 @@ async function saveAdd(){
   try{
     const r=await api('gastos',{m:'POST',h:{Prefer:'return=representation'},b:{fecha:hoyISO(),monto,descripcion:desc,tarjeta:S.card,fuente:'app'}});
     const g=r[0],c=CAT[g.categoria_clave]||CAT.otros;closeSheet();
-    const nuevoDiario=(S.V.queda-(g.pulldex?0:monto))/S.V.dias;
-    toast(g.pulldex?`✅ ${fmt(monto)} anotado como negocio`:`✅ ${c.ic} ${fmt(monto)} · hoy te quedan ${fmt(Math.max(0,nuevoDiario))}`);
-    S.periodo=g.periodo;await loadAll();
-    if(g.categoria_clave==='otros')setTimeout(()=>openTx(g.id),400);
+    // Siempre vuelve al mes de hoy (antes saltaba al mes siguiente si la tarjeta ya había cerrado).
+    S.periodo=S.actual;await loadAll();
+    toast(g.pulldex?`✅ ${fmt(monto)} anotado como negocio`:g.periodo!==S.actual?`✅ ${c.ic} ${fmt(monto)} · va en la boleta de ${MESL[+g.periodo.slice(5)-1]}`:`✅ ${c.ic} ${fmt(monto)} · hoy te quedan ${fmt(Math.max(0,S.V.diario))}`);
+    if(g.categoria_clave==='otros'&&g.periodo===S.actual)setTimeout(()=>openTx(g.id),400);
   }catch(e){toast('❌ No se pudo guardar');console.error(e)}
 }
 
@@ -640,7 +665,7 @@ function evalCheck(){
   let V=S.V,x=val('a-monto'),desc=$('a-desc').value,{cat,neg}=guess(desc),el=$('verdict');
   if(!x){el.className='verdict';$('chk-btns').style.display='none';return}
   $('chk-btns').style.display='block';
-  const t=S.techos[cat]||0,s=V.tot[cat]||0,catN=cat!=='otros'?CAT[cat].n:null;
+  const t=S.techos[cat]||0,s=V.tot[cat]||0,catN=cat!=='otros'&&CAT[cat]?CAT[cat].n:null;
   const X=x,nc=S.nc||1,mc=Math.round(X/nc);x=nc>1?mc:X;const cuoP=Math.round(V.cuo/S.ppto*100),cuoP2=Math.round((V.cuo+mc)/S.ppto*100);
   const q2=V.queda-x,d2=q2/V.dias,fin2=Math.round(Math.max(0,SUELDO-Math.max(V.total+x,S.ppto))/2);
   let c,h,b;
@@ -665,30 +690,34 @@ async function saveCuotaNueva(){const q=S.cq,pp=addM(periodoDe(hoyISO(),S.card),
 function openTx(id){
   const g=S.gastos.find(x=>x.id===id);if(!g)return;
   openSheet(`<h3>${g.descripcion}</h3><p>${fmt(g.monto)} · ${TJ[g.tarjeta]||g.tarjeta} · ${g.fecha}</p>
-  <label>¿Qué tipo de gasto es?</label><div class="chips">${Object.entries(CAT).filter(([k])=>k!=='otros').map(([k,c])=>`<button class="chip ${k===g.categoria_clave?'on':''}" onclick="document.querySelectorAll('#cat-ch .chip').forEach(b=>b.classList.remove('on'));this.classList.add('on');this.dataset.sel=1" data-k="${k}">${c.ic} ${c.n}</button>`).join('').replace('<div class="chips">','')}</div>
+  <label>¿Qué tipo de gasto es?</label><div class="chips">${Object.entries(CAT).filter(([k])=>k!=='otros').map(([k,c])=>`<button class="chip ${k===g.categoria_clave?'on':''}" onclick="document.querySelectorAll('#cat-ch .chip').forEach(b=>b.classList.remove('on'));this.classList.add('on');this.dataset.sel=1" data-k="${k}">${c.ic} ${c.n}</button>`).join('')}</div>
   <label>Es de</label><div class="chips" id="neg-ch"><button class="chip ${!g.pulldex?'on':''}" data-v="0" onclick="selNeg(this)">Personal</button><button class="chip ${g.pulldex?'on':''}" data-v="1" onclick="selNeg(this)">Negocio</button></div>
-  <label>Monto</label><input id="e-monto" inputmode="numeric" value="${g.monto}">
-  <button class="btn p" onclick="saveTx(${id})">Guardar (y recordar para la próxima)</button>
+  <label>Monto${g.monto<0?' (venta)':''}</label><input id="e-monto" inputmode="numeric" oninput="fmtIn(this)" value="$${Math.abs(g.monto).toLocaleString('es-CL')}">
+  <button class="btn p" onclick="saveTx(${id})">Guardar</button>
   <button class="btn d" onclick="delTx(${id})">Borrar gasto</button>`);
-  const chips=$('sheet').querySelectorAll('.chips')[0];chips.id='cat-ch';
+  $('sheet').querySelector('.chips').id='cat-ch';
 }
 function selNeg(b){$('neg-ch').querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on')}
 async function saveTx(id){
   const g=S.gastos.find(x=>x.id===id);
   const sel=$('cat-ch').querySelector('.chip.on'),cat=sel?sel.dataset.k:g.categoria_clave;
   const neg=$('neg-ch').querySelector('.chip.on').dataset.v==='1';
+  // Antes "12.990" se guardaba como $12 y una venta editada pasaba a ser gasto: ahora se respeta el formato y el signo.
+  const m=val('e-monto'),monto=m?(g.monto<0?-m:m):g.monto;
   try{
-    await api('gastos?id=eq.'+id,{m:'PATCH',b:{monto:parseInt($('e-monto').value)||g.monto,categoria_clave:cat,pulldex:neg}});
-    const palabra=g.descripcion.split(' ')[0].toLowerCase();
-    if(cat!=='otros'&&palabra.length>2&&!S.reglas.some(r=>r.palabra.toLowerCase()===palabra))await api('reglas_categoria',{m:'POST',b:{palabra,categoria_clave:cat,negocio:neg}});
-    closeSheet();toast('✅ Listo, lo recordaré');loadAll();
+    await api('gastos?id=eq.'+id,{m:'PATCH',b:{monto,categoria_clave:cat,pulldex:neg}});
+    const palabra=g.descripcion.split(' ')[0].toLowerCase(),recordar=(cat!==g.categoria_clave||neg!==!!g.pulldex)&&!g.destinatario;
+    if(recordar&&cat!=='otros'&&palabra.length>2&&!S.reglas.some(r=>r.palabra.toLowerCase()===palabra))await api('reglas_categoria',{m:'POST',b:{palabra,categoria_clave:cat,negocio:neg}});
+    closeSheet();toast(recordar?'✅ Listo, lo recordaré':'✅ Guardado');await loadAll();
+    // Si estabas ordenando los "sin categoría", sigue con el próximo.
+    if(g.categoria_clave==='otros'&&(S.V.items.otros||[]).length)openCat('otros');
   }catch(e){toast('❌ Error');console.error(e)}
 }
 async function delTx(id){if(!confirm('¿Borrar este gasto?'))return;const g=S.gastos.find(x=>x.id===id);
   // Si vino de un correo, se marca "no cuenta" en vez de borrar; si no, el importador lo volvería a traer.
   try{await api('gastos?id=eq.'+id,g&&g.ref_externa?{m:'PATCH',b:{estado:'ignorado'}}:{m:'DELETE'});closeSheet();toast('🗑 Borrado');loadAll()}catch(e){toast('❌ Error')}}
 function editPpto(){openSheet(`<h3>⚙️ Presupuesto de ${S.V.mes}</h3><p>Todo lo que puedes gastar en el mes, incluidas cuotas y fijos. Lo que no gastes va a Fintual.</p><input id="e-ppto" class="amt-in" inputmode="numeric" oninput="fmtIn(this)" value="${'$'+S.ppto.toLocaleString('es-CL')}"><button class="btn p" onclick="savePpto()">Guardar</button>`)}
-async function savePpto(){try{await api('presupuestos',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{periodo:S.periodo,monto:val('e-ppto')}});closeSheet();toast('✅ Presupuesto actualizado');loadAll()}catch(e){toast('❌ Error')}}
+async function savePpto(){const monto=val('e-ppto');if(monto<100000){toast('Pon un presupuesto de al menos $100.000');return}try{await api('presupuestos',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{periodo:S.periodo,monto}});closeSheet();toast('✅ Presupuesto actualizado');loadAll()}catch(e){toast('❌ Error')}}
 async function loadIngresos(){try{const all=await api('ingresos?order=fecha.asc');const b={};all.forEach(i=>{const k=i.fecha.slice(0,7);b[k]=(b[k]||0)+i.monto});S.ing=b;
   const y=String(new Date().getFullYear()),rows=all.filter(i=>i.fecha.startsWith(y)&&i.base_tributable);
   if(rows.length){const meses=new Set(rows.map(r=>r.fecha.slice(0,7))).size,last=rows[rows.length-1].base_tributable,rest=Math.max(0,12-meses);
@@ -697,7 +726,8 @@ async function loadIngresos(){try{const all=await api('ingresos?order=fecha.asc'
   if(S.V.mes){renderNext();renderMeta();}}catch(e){console.error(e)}}
 
 loadAll();
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('sheet-bg').classList.contains('on'))loadAll()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&getKey()&&!enFaceId&&!sheetOn())loadAll()});
+window.addEventListener('online',()=>{if(getKey()&&!sheetOn())loadAll()});
 </script>
 </body>
 </html>
