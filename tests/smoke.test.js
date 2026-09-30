@@ -139,6 +139,13 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval("verCard('deudas-c')");checks['plata compacta: la fila abre el detalle']=t('sheet').includes('La pagué');w.eval('closeSheet()');
  // Guía para ponerla en la pantalla de inicio
  w.eval('guiaInicio()');checks['guía inicio: pasos y no está en la tienda']=t('sheet').includes('Ponla en tu pantalla de inicio')&&t('sheet').includes('No la busques en la')&&d.querySelectorAll('#sheet .step').length>=3;w.eval('closeSheet()');
+ // Bienvenida de cuenta nueva
+ w.eval("bienvenida()");d.getElementById('bv-nom').value='Pedro Pérez';d.getElementById('bv-edad').value='58';w.eval('bv1()');
+ d.getElementById('bv-sue').value='$1.500.000';w.eval('bv2()');
+ checks['bienvenida: sugiere presupuesto 80% y dice cuánto ahorra']=d.getElementById('bv-ppto').value==='$1.200.000'&&t('sheet').includes('Ahorrarías $300.000')&&t('sheet').includes('Paso 3 de 3');
+ w.CALLS=[];await w.eval('bv3()');await new Promise(r=>setTimeout(r,80));
+ {const c=w.CALLS.find(c=>c.u.includes('ajustes')&&c.b&&c.b.includes('perfil'));checks['bienvenida: guarda perfil y presupuesto']=!!c&&c.b.includes('Pedro')&&c.b.includes('1500000')&&w.CALLS.some(c=>c.u.includes('presupuestos')&&c.b.includes('1200000'));}
+ w.eval('closeSheet()');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();

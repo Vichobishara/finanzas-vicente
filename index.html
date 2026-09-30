@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Finanzas">
 <meta name="theme-color" content="#EEEEF3">
-<title>Finanzas Vicho</title>
+<title>Finanzas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
@@ -381,7 +381,7 @@ body:not(.ready) .mes-b .chev{display:none}
 <body>
 <div class="app">
   <div class="hdr">
-    <div class="who"><div class="avatar">V</div><div><small id="greet">Hola</small><button class="mes-b" onclick="openMeses()" aria-label="Elegir mes"><h1 id="mes-t">Vicho</h1><span class="chev"></span></button></div></div>
+    <div class="who"><div class="avatar" id="avatar">🙂</div><div><small id="greet">Hola</small><button class="mes-b" onclick="openMeses()" aria-label="Elegir mes"><h1 id="mes-t">Hoy</h1><span class="chev"></span></button></div></div>
     <button class="refresh" id="refresh" onclick="refresh()" aria-label="Actualizar"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/></svg></button>
   </div>
   <section class="tab" data-tab="hoy">
@@ -409,7 +409,7 @@ body:not(.ready) .mes-b .chev{display:none}
   </div>
   <div class="card menu">
     <button class="crow" onclick="openCuotas()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg></div><div class="cm"><b>Cuotas y fijos</b><small id="m-cuo">—</small></div><span class="chev">›</span></button>
-    <button class="crow" onclick="openNeg()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 22V12h6v10"/></svg></div><div class="cm"><b>Negocio (PULLDEX)</b><small>Gastos y ventas: ¿gana o pierde plata?</small></div><span class="chev">›</span></button>
+    <button class="crow" id="m-neg-b" onclick="openNeg()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 22V12h6v10"/></svg></div><div class="cm"><b>Negocio (PULLDEX)</b><small>Gastos y ventas: ¿gana o pierde plata?</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openMeses()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg></div><div class="cm"><b>Meses anteriores</b><small>Compara cómo te fue</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="editPpto()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></div><div class="cm"><b>Presupuesto del mes</b><small id="m-ppto">—</small></div><span class="chev">›</span></button>
   </div>
@@ -640,7 +640,38 @@ async function entrarGoogle(){const t=G_TOK;G_TOK=null;lock();ocupado('g-btn','E
     toast(`✅ Hola${r.nombre?' '+r.nombre.split(' ')[0]:''}, entraste con Google`);await loadAll();ofrecerFaceId()}
   catch(e){console.error(e);lock('Se demoró mucho con Google. Toca el botón de nuevo.','mal')}}
 // Después de entrar con Google en un aparato sin Face ID: ofrecer activarlo (acceso con accion 'nuevo' + x-app-key).
-function ofrecerFaceId(){if(LS('fid-ok')==='1'||!window.PublicKeyCredential)return;
+// ---------- Bienvenida (cuenta nueva, sin perfil): nombre, edad, sueldo y presupuesto. Después Face ID e inicio ----------
+const BV={};
+function bvPaso(n,h){openSheet(`<div class="w-paso" style="font-size:12.5px;color:var(--sec);font-weight:600;margin-bottom:4px">Paso ${n} de 3</div>${h}`)}
+function bienvenida(){BV.nombre=BV.nombre||NOMBRE();
+  bvPaso(1,`<h3>¡Hola${BV.nombre?' '+BV.nombre:''}! 👋</h3><p>Armemos tu app en un minuto. Solo tú ves tus datos.</p>
+  <label>¿Cómo te llamo?</label><input id="bv-nom" value="${(BV.nombre||'').replace(/"/g,'&quot;')}" placeholder="Tu nombre" autocomplete="given-name">
+  <label>¿Cuántos años tienes?</label><input id="bv-edad" inputmode="numeric" placeholder="ej: 30" value="${BV.edad||''}">
+  <button class="btn p" onclick="bv1()">Seguir</button>`)}
+function bv1(){const n=$('bv-nom').value.trim(),e=+$('bv-edad').value.replace(/\D/g,'');if(!n)return toast('Pon tu nombre');if(e<14||e>99)return toast('Pon tu edad');
+  BV.nombre=n.split(' ')[0];BV.edad=e;LS('nombre',BV.nombre);
+  bvPaso(2,`<h3>¿Cuánto te llega al mes?</h3><p>Tu sueldo líquido, más o menos. Con esto calculo cuánto puedes gastar.</p>
+  <input id="bv-sue" class="amt-in" inputmode="numeric" oninput="fmtIn(this)" placeholder="$0" value="${BV.sueldo?'$'+BV.sueldo.toLocaleString('es-CL'):''}">
+  <div class="chips">${[600000,900000,1300000,2000000].map(v=>`<button class="chip" onclick="$('bv-sue').value='${fmt(v)}';bv2()">${fmt(v)}</button>`).join('')}</div>
+  <button class="btn p" style="margin-top:12px" onclick="bv2()">Seguir</button>`)}
+function bv2(){const v=val('bv-sue');if(v<100000)return toast('Pon cuánto te llega al mes');BV.sueldo=v;
+  const sug=Math.round(v*.8/10000)*10000;BV.ppto=BV.ppto||sug;
+  bvPaso(3,`<h3>Tu plata del mes</h3><p>Todo lo que vas a gastar hasta el 22, <b>incluidas cuotas y cuentas fijas</b>. Te sugiero el 80% de tu sueldo: el resto es ahorro.</p>
+  <input id="bv-ppto" class="amt-in" inputmode="numeric" oninput="fmtIn(this)" value="$${BV.ppto.toLocaleString('es-CL')}">
+  <p class="fine" style="margin:8px 0 14px">Ahorrarías <b>${fmt(v-BV.ppto)}</b> al mes. Lo puedes cambiar cuando quieras en Gastos → Presupuesto.</p>
+  <button class="btn p" onclick="bv3()">Listo, armar mi app</button>`)}
+async function bv3(){const p=val('bv-ppto');if(p<100000)return toast('Pon un presupuesto de al menos $100.000');BV.ppto=p;
+  const y=new Date().getFullYear()-BV.edad;
+  try{closeSheet();
+    await api('presupuestos',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{periodo:S.actual,monto:p}});
+    // Topes de cada categoría a escala de su presupuesto (vienen pensados para $1.000.000)
+    await Promise.all(Object.entries(S.techos).filter(([,t])=>t>0).map(([c,t])=>api('categorias?clave=eq.'+c,{m:'PATCH',b:{techo:Math.round(t*p/1e6/5000)*5000}})));
+    await saveAj('perfil',{nombre:BV.nombre,sueldo:BV.sueldo,nacimiento:y+'-06-30',meta:100000000},true);
+    toast(`🎉 Listo, ${BV.nombre}. Tu app está armada`);await loadAll();
+    setTimeout(()=>{if(!standalone)guiaInicio();else ofrecerFaceId()},900);
+  }catch(e){console.error(e);toast('❌ No se guardó. Revisa tu internet e intenta de nuevo');bienvenida()}}
+
+function ofrecerFaceId(){if(LS('fid-ok')==='1'||!window.PublicKeyCredential||!S.aj.perfil)return;
   openSheet(`<div style="text-align:center"><div style="font-size:56px;margin:4px 0 6px">🙂</div><h3>¿Entrar con tu cara la próxima vez?</h3><p>Activa Face ID en este aparato y no vuelves a pasar por Google.</p></div>
   <button class="btn p" onclick="faceId(true)">Activar Face ID</button><button class="btn p" style="margin-top:8px;background:var(--bg3);color:var(--text);box-shadow:none" onclick="LS('fid-ok','0');closeSheet()">Ahora no</button>`)}
 let enFaceId=false;
@@ -687,6 +718,7 @@ async function _loadAll(){
     try{if(localStorage.getItem('apv-abierto')==='1'&&!apvOk())saveAj('apv',{abierto:true,fecha:hoyISO()},true);
       const l=+localStorage.getItem('evitado-'+S.actual)||0;if(l&&!getEv())saveAj('evitado',{...(S.aj.evitado||{}),[S.actual]:l},true);}catch(e){}
     await loadPeriodo();loadIngresos();
+    if(!S.aj.perfil)return bienvenida();
     if(S.periodo===S.actual&&!sheetOn())avisar();
   }catch(e){console.error(e);$('hero-w').innerHTML=`<div class="hero bad"><div class="h-lbl">${navigator.onLine===false?'Sin internet':'No pude cargar tus datos'}</div><div class="h-l1" style="margin:8px 0 14px">${navigator.onLine===false?'Revisa tu conexión y reintenta.':'Puede ser la señal. Reintenta en un rato.'}</div><button class="btn p" style="margin-top:0;background:#fff;color:#121217" onclick="refresh()">Reintentar</button></div>`;}
 }
@@ -708,7 +740,7 @@ function avisar(){let vis={};try{vis=JSON.parse(localStorage.getItem('alertas-vi
   const nuevas=alertas().filter(a=>!vis[a.k]);if(!nuevas.length)return false;
   nuevas.forEach(a=>vis[a.k]=hoyISO());const ks=Object.keys(vis).sort((a,b)=>vis[b].localeCompare(vis[a])).slice(0,80);
   try{localStorage.setItem('alertas-vistas',JSON.stringify(Object.fromEntries(ks.map(k=>[k,vis[k]]))))}catch(e){}
-  openSheet(`<h3>🚨 Ojo, Vicho</h3>${nuevas.map(a=>`<div class="lever"><i style="font-style:normal">${a.ic}</i><div><b>${a.t}</b><br>${a.b}</div></div>`).join('')}<button class="btn p" onclick="closeSheet()">Entendido</button><button class="btn" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="openCheck()">Abrir ¿Me alcanza?</button>`);return true}
+  openSheet(`<h3>🚨 Ojo${NOMBRE()?', '+NOMBRE():''}</h3>${nuevas.map(a=>`<div class="lever"><i style="font-style:normal">${a.ic}</i><div><b>${a.t}</b><br>${a.b}</div></div>`).join('')}<button class="btn p" onclick="closeSheet()">Entendido</button><button class="btn" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="openCheck()">Abrir ¿Me alcanza?</button>`);return true}
 function setPer(p){if(p!==S.periodo){S.periodo=p;skel()}closeSheet();loadAll();window.scrollTo(0,0)}
 
 async function loadPeriodo(){
@@ -721,7 +753,10 @@ async function loadPeriodo(){
 
 const SVG=d=>`<svg class="i" viewBox="0 0 24 24">${d}</svg>`;
 const HICO=(c,q)=>SVG(c==='ok'||(c===''&&q>=0)?'<circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/>':c==='bad'||c===''?'<path d="M7.9 2h8.2L22 7.9v8.2L16.1 22H7.9L2 16.1V7.9z"/><path d="M12 8v4M12 16h.01"/>':'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>');
-function render(){
+function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase():'🙂';
+  // Negocio (PULLDEX) solo para quien tiene reglas o gastos de negocio
+  $('m-neg-b').style.display=S.reglas.some(r=>r.negocio)||(S.gastos||[]).some(g=>g.pulldex)?'':'none';
+
   const pers=S.gastos.filter(g=>!g.pulldex),neg=S.gastos.filter(g=>g.pulldex);
   const gast=pers.reduce((s,g)=>s+g.monto,0),CQ=cuotasDe(S.periodo),cuo=CQ.reduce((s,c)=>s+c.monto_cuota,0);
   const total=gast+cuo,queda=S.ppto-total,p=Math.min(100,Math.round(total/S.ppto*100));
@@ -937,7 +972,9 @@ function calcBono(){
 }
 
 const PAT=()=>S.aj.patrimonio||{fintual:13047596,cartas:5000000,eth:1440000};
-const PERF=()=>S.aj.perfil||{nacimiento:'1999-12-03',meta:100000000};
+const PERF=()=>({nacimiento:'1999-12-03',meta:100000000,...(S.aj.perfil||{})});
+// Nombre de quien usa la app (fase 2: cada cuenta es de una persona)
+const NOMBRE=()=>PERF().nombre||LS('nombre')||'';
 const RENT=.06;
 const fmtM=n=>n>=1e9?'$'+(n/1e9).toLocaleString('es-CL',{maximumFractionDigits:2})+' mil M':'$'+(n/1e6).toLocaleString('es-CL',{maximumFractionDigits:n<1e8?1:0})+'M';
 function edadAhora(){const b=new Date(PERF().nacimiento+'T12:00:00'),n=new Date();return (n-b)/(365.25*864e5)}
