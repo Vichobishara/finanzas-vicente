@@ -94,9 +94,12 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - Todas las tablas exigen el header `x-app-key`. La función `privado.autorizado()` compara su sha256 con el hash guardado
   (el esquema `privado` no está expuesto). `rpc/clave_ok` devuelve true/false para la pantalla de candado.
 - **Entrar = Face ID (passkey).** Edge function `acceso` (WebAuthn, rpID finanzas-vicente.vercel.app): si la passkey es
-  válida devuelve la clave, que la app guarda en localStorage. Tablas `passkeys`, `passkey_retos` y `secretos` (app_key)
-  tienen RLS sin políticas: solo las lee la edge function con service role. El primer registro queda abierto hasta el
-  13-10-2026; después, registrar otra passkey exige la clave (`accion:'nuevo'` + x-app-key).
+  válida devuelve la clave **de su dueño** (`passkeys.user_id` → `cuentas.clave`), que la app guarda en localStorage.
+  Tablas `passkeys`, `passkey_retos`, `secretos`, `cuentas` y `atajo_log` tienen RLS sin políticas: solo las leen las edge
+  functions con service role o funciones SECURITY DEFINER. Registrar una passkey siempre exige estar dentro
+  (`accion:'nuevo'` + x-app-key); ya no hay registro abierto.
+- Las RPC SECURITY DEFINER expuestas a anon (`anotar_atajo`, `widget`, `atajo_url`, `es_admin`, `invitados`, `invitar`,
+  `mi_token_atajo`, `mi_ultimo_atajo`) son a propósito: cada una valida la clave (`privado.uid()`) o el código personal adentro.
 - **Continuar con Google** (fase 1 del proyecto amigos): Supabase Auth con Google (cliente OAuth en el proyecto Google Cloud
   `finanzas-vicho`). La app va a `/auth/v1/authorize?provider=google`, vuelve con `#access_token` y la edge function
   `acceso_google` revisa que el correo esté en `secretos.google_emails` (separados por coma) y devuelve la clave.
