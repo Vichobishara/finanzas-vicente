@@ -130,6 +130,9 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval("S.aj.fondo={que:'iPad',meta:600000,ahorrado:150000,mensual:50000};renderFondo()");
  checks['fondo gadgets: cuánto falta y cuándo llegas']=t('fondo-c').includes('Te faltan $450.000')&&t('fondo-c').includes('Apartando $50.000 al mes llegas en');
  w.eval("S.aj.fondo=null;renderFondo()");checks['fondo gadgets: invita a crearlo']=t('fondo-c').includes('Crear mi fondo');
+ // Por pagar
+ w.eval("S.aj.deudas=[{id:1,que:'PSA',monto:490000,nota:'US$510'}];renderDeudas()");
+ checks['por pagar: muestra la deuda y el total']=t('deudas-c').includes('PSA')&&t('deudas-c').includes('$490.000')&&t('deudas-c').includes('La pagué');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();

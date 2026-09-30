@@ -413,6 +413,7 @@ body:not(.ready) .mes-b .chev{display:none}
   <div id="next"></div>
   <div class="card" id="fin"></div>
   <div class="card" id="fondo-c"></div>
+  <div class="card" id="deudas-c"></div>
   <div class="card" id="apv-c"></div>
   <div class="card" id="tax-c"></div>
   <div class="card menu">
@@ -859,7 +860,7 @@ function renderPlata(){
    :`<div class="card-h"><h2>🧾 Impuestos</h2><span class="pill ok">Al día</span></div><div class="lead">Este año vas pagando más o menos lo justo: no hay devolución grande que pedir. Si te llega un bono, vuelve a mirar aquí.</div>`;
   const pf=PAT().fecha,dp=pf?Math.round((new Date()-new Date(pf+'T12:00:00'))/864e5):null;
   $('m-pat').textContent=dp===null?'Fintual, cartas y ETH':dp<1?'Lo actualizaste hoy':`Lo actualizaste hace ${dp} día${dp>1?'s':''}${dp>35?' ⚠️':''}`;
-  renderNext();renderMeta();renderFondo();
+  renderNext();renderMeta();renderFondo();renderDeudas();
 }
 
 function openPlata(){
@@ -1098,6 +1099,23 @@ function renderDeseos(){const el=$('deseos-c');if(!el)return;const L=DES(),E=L.f
   el.innerHTML=`<div class="card-h"><h2>⏳ Lista de deseos</h2>${ag?`<span class="pill ok">Te aguantaste ${fmt(ag)}</span>`:''}</div>
   ${E.length?E.map(fila).join(''):`<div class="lead">¿Viste algo que quieres? Anótalo aquí en vez de comprarlo. En 72 horas te pregunto si todavía lo quieres: la mayoría de las veces se te pasa.</div>`}
   <button class="btn p" style="margin:10px 0 14px" onclick="openCheck()">+ Algo que quiero comprar</button>`}
+
+// ---------- Por pagar: deudas que no son cuotas (ej: PSA grading). Se pagan antes que cualquier gusto ----------
+// ajustes.deudas = [{id, que, monto, desde, nota}]
+const DEU=()=>S.aj.deudas||[];
+function renderDeudas(){const el=$('deudas-c');if(!el)return;const D=DEU(),tot=D.reduce((s,x)=>s+x.monto,0);
+  el.innerHTML=`<div class="card-h"><h2>🧾 Por pagar</h2>${tot?`<span class="pill">${fmt(tot)}</span>`:''}</div>
+  ${D.length?`<div class="lead">Lo que debes fuera de tus cuotas. <b>Se paga antes que cualquier gusto.</b></div>${D.map(x=>`<div class="crow" style="cursor:default"><div class="ic">🧾</div><div class="cm"><b>${x.que}</b><small><span style="color:var(--text);font-weight:600">${fmt(x.monto)}</span>${x.nota?' · '+x.nota:''}</small></div><button class="chip" onclick="deudaPagada(${x.id})">La pagué</button></div>`).join('')}`:`<div class="lead">No le debes nada a nadie fuera de tus cuotas. 🙌</div>`}
+  <div class="chips" style="margin:10px 0 14px"><button class="chip" onclick="editDeuda()">+ Debo algo</button></div>`}
+function editDeuda(){openSheet(`<h3>🧾 Debo algo</h3><p>Para tenerlo a la vista hasta que lo pagues.</p>
+  <label>¿A quién o qué?</label><input id="d-que" placeholder="ej: PSA, un amigo">
+  <label>¿Cuánto? (aprox. si es en dólares)</label><input id="d-monto" inputmode="numeric" oninput="fmtIn(this)" placeholder="$0">
+  <label>Nota (opcional)</label><input id="d-nota" placeholder="ej: US$510, lo pago con ventas de cartas">
+  <button class="btn p" onclick="saveDeuda()">Guardar</button>`)}
+function saveDeuda(){const que=$('d-que').value.trim(),monto=val('d-monto');if(!que||!monto)return toast('Pon a quién y cuánto');
+  closeSheet();saveAj('deudas',[...DEU(),{id:Date.now(),que,monto,desde:hoyISO(),nota:$('d-nota').value.trim()}]);toast('🧾 Anotado')}
+async function deudaPagada(id){const x=DEU().find(d=>d.id===id);if(!x||!confirm(`¿Pagaste ${x.que}?`))return;
+  await saveAj('deudas',DEU().filter(d=>d.id!==id));toast('✅ Una deuda menos')}
 
 // ---------- Fondo gadgets: plata apartada para tecnología, así no sale del mes ----------
 // ajustes.fondo = {que, meta, ahorrado, mensual}

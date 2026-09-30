@@ -51,6 +51,8 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   Moderate Pitt), `perfil` {nacimiento, meta, sueldo}, `apv` {abierto, fecha}, `evitado` {periodo: monto},
   `deseos` [{id, que, monto, desde, estado espera|aguantado|comprado}] (lista de deseos, regla de 72 horas: aguantarse suma a
   `evitado`), `fondo` {que, meta, ahorrado, mensual} (fondo gadgets: lo comprado con el fondo queda como gasto `ignorado`).
+  `deudas` [{id, que, monto, desde, nota}] (tarjeta "Por pagar" en Plata: deudas que no son cuotas, ej. PSA; no cuentan en el
+  presupuesto, "La pagué" las quita). Ingresos inciertos (comisiones que quizás llegan) **no** se anotan: Vicho no quiere contar con ellos.
 - `ingresos` también tiene `ref_externa` (único, id del correo) y `fuente` (manual | app | toku_auto). El script importa
   los abonos de TOKU SPA y no duplica si ya hay uno manual con el mismo monto (±5 días).
 - `ahorros` (fecha, monto, destino fintual|apv|colchon, periodo): lo que Vicho **de verdad** transfirió. `periodo` = mes del sueldo.
