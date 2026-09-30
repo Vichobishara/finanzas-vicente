@@ -98,6 +98,10 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval('closeSheet()');checks['cerrar hoja']=!d.getElementById('sheet-bg').classList.contains('on')&&!d.body.classList.contains('lock');
  d.querySelector('.mes-b').click();checks['tocar el mes abre el selector con fechas']=d.getElementById('sheet').textContent.includes('23 ')&&d.getElementById('sheet').textContent.includes('este mes');w.eval('closeSheet()');
  checks['fecha de hoy arriba']=/\d/.test(t('greet'));
+ w.eval('closeSheet()');d.querySelector('[onclick="guiaAP(0)"]').click();checks['guía Apple Pay abre en Coach']=t('sheet').includes('anotadas solas');
+ d.querySelector('#sheet .gu .btn').click();d.querySelector('#sheet .gu .btn').click();checks['guía Apple Pay avanza sin apilar ‹ (vista previa sin link)']=t('sheet').includes('Paso 2 de 8')&&!!d.querySelector('#sheet .tap')&&!d.querySelector('#sheet .bk');
+ d.querySelector('#sheet .gu .alt').click();checks['guía Apple Pay: atrás']=t('sheet').includes('Paso 1 de 8');
+ w.eval('closeSheet()');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();
