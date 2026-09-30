@@ -3,141 +3,166 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EEEEF3">
 <title>Bienvenida · prototipo</title>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <style>
-/* Prototipo del onboarding para amigos (no conectado a datos). Mismo lenguaje visual que la app. */
-:root{--bg:#EEEEF3;--card:#FFFFFF;--bg3:#F4F4F7;--border:#E4E4EA;--text:#121217;--sec:#6E6E7A;--hint:#A3A3AE;--ac:#121217;--green:#12B76A;--green-d:#067647;--green-t:#ECFDF3;--sh:0 1px 2px rgba(18,18,23,.03),0 10px 30px -12px rgba(18,18,23,.08);--safe-t:env(safe-area-inset-top,20px);--safe-b:env(safe-area-inset-bottom,16px)}
+/* Prototipo del onboarding para amigos (no guarda nada). Mismo lenguaje que la app: fondo claro, negro, listas tipo iOS. */
+:root{--bg:#EEEEF3;--card:#FFFFFF;--bg3:#F4F4F7;--line:#ECECF1;--text:#121217;--sec:#6E6E7A;--hint:#A3A3AE;--ac:#121217;--green:#12B76A;--green-d:#067647;--safe-t:env(safe-area-inset-top,20px);--safe-b:env(safe-area-inset-bottom,16px)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
-button{font-family:inherit;cursor:pointer;color:inherit;border:none;background:none}
-.app{max-width:440px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:calc(var(--safe-t) + 14px) 22px 0}
-.top{display:flex;align-items:center;gap:12px;height:44px}
-.atras{width:44px;height:44px;border-radius:50%;background:var(--card);box-shadow:var(--sh);font-size:22px;display:flex;align-items:center;justify-content:center}
-.atras[hidden]{visibility:hidden;display:flex}
-.prog{flex:1;height:6px;background:#E1E1E8;border-radius:99px;overflow:hidden}
-.prog i{display:block;height:100%;background:var(--ac);border-radius:99px;transition:width .35s cubic-bezier(.2,.9,.3,1)}
-.paso{flex:1;display:flex;flex-direction:column;padding-top:18px;animation:entra .3s cubic-bezier(.2,.9,.3,1)}
-@keyframes entra{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
-.emoji{font-size:40px;line-height:1;margin-bottom:12px}
-h1{font-size:28px;font-weight:800;letter-spacing:-.8px;line-height:1.15;margin-bottom:10px}
-.sub{font-size:17px;color:var(--sec);line-height:1.45;margin-bottom:18px}
-.grande{width:100%;font-size:28px;font-weight:700;padding:18px 20px;border-radius:20px;border:2px solid var(--border);background:var(--card);outline:none;color:var(--text)}
+button{font-family:inherit;cursor:pointer;color:inherit;border:none;background:none;text-align:left}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.app{max-width:440px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:calc(var(--safe-t) + 10px) 20px 0}
+.top{display:flex;align-items:center;gap:14px;height:44px}
+.atras{width:44px;height:44px;margin-left:-10px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.atras:active{background:rgba(18,18,23,.06)}
+.atras[hidden]{display:flex;visibility:hidden}
+.prog{flex:1;display:flex;gap:4px}
+.prog i{flex:1;height:4px;border-radius:99px;background:#DCDCE3;transition:background .3s}
+.prog i.on{background:var(--ac)}
+.paso{flex:1;display:flex;flex-direction:column;padding-top:22px;animation:entra .28s cubic-bezier(.2,.9,.3,1)}
+@keyframes entra{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+.eti{font-size:14px;font-weight:700;color:var(--sec);letter-spacing:.2px;margin-bottom:8px}
+h1{font-size:27px;font-weight:800;letter-spacing:-.7px;line-height:1.15;margin-bottom:8px}
+.sub{font-size:16px;color:var(--sec);line-height:1.45;margin-bottom:22px}
+.grande{width:100%;font-size:24px;font-weight:700;padding:16px 18px;border-radius:16px;border:1.5px solid var(--line);background:var(--card);outline:none;color:var(--text)}
 .grande:focus{border-color:var(--ac)}
-.ops{display:flex;flex-direction:column;gap:10px}
-.op{display:flex;align-items:center;gap:14px;width:100%;min-height:58px;padding:12px 18px;border-radius:20px;background:var(--card);border:2px solid transparent;box-shadow:var(--sh);font-size:18px;font-weight:600;text-align:left;transition:transform .12s,border-color .15s}
-.op:active{transform:scale(.98)}
-.op.on{border-color:var(--ac)}
-.op .ic{font-size:28px;width:36px;text-align:center;flex-shrink:0}
-.op .tx{flex:1}
-.op .tx small{display:block;font-size:14px;font-weight:500;color:var(--sec);margin-top:2px;line-height:1.35}
-.op .ck{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;flex-shrink:0}
-.op.on .ck{background:var(--ac);border-color:var(--ac)}
+/* Lista tipo iOS */
+.lista{background:var(--card);border-radius:18px;overflow:hidden}
+.fila{display:flex;align-items:center;gap:14px;width:100%;min-height:56px;padding:0 16px;font-size:17px;font-weight:600;position:relative}
+.fila+.fila:before{content:'';position:absolute;top:0;left:16px;right:0;height:1px;background:var(--line)}
+.fila:active{background:var(--bg3)}
+.fila .tx{flex:1;padding:14px 0}
+.fila .tx small{display:block;font-size:14px;font-weight:500;color:var(--sec);margin-top:2px}
+.fila .ok{width:24px;height:24px;border-radius:50%;border:1.5px solid #CFCFD8;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fila.on .ok{background:var(--ac);border-color:var(--ac)}
+.fila.on .ok:after{content:'';width:10px;height:6px;border:2.5px solid #fff;border-top:none;border-right:none;transform:rotate(-45deg) translate(1px,-1px)}
+.fila .chev{color:var(--hint);font-size:22px}
+.marca{width:30px;height:30px;border-radius:8px;flex-shrink:0}
+/* Grilla de montos y días */
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.banco{min-height:76px;border-radius:20px;background:var(--card);box-shadow:var(--sh);border:2px solid transparent;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;padding:14px;font-size:16px;font-weight:700;text-align:left;position:relative}
-.banco .dot{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800}
-.banco.on{border-color:var(--ac)}
-.banco.on:after{content:'✓';position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;background:var(--ac);color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center}
-.estrella{display:inline-block;font-size:14px;font-weight:800;color:var(--green-d);background:var(--green-t);padding:3px 8px;border-radius:99px;margin-bottom:4px}
-.pie{position:sticky;bottom:0;margin:auto -22px 0;padding:16px 22px calc(var(--safe-b) + 14px);display:flex;flex-direction:column;gap:4px;background:linear-gradient(rgba(238,238,243,0),var(--bg) 22px)}
-.btn{width:100%;padding:19px;border-radius:99px;font-size:18px;font-weight:700;background:var(--ac);color:#fff;transition:transform .12s,opacity .2s}
+.cel{min-height:64px;border-radius:16px;background:var(--card);border:1.5px solid transparent;font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px}
+.cel small{display:block;font-size:13px;font-weight:500;color:var(--sec)}
+.cel.on{border-color:var(--ac)}
+.cel:active{transform:scale(.98)}
+.tel{min-height:120px;flex-direction:column;gap:10px}
+.tel svg{width:34px;height:34px}
+/* Conectar un banco: una recomendación clara */
+.banco-h{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.banco-h .marca{width:40px;height:40px;border-radius:11px}
+.banco-h b{font-size:17px}
+.banco-h small{display:block;font-size:14px;color:var(--sec);font-weight:500}
+.reco{background:var(--card);border-radius:20px;padding:20px}
+.reco .tag{display:inline-block;font-size:14px;font-weight:700;color:var(--green-d);background:#ECFDF3;padding:4px 10px;border-radius:99px;margin-bottom:12px}
+.reco h2{font-size:21px;font-weight:800;letter-spacing:-.4px;margin-bottom:6px}
+.reco p{font-size:15.5px;color:var(--sec);line-height:1.45}
+.reco .btn{margin-top:18px}
+.otras{margin:22px 4px 8px}
+/* Pasos de una guía */
+.pasos{background:var(--card);border-radius:18px;padding:4px 16px}
+.pasos div{display:flex;gap:14px;align-items:center;min-height:56px;padding:10px 0;font-size:16.5px;line-height:1.35}
+.pasos div+div{border-top:1px solid var(--line)}
+.pasos b.n{width:28px;height:28px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+/* Pie fijo abajo: el botón siempre se ve */
+.pie{position:sticky;bottom:0;margin:auto -20px 0;padding:18px 20px calc(var(--safe-b) + 12px);display:flex;flex-direction:column;gap:2px;background:linear-gradient(rgba(238,238,243,0),var(--bg) 18px)}
+.btn{width:100%;min-height:56px;padding:16px;border-radius:99px;font-size:17px;font-weight:700;background:var(--ac);color:#fff;text-align:center;transition:transform .12s,opacity .2s}
 .btn:active{transform:scale(.98)}
-.btn:disabled{opacity:.3}
-.btn.g{background:var(--green)}
-.saltar{min-height:48px;padding:12px;font-size:16px;font-weight:600;color:var(--sec)}
-.pasos{background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:6px 18px}
-.pasos div{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--border);font-size:17px;line-height:1.4}
-.pasos div:last-child{border-bottom:none}
-.pasos b.n{width:30px;height:30px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.copiar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg3);border-radius:14px;padding:12px 14px;margin-top:8px;font-size:15px;font-weight:700;word-break:break-all}
-.copiar button{background:var(--ac);color:#fff;border-radius:99px;min-height:44px;padding:10px 18px;font-size:14px;font-weight:700;flex-shrink:0}
-.hero{border-radius:30px;padding:24px;color:#fff;background:linear-gradient(160deg,#2BCB85,#0B9A5C);box-shadow:0 16px 32px -14px rgba(11,154,92,.5);margin-bottom:14px}
-.hero small{font-size:15px;opacity:.85;font-weight:600}
-.hero b{display:block;font-size:52px;font-weight:800;letter-spacing:-2px;margin:6px 0 4px}
-.hero span{font-size:15px;opacity:.9}
-.lista{background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:4px 18px}
-.lista div{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);font-size:16px;font-weight:600}
-.lista div:last-child{border-bottom:none}
-.lista em{font-style:normal;font-size:14px;color:var(--green-d);font-weight:700}
-.lista em.no{color:var(--sec)}
-.toast{position:fixed;left:50%;bottom:calc(var(--safe-b) + 90px);transform:translate(-50%,20px);background:var(--ac);color:#fff;padding:12px 18px;border-radius:99px;font-size:15px;font-weight:600;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap}
+.btn:disabled{opacity:.25}
+.saltar{min-height:48px;font-size:16px;font-weight:600;color:var(--sec);text-align:center}
+/* Final */
+.hero{border-radius:26px;padding:22px;color:#fff;background:linear-gradient(160deg,#2BCB85,#0B9A5C);margin-bottom:14px}
+.hero small{font-size:14px;opacity:.85;font-weight:600}
+.hero b{display:block;font-size:48px;font-weight:800;letter-spacing:-2px;margin:4px 0 2px}
+.hero span{font-size:14px;opacity:.9}
+.estado{font-size:14px;font-weight:700;color:var(--green-d)}
+.estado.no{color:var(--sec)}
+.toast{position:fixed;left:50%;top:calc(var(--safe-t) + 12px);transform:translate(-50%,-20px);background:var(--ac);color:#fff;padding:12px 18px;border-radius:99px;font-size:15px;font-weight:600;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap;z-index:9}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body>
-<div class="app"><div class="top"><button class="atras" id="atras" onclick="atras()" aria-label="Volver">‹</button><div class="prog"><i id="prog"></i></div></div><div id="paso"></div></div>
+<div class="app"><div class="top"><button class="atras" id="atras" onclick="atras()" aria-label="Volver"><svg class="i" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><div class="prog" id="prog"></div></div><div id="paso"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-// ---------- Datos: qué formas de conectar ofrece cada banco ----------
-// apple: la tarjeta funciona en Apple Pay (automatización "Transacción" de iOS)
-// correo: el banco manda un correo por cada compra → reenvío a tu dirección de la app (como Kuanto)
-// cartola: siempre se puede (PDF o foto del estado de cuenta)
+// Qué formas de conectar ofrece cada banco (a confirmar banco por banco):
+//   apple: la tarjeta funciona en Apple Pay → atajo "Finanzas: anotar compra" (lo que usa Vicho)
+//   correo: el banco manda un correo por cada compra → reenvío a tu dirección de la app
+//   siempre: foto/PDF de la cartola, o anotar a mano
 const BANCOS=[
- {id:'chile',n:'Banco de Chile',c:'#0033A0',ini:'BCh',apple:1,correo:1},
- {id:'santander',n:'Santander',c:'#EC0000',ini:'S',apple:1,correo:1},
- {id:'bci',n:'BCI',c:'#00A6E0',ini:'BCI',apple:1,correo:1},
- {id:'falabella',n:'Falabella / CMR',c:'#3E9B35',ini:'F',apple:1,correo:1},
- {id:'scotia',n:'Scotiabank',c:'#D81E05',ini:'Sc',apple:1,correo:0},
- {id:'estado',n:'BancoEstado',c:'#F58220',ini:'BE',apple:1,correo:0},
- {id:'itau',n:'Itaú',c:'#EC7000',ini:'It',apple:1,correo:1},
- {id:'mach',n:'MACH / Tenpo',c:'#6B2BD9',ini:'M',apple:1,correo:0},
+ {id:'chile',n:'Banco de Chile',c:'#0033A0',apple:1,correo:1},
+ {id:'santander',n:'Santander',c:'#EC0000',apple:1,correo:1},
+ {id:'bci',n:'BCI',c:'#00A6E0',apple:1,correo:1},
+ {id:'scotia',n:'Scotiabank',c:'#D81E05',apple:1,correo:0},
+ {id:'falabella',n:'Falabella / CMR',c:'#3E9B35',apple:1,correo:1},
+ {id:'estado',n:'BancoEstado',c:'#F58220',apple:1,correo:0},
+ {id:'itau',n:'Itaú',c:'#EC7000',apple:1,correo:1},
+ {id:'mach',n:'MACH o Tenpo',c:'#6B2BD9',apple:1,correo:0},
 ];
-const S={nombre:'',sueldo:null,dia:null,tel:null,bancos:[],hechos:{},i:0,modo:null};
-const $=id=>document.getElementById(id);
+const S={nombre:'',sueldo:null,dia:null,tel:null,bancos:[],hechos:{},i:0};
+const $=id=>document.getElementById(id),B=id=>BANCOS.find(b=>b.id===id);
 const fmt=n=>'$'+Math.round(n).toLocaleString('es-CL');
-const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2200)};
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2000)};
+const IC={apple:'<svg class="i" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>',
+  correo:'<svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+  cartola:'<svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>',
+  mano:'<svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>'};
 
-// Formas de conectar para un banco, la mejor primero: en iPhone el atajo de Apple Pay (el que usa Vicho), después el correo
-function formas(b){const F=[];
-  if(b.apple&&S.tel==='iphone')F.push({k:'apple',ic:'📱',t:'Cuando pagas con el iPhone',s:'Pagas con Apple Pay y la compra se anota al tiro, con aviso de cuánto te queda.',min:'2 min'});
-  if(b.correo)F.push({k:'correo',ic:'📧',t:'Que lleguen solas por correo',s:'Cada compra que el banco te avisa por correo se anota sola. Lo haces una vez.',min:'2 min'});
-  F.push({k:'cartola',ic:'📄',t:'Foto de tu estado de cuenta',s:'Una vez al mes le sacas una foto y yo leo todo.',min:'30 seg'});
-  F.push({k:'mano',ic:'✍️',t:'Lo anoto yo',s:'Tocas + y pones el monto. Tres segundos.',min:''});
-  return F}
+// Formas de conectar, la más fácil primero. En iPhone manda el atajo de Apple Pay.
+const FORMAS={
+  apple:{t:'Con tu iPhone',s:'Cuando pagas con Apple Pay, la compra se anota sola.',min:'2 min'},
+  correo:{t:'Con los correos del banco',s:'Cada compra que el banco te avisa por correo se anota sola.',min:'2 min'},
+  cartola:{t:'Con una foto de tu cartola',s:'Una vez al mes. Yo leo las compras y las cuotas.',min:'30 seg'},
+  mano:{t:'Lo anoto yo',s:'Tocas + y pones el monto.',min:''}};
+const formas=b=>[...(b.apple&&S.tel==='iphone'?['apple']:[]),...(b.correo?['correo']:[]),'cartola','mano'];
 
-// ---------- Pasos ----------
-const PASOS=[
- ()=>({emoji:'👋',h:'¡Hola! Te ayudo a ordenar tu plata',sub:'Son 2 minutos. Solo tocas botones.',btn:'Empezar',ok:true}),
- ()=>({emoji:'😊',h:'¿Cómo te llamo?',sub:'Tu nombre o apodo.',body:`<input class="grande" id="nom" placeholder="Tu nombre" autocomplete="given-name" enterkeyhint="next" value="${S.nombre}" oninput="S.nombre=this.value.trim();pinta(1)" onkeydown="if(event.key==='Enter'&&S.nombre)sig()">`,ok:!!S.nombre,foco:'nom'}),
- ()=>({emoji:'💰',h:`${S.nombre?S.nombre+', ¿':'¿'}cuánto te llega al mes?`,sub:'Más o menos. Nadie más lo ve.',body:chips('sueldo',[[500000,'Menos de $600 mil'],[750000,'Entre $600 y $900 mil'],[1100000,'Entre $900 mil y $1,3 millones'],[1650000,'Entre $1,3 y $2 millones'],[2400000,'Más de $2 millones']]),ok:!!S.sueldo}),
- ()=>({emoji:'📅',h:'¿Cuándo te pagan?',sub:'Así sé hasta cuándo te tiene que durar.',body:chips('dia',[['fin','🗓 A fin de mes'],['ini','🗓 A principio de mes'],['15','🗓 El 15'],['otro','🤷 Otro día']]),ok:!!S.dia}),
- ()=>({emoji:'📱',h:'¿Qué celular tienes?',sub:'Para mostrarte lo que funciona en el tuyo.',body:chips('tel',[['iphone','📱 iPhone'],['android','🤖 Android']]),ok:!!S.tel}),
- ()=>({emoji:'🏦',h:'¿Qué bancos o tarjetas usas?',sub:'Toca todos los que tengas.',body:`<div class="grid">${BANCOS.map(b=>`<button class="banco ${S.bancos.includes(b.id)?'on':''}" onclick="toggleB('${b.id}')"><span class="dot" style="background:${b.c}">${b.ini}</span>${b.n}</button>`).join('')}</div>`,ok:S.bancos.length>0,btn:S.bancos.length?`Seguir con ${S.bancos.length} banco${S.bancos.length>1?'s':''}`:'Elige al menos uno',saltar:'Solo uso efectivo'}),
- ()=>{const b=BANCOS.find(x=>x.id===S.bancos[S.i]),F=formas(b);
-   return{emoji:'🔌',h:`Conectemos ${b.n}`,sub:`${S.bancos.length>1?`Banco ${S.i+1} de ${S.bancos.length}. `:''}Elige cómo quieres que se anoten tus compras.`,
-   body:`<div class="ops">${F.map((f,j)=>`<button class="op" onclick="elegir('${f.k}')"><span class="ic">${f.ic}</span><span class="tx">${j===0?'<span class="estrella">⭐ Lo más fácil</span><br>':''}${f.t}<small>${f.s}${f.min?' · '+f.min:''}</small></span><span style="font-size:22px;color:var(--hint)">›</span></button>`).join('')}</div>`,sinBtn:true}},
- ()=>guia(),
- ()=>{const P=presu();return{emoji:'🎯',h:'Tu plan del mes',sub:`Para que te sobre plata todos los meses, te sugiero:`,body:`<div class="lista"><div>Para gastar en el mes<span>${fmt(P.gasto)}</span></div><div>Para ahorrar<span style="color:var(--green-d)">${fmt(P.ahorro)}</span></div></div><p class="sub" style="margin:14px 2px 0;font-size:15px">Lo puedes cambiar cuando quieras.</p>`,btn:'Me parece',ok:true}},
- ()=>{const P=presu(),d=diasHasta(),hoy=Math.round(P.gasto/30/1000)*1000;return{emoji:'🎉',h:`¡Listo${S.nombre?', '+S.nombre:''}!`,sub:'Esto es lo único que tienes que mirar cada día:',body:`<div class="hero"><small>Hoy puedes gastar</small><b>${fmt(hoy)}</b><span>Te quedan ${d} días hasta el próximo sueldo</span></div>
-   <div class="lista">${S.bancos.map(id=>{const b=BANCOS.find(x=>x.id===id),h=S.hechos[id];return`<div>${b.n}<em class="${h&&h!=='mano'?'':'no'}">${!h?'Pendiente':h==='mano'?'Lo anotas tú':'✓ Conectado'}</em></div>`}).join('')}</div>`,btn:'Ir a mi plata',ok:true,fin:true}},
-];
-const presu=()=>{const s=S.sueldo||800000;return{gasto:Math.round(s*.8/10000)*10000,ahorro:s-Math.round(s*.8/10000)*10000}};
-const diasHasta=()=>{const h=new Date(),f=S.dia==='15'?15:S.dia==='ini'?5:new Date(h.getFullYear(),h.getMonth()+1,0).getDate();let d=f-h.getDate();if(d<=0)d+=30;return d};
-const chips=(k,L)=>`<div class="ops">${L.map(([v,t])=>`<button class="op ${S[k]===v?'on':''}" onclick="S['${k}']=${typeof v==='string'?`'${v}'`:v};pinta();setTimeout(sig,220)"><span class="tx">${t}</span><span class="ck">${S[k]===v?'✓':''}</span></button>`).join('')}</div>`;
-
-// Mini guía de cada forma de conectar (en la app real abre la guía con el iPhone dibujado, el lector de cartolas, etc.)
-function guia(){const b=BANCOS.find(x=>x.id===S.bancos[S.i]);
-  if(S.modo==='correo')return{emoji:'📧',h:'Reenvía los correos del banco',sub:`Tu dirección para ${b.n}:`,body:`<div class="copiar"><span>vicho-7f3a@correos.tuplata.cl</span><button onclick="toast('📋 Copiado')">Copiar</button></div>
-   <div class="pasos" style="margin-top:14px"><div><b class="n">1</b><span>Toca <b>Abrir Gmail</b></span></div><div><b class="n">2</b><span>Pega la dirección donde dice <b>Reenviar a</b></span></div><div><b class="n">3</b><span>Listo. Yo confirmo el correo por ti</span></div></div>`,btn:'Abrir Gmail',ok:true,listo:'correo'};
-  if(S.modo==='apple')return{emoji:'📱',h:'Conectemos tu iPhone',sub:'Te muestro dónde tocar, paso a paso, con un dedito 👆.',body:`<div class="pasos"><div><b class="n">1</b><span>Instalar el atajo (un toque)</span></div><div><b class="n">2</b><span>Crear la automatización (5 toques, te guío)</span></div><div><b class="n">3</b><span>Pagar algo chico para probar</span></div></div>`,btn:'Empezar la guía',ok:true,listo:'apple'};
-  if(S.modo==='cartola')return{emoji:'📄',h:'Sácale una foto a tu estado de cuenta',sub:'El que te llega por correo o en la app del banco. Yo leo las compras y las cuotas.',body:`<div class="pasos"><div><b class="n">1</b><span>Toca <b>Sacar foto</b> o elige el PDF</span></div><div><b class="n">2</b><span>Revisa la lista que te muestro</span></div><div><b class="n">3</b><span>Toca <b>Guardar</b></span></div></div>`,btn:'Sacar foto o elegir PDF',ok:true,listo:'cartola'};
-  return{emoji:'✍️',h:'Perfecto, lo anotas tú',sub:'Abajo al medio siempre está el botón <b>+</b>. Pones el monto y listo: la categoría la pongo yo.',btn:'Entendido',ok:true,listo:'mano'}}
+// ---------- Pantallas ----------
+const P={
+ hola:()=>({h:'Ordenemos tu plata',sub:'Te hago 5 preguntas y listo. Solo tocas botones.',btn:'Empezar',ok:true}),
+ nombre:()=>({h:'¿Cómo te llamo?',body:`<input class="grande" id="nom" placeholder="Tu nombre" autocomplete="given-name" enterkeyhint="next" value="${S.nombre}" oninput="S.nombre=this.value.trim();$('sig').disabled=!S.nombre" onkeydown="if(event.key==='Enter'&&S.nombre)sig()">`,ok:!!S.nombre,foco:'nom'}),
+ sueldo:()=>({h:`${S.nombre?S.nombre+', ¿cuánto':'¿Cuánto'} te llega al mes?`,sub:'Más o menos. Solo tú lo ves.',body:grid('sueldo',[[500000,'$500 mil'],[800000,'$800 mil'],[1200000,'$1,2 millones'],[1700000,'$1,7 millones'],[2200000,'$2,2 millones'],[3000000,'$3 millones o más']]),auto:true}),
+ dia:()=>({h:'¿Cuándo te pagan?',sub:'Así sé hasta cuándo te tiene que durar.',body:grid('dia',[['fin','A fin de mes'],['ini','A principio de mes'],['15','El 15'],['otro','Otro día']]),auto:true}),
+ tel:()=>({h:'¿Qué celular tienes?',body:`<div class="grid"><button class="cel tel ${S.tel==='iphone'?'on':''}" onclick="pick('tel','iphone')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.8-.9-3-.8c-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.2.8 1.1 1.7 2.3 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.2.9-1.3 1.3-2.5 1.3-2.6-.1 0-2.5-.9-2.5-3.8zM14.1 5.8c.6-.8 1.1-1.8 1-2.8-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.7-1 2.7 1 .1 2-.5 2.7-1.3z"/></svg>iPhone</button>
+   <button class="cel tel ${S.tel==='android'?'on':''}" onclick="pick('tel','android')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18c0 .6.4 1 1 1h1v3.5a1.5 1.5 0 0 0 3 0V19h2v3.5a1.5 1.5 0 0 0 3 0V19h1c.6 0 1-.4 1-1V8H6zM3.5 8A1.5 1.5 0 0 0 2 9.5v7a1.5 1.5 0 0 0 3 0v-7A1.5 1.5 0 0 0 3.5 8zm17 0A1.5 1.5 0 0 0 19 9.5v7a1.5 1.5 0 0 0 3 0v-7A1.5 1.5 0 0 0 20.5 8zm-4.9-5.8 1.3-1.3a.5.5 0 0 0-.7-.7l-1.5 1.5A6 6 0 0 0 12 1a6 6 0 0 0-2.7.7L7.8.2a.5.5 0 0 0-.7.7l1.3 1.3A6 6 0 0 0 6 7h12a6 6 0 0 0-2.4-4.8zM10 5H9V4h1zm5 0h-1V4h1z"/></svg>Android</button></div>`,auto:true}),
+ bancos:()=>({h:'¿Qué bancos o tarjetas usas?',sub:'Marca todos los que tengas.',body:`<div class="lista">${BANCOS.map(b=>`<button class="fila ${S.bancos.includes(b.id)?'on':''}" onclick="toggleB('${b.id}')"><span class="marca" style="background:${b.c}"></span><span class="tx">${b.n}</span><span class="ok"></span></button>`).join('')}</div>`,
+   ok:S.bancos.length>0,btn:S.bancos.length?'Siguiente':'Marca al menos uno',saltar:['Solo uso efectivo','soloEfectivo()']}),
+ conectar:()=>{const b=B(S.bancos[S.i]),F=formas(b),r=F[0],f=FORMAS[r];
+   return{h:'¿Cómo anotamos tus compras?',sub:S.bancos.length>1?`Tarjeta ${S.i+1} de ${S.bancos.length}`:'',
+   body:`<div class="banco-h"><span class="marca" style="background:${b.c}"></span><div><b>${b.n}</b><small>${S.hechos[b.id]?'Conectado':'Sin conectar'}</small></div></div>
+   <div class="reco"><span class="tag">Lo más fácil</span><h2>${f.t}</h2><p>${f.s}${f.min?` Te toma ${f.min}.`:''}</p><button class="btn" onclick="guia('${r}')">Conectar</button></div>
+   <div class="eti otras">OTRAS FORMAS</div><div class="lista">${F.slice(1).map(k=>`<button class="fila" onclick="guia('${k}')">${IC[k]}<span class="tx">${FORMAS[k].t}</span><span class="chev">›</span></button>`).join('')}</div>`,
+   sinBtn:true,saltar:['Ahora no','sigBanco()']}},
+ guia:()=>{const b=B(S.bancos[S.i]),k=S.modo;
+   const G={apple:{h:'Conecta tu iPhone',sub:'Te muestro dónde tocar, paso a paso.',p:['Instalar el atajo: un toque','Crear la automatización: 5 toques con guía','Pagar algo chico para probar'],btn:'Empezar la guía'},
+     correo:{h:`Reenvía los correos de ${b.n}`,sub:'Tu dirección personal ya está copiada.',p:['Toca <b>Abrir Gmail</b>','Donde dice <b>Reenviar a</b>, pega','Listo, yo confirmo el resto'],btn:'Abrir Gmail'},
+     cartola:{h:'Sácale una foto a tu cartola',sub:'La que te llega por correo o está en la app del banco.',p:['Toca <b>Sacar foto</b> o elige el PDF','Revisa lo que encontré','Toca <b>Guardar</b>'],btn:'Sacar foto o elegir PDF'},
+     mano:{h:'Perfecto, lo anotas tú',sub:'El botón <b>+</b> siempre está abajo al medio. Pones el monto y yo pongo la categoría.',p:[],btn:'Entendido'}}[k];
+   return{h:G.h,sub:G.sub,body:G.p.length?`<div class="pasos">${G.p.map((t,j)=>`<div><b class="n">${j+1}</b><span>${t}</span></div>`).join('')}</div>`:'',btn:G.btn,ok:true,accion:`hecho('${k}')`}},
+ plan:()=>{const p=plan();return{h:'Tu plan del mes',sub:'Para que te sobre plata todos los meses:',body:`<div class="lista"><div class="fila"><span class="tx">Para gastar</span><b>${fmt(p.gasto)}</b></div><div class="fila"><span class="tx">Para ahorrar</span><b style="color:var(--green-d)">${fmt(p.ahorro)}</b></div></div><p class="sub" style="margin:12px 4px 0;font-size:14px">Lo puedes cambiar cuando quieras.</p>`,btn:'Me parece',ok:true}},
+ listo:()=>{const p=plan(),hoy=Math.round(p.gasto/30/500)*500;return{h:`¡Listo${S.nombre?', '+S.nombre:''}!`,sub:'Esto es lo único que miras cada día:',body:`<div class="hero"><small>Hoy puedes gastar</small><b>${fmt(hoy)}</b><span>Hasta tu próximo sueldo</span></div>
+   ${S.bancos.length?`<div class="lista">${S.bancos.map(id=>{const h=S.hechos[id];return`<div class="fila"><span class="marca" style="background:${B(id).c};width:22px;height:22px;border-radius:6px"></span><span class="tx">${B(id).n}</span><span class="estado ${h&&h!=='mano'?'':'no'}">${!h?'Pendiente':h==='mano'?'A mano':'Conectado'}</span></div>`}).join('')}</div>`:''}`,btn:'Ir a mi plata',ok:true,accion:"toast('Fin del prototipo')"}}
+};
+const ORDEN=['hola','nombre','sueldo','dia','tel','bancos','conectar','plan','listo'];
+const plan=()=>{const s=S.sueldo||800000,g=Math.round(s*.8/10000)*10000;return{gasto:g,ahorro:s-g}};
+const grid=(k,L)=>`<div class="grid">${L.map(([v,t])=>`<button class="cel ${S[k]===v?'on':''}" onclick="pick('${k}',${typeof v==='string'?`'${v}'`:v})">${t}</button>`).join('')}</div>`;
 
 // ---------- Navegación ----------
-let N=0,hist=[];
-function pinta(){const p=PASOS[N](),tot=PASOS.length-1;
-  $('prog').style.width=Math.max(4,N/tot*100)+'%';$('atras').hidden=N===0;
-  $('paso').innerHTML=`<div class="paso"><div class="emoji">${p.emoji}</div><h1>${p.h}</h1><p class="sub">${p.sub}</p>${p.body||''}
-   ${p.sinBtn?`<div class="pie"><button class="saltar" onclick="saltarBanco()">Después lo hago</button></div>`:`<div class="pie"><button class="btn ${p.listo?'g':''}" id="sig" ${p.ok?'':'disabled'} onclick="${p.listo?`hecho('${p.listo}')`:p.fin?`toast('Fin del prototipo 🙌')`:'sig()'}">${p.btn||'Siguiente'}</button>${p.saltar?`<button class="saltar" onclick="S.bancos=[];N=8;pinta()">${p.saltar}</button>`:''}</div>`}</div>`;
-  S._ultimo=p;if(p.foco)setTimeout(()=>{const e=$(p.foco);if(e&&document.activeElement!==e)e.focus()},50)}
-function sig(){if(!S._ultimo.ok)return;hist.push([N,S.i]);N++;pinta()}
-function atras(){const h=hist.pop();if(!h)return;[N,S.i]=h;pinta()}
+let V='hola',hist=[];
+function pinta(){const p=P[V](),n=ORDEN.indexOf(V==='guia'?'conectar':V);
+  $('prog').innerHTML=ORDEN.slice(1).map((_,j)=>`<i class="${j<n?'on':''}"></i>`).join('');$('atras').hidden=!hist.length;
+  $('paso').innerHTML=`<div class="paso"><h1>${p.h}</h1>${p.sub?`<p class="sub">${p.sub}</p>`:''}${p.body||''}
+   <div class="pie">${p.sinBtn||p.auto?'':`<button class="btn" id="sig" ${p.ok?'':'disabled'} onclick="${p.accion||'sig()'}">${p.btn||'Siguiente'}</button>`}${p.saltar?`<button class="saltar" onclick="${p.saltar[1]}">${p.saltar[0]}</button>`:''}</div></div>`;
+  if(p.foco)setTimeout(()=>$(p.foco)&&$(p.foco).focus(),60)}
+const ir=v=>{hist.push([V,S.i]);V=v;pinta();scrollTo(0,0)};
+function sig(){ir(ORDEN[ORDEN.indexOf(V)+1])}
+function atras(){const h=hist.pop();if(!h)return;[V,S.i]=h;pinta()}
+function pick(k,v){S[k]=v;pinta();setTimeout(sig,200)}
 function toggleB(id){const i=S.bancos.indexOf(id);i<0?S.bancos.push(id):S.bancos.splice(i,1);pinta()}
-function elegir(k){S.modo=k;hist.push([N,S.i]);N=7;pinta()}
-function hecho(k){S.hechos[S.bancos[S.i]]=k;toast(k==='mano'?'👍 Anotado':'✅ '+BANCOS.find(x=>x.id===S.bancos[S.i]).n+' conectado');siguienteBanco()}
-function saltarBanco(){siguienteBanco()}
-function siguienteBanco(){hist.push([N,S.i]);if(S.i<S.bancos.length-1){S.i++;N=6}else N=8;pinta()}
-// La pantalla de "Me parece" (paso 8) avanza normal; la 9 es el final
+function soloEfectivo(){S.bancos=[];ir('plan')}
+function guia(k){S.modo=k;ir('guia')}
+function hecho(k){S.hechos[S.bancos[S.i]]=k;toast(k==='mano'?'Anotado':B(S.bancos[S.i]).n+' conectado');sigBanco()}
+function sigBanco(){if(S.i<S.bancos.length-1){hist.push([V,S.i]);S.i++;V='conectar';pinta()}else ir('plan')}
 pinta();
 </script>
 </body>
