@@ -398,6 +398,56 @@ body:not(.ready) .mes-b .chev{display:none}
 .gi-k svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .gi-no{font-size:13px;color:var(--sec);line-height:1.5;background:var(--bg3);border-radius:14px;padding:11px 14px;margin:14px 0 4px}
 .lg-fine{text-align:center;font-size:12px;color:var(--hint)}
+/* Guía "Conectar Apple Pay": una pantalla por paso, un iPhone dibujado y un dedo que marca dónde tocar */
+.gu-top{display:flex;gap:5px;margin:2px 44px 18px}
+.gu-top i{flex:1;height:5px;border-radius:99px;background:var(--bg3);overflow:hidden}
+.gu-top i.on{background:var(--ac)}
+.gu-top i.now{background:linear-gradient(90deg,var(--ac) 50%,var(--bg3) 0)}
+.gu{text-align:center;animation:gu .32s cubic-bezier(.2,.9,.3,1)}
+@keyframes gu{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+.gu small.n{display:block;font-size:12.5px;font-weight:700;color:var(--hint);letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px}
+.gu h3{font-size:25px!important;line-height:1.15;margin-bottom:8px!important}
+.gu p{font-size:15px!important;max-width:320px;margin:0 auto 18px!important}
+.gu .big{font-size:64px;margin:6px 0 10px;line-height:1}
+.gu .btn{margin-top:10px}
+.gu .alt{background:none;border:none;color:var(--sec);font-size:14px;font-weight:600;padding:12px;margin-top:2px}
+.gu .nota{background:var(--bg3);border-radius:16px;padding:11px 14px;font-size:13px;color:var(--sec);line-height:1.45;text-align:left;margin-top:12px}
+.fone{position:relative;width:204px;margin:0 auto 16px;border-radius:44px;padding:4px;background:linear-gradient(145deg,#8E8E93,#3A3A3C 22%,#1C1C1E 50%,#48484A 78%,#AEAEB2);box-shadow:0 24px 44px -20px rgba(18,18,23,.6),0 2px 4px rgba(18,18,23,.2)}
+.fone:before,.fone:after{content:'';position:absolute;width:3px;border-radius:2px;background:linear-gradient(#8E8E93,#48484A)}
+.fone:before{left:-3px;top:88px;height:34px;box-shadow:0 44px 0 #636366}
+.fone:after{right:-3px;top:110px;height:52px}
+.fone .scr{position:relative;border-radius:40px;border:3px solid #000;height:330px;padding:40px 12px 12px;text-align:left;font-size:9.5px;color:#fff;overflow:hidden;background:#000 radial-gradient(120% 60% at 50% 0,#1E2A44,#000 70%)}
+.fone .di{position:absolute;top:9px;left:50%;width:56px;height:18px;margin-left:-28px;border-radius:99px;background:#000;z-index:5}
+.fone .sb{position:absolute;top:11px;left:22px;right:16px;align-items:center;display:flex;justify-content:space-between;font-size:11px;font-weight:700;z-index:4}
+.fone .tt{font-size:15.5px;font-weight:800;margin:4px 4px 10px;letter-spacing:-.4px}
+.fone .grp{background:rgba(44,44,46,.92);border-radius:10px;overflow:visible;margin-bottom:8px}
+.fone .rw{padding:6px 8px;display:flex;align-items:center;gap:6px;position:relative;border-bottom:.5px solid rgba(255,255,255,.08);border-radius:12px}
+.fone .grp .rw:last-child{border-bottom:none}
+.fone .rw em{font-style:normal;margin-left:auto;color:#8E8E93}
+.fone .rw em.v{color:#0A84FF;font-weight:800}
+.fone .ico{width:17px;height:17px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:9.5px;flex-shrink:0}
+.fone .dim{color:#8E8E93}
+.fone .bl{background:#0A84FF;color:#fff;border-radius:10px;padding:7px;text-align:center;font-weight:700;position:relative}
+.fone .tabs{position:absolute;left:10px;right:10px;bottom:12px;display:flex;justify-content:space-around;padding:6px 4px;border-radius:99px;background:rgba(44,44,46,.85);font-size:8px;color:#8E8E93}
+.fone .tabs>span{position:relative;padding:3px 6px;border-radius:99px}
+.fone .tabs .sel{color:#0A84FF;font-weight:700}
+.fone .pl{position:absolute;top:44px;right:14px;width:22px;height:22px;border-radius:50%;background:rgba(44,44,46,.92);color:#0A84FF;font-size:15px;display:flex;align-items:center;justify-content:center}
+/* Estilo Clicky: se oscurece todo menos donde hay que tocar, anillo punteado amarillo girando y etiqueta */
+.tap{z-index:3;box-shadow:0 0 0 999px rgba(0,0,0,.55),0 0 0 2px #F5B83D}
+.tap:after{content:'';position:absolute;left:50%;top:50%;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;border:2px dashed #F5B83D;background:radial-gradient(circle,rgba(245,184,61,.28),rgba(245,184,61,0) 70%);animation:gira 4s linear infinite,late 1.6s ease-in-out infinite;pointer-events:none}
+.tap:before{content:'';position:absolute;left:50%;top:50%;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(245,184,61,.6),0 2px 6px rgba(0,0,0,.5);z-index:2;animation:toque 1.6s ease-in-out infinite}
+.lbl{position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);white-space:nowrap;background:linear-gradient(#F9C85A,#EDA82B);color:#5A3A00;font-size:9px;font-weight:800;padding:4px 8px;border-radius:8px;box-shadow:0 4px 12px -2px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.5);z-index:4;animation:flota 2.4s ease-in-out infinite}
+.lbl.ab{bottom:auto;top:calc(100% + 7px)}
+@keyframes gira{to{transform:rotate(360deg)}}
+@keyframes late{0%,100%{scale:1}50%{scale:1.15}}
+@keyframes toque{0%,60%,100%{transform:scale(1)}70%{transform:scale(.7)}}
+@keyframes flota{0%,100%{translate:0 0}50%{translate:0 -3px}}
+/* Burbujas tipo Clicky en la portada de la guía */
+.gu .bub{display:inline-block;max-width:78%;padding:10px 15px;border-radius:20px;font-size:15px;font-weight:600;line-height:1.3;text-align:left;margin:4px 0;box-shadow:0 6px 16px -8px rgba(18,18,23,.45),inset 0 1px 0 rgba(255,255,255,.7)}
+.gu .bub.yo{background:linear-gradient(#D8E8FF,#9CC3FF);color:#0B2A55;border:1px solid #7FA8E8;border-bottom-left-radius:6px}
+.gu .bub.el{background:linear-gradient(#FFE2C6,#F8B98A);color:#5A2A08;border:1px solid #E59A63;border-bottom-left-radius:6px}
+.gu .chat{text-align:left;margin:4px 8px 18px;animation:gu .4s}
+.gu .chat .bub.el{animation:gu .4s .5s both}
 </style>
 </head>
 <body>
@@ -465,6 +515,8 @@ body:not(.ready) .mes-b .chev{display:none}
   <h3 class="sec-t" id="m-tips">Consejos con tus números</h3>
   <div id="coach"></div>
   <div class="card menu" style="margin-top:6px">
+    <button class="crow" id="m-inv" onclick="openInvitar()" style="display:none"><div class="ic" style="font-size:18px">👥</div><div class="cm"><b>Invitar a alguien</b><small>Tu papá, tus amigos: cada uno con su app y sus datos privados</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="guiaAP(0)"><div class="ic" style="font-size:18px">💳</div><div class="cm"><b>Conecta Apple Pay</b><small id="ap-est">Tus compras se anotan solas. Te guío en 2 minutos</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openAvisos()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div class="cm"><b>Avisos en tu calendario</b><small>Que el celular te recuerde qué hacer y cuándo</small></div><span class="chev">›</span></button>
   </div>
   </section>
@@ -736,6 +788,7 @@ async function _loadAll(){
     ]);
     if(!ok)return lock('Esa clave no funciona. Revisa que esté bien copiada.','mal');
     S.aj={};(aj||[]).forEach(a=>S.aj[a.clave]=a.valor);S.ahorros=ahorros||[];
+    api('rpc/atajo_url',{m:'POST',b:{}}).then(u=>ATAJO_URL=typeof u==='string'?u:'').catch(()=>{});api('rpc/es_admin',{m:'POST',b:{}}).then(v=>{S.admin=v===true;renderCoach()}).catch(()=>{});
     SUELDO=PERF().sueldo||SUELDO;
     cats.forEach(c=>S.techos[c.clave]=c.techo);
     S.cuotas=cuotas;S.pptos={};pptos.forEach(p=>S.pptos[p.periodo]=p.monto);
@@ -889,6 +942,8 @@ function habitos(){
 }
 function renderCoach(){
   renderDeseos();
+  const mi=$('m-inv');if(mi)mi.style.display=S.admin?'':'none';
+  const ap=$('ap-est');if(ap&&apConectado())ap.textContent='✅ Conectado: tus compras con Apple Pay entran solas';
   const el=$('coach-hab');
   if(!S.V.esActual)el.innerHTML=`<div class="nudge"><div>👀 Estás viendo <b>${perL(S.periodo)}</b>. Tus hábitos son del mes de hoy.</div><button onclick="setPer(S.actual)">Volver a hoy</button></div>`;
   else{const H=habitos(),cu=H.filter(h=>h.ok!==null),n=cu.filter(h=>h.ok).length,t=cu.length,f=t-n,pc=Math.round(n/t*100);
@@ -1053,6 +1108,70 @@ function editPat(){const p=PAT();openSheet(`<h3>Tu patrimonio hoy</h3><p>Actual�
   <button class="btn p" onclick="saveAj('patrimonio',{fintual:val('p-f'),colchon:val('p-col'),cartas:val('p-c'),eth:val('p-e'),fecha:hoyISO()}).then(()=>{toast('✅ Patrimonio actualizado');openMeta()})">Guardar</button>`)}
 
 function icsEvt(uid,start,title,desc,rrule){return['BEGIN:VEVENT','UID:'+uid+'@finanzas-vicho','DTSTAMP:20260929T120000Z','DTSTART;TZID=America/Santiago:'+start,'DURATION:PT15M','SUMMARY:'+title,'DESCRIPTION:'+desc,rrule?'RRULE:'+rrule:null,'BEGIN:VALARM','TRIGGER:PT0M','ACTION:DISPLAY','DESCRIPTION:'+title,'END:VALARM','END:VEVENT'].filter(Boolean).join('\r\n')}
+// ---------- Guía "Conecta Apple Pay" (estilo Clicky: un paso por pantalla, un dedo que muestra dónde tocar) ----------
+// Parte 1 instala el atajo "Finanzas: anotar compra" desde un link de iCloud (pregunta "Pega tu código" al instalarlo).
+// Parte 2 es la automatización Transacción → atajo: iOS no deja crearla desde afuera, así que se guía con un iPhone dibujado.
+// El link de iCloud del atajo vive en secretos.atajo_url (rpc/atajo_url): se cambia sin publicar la app.
+// El código es cuentas.token_atajo de cada persona (rpc/mi_token_atajo). La cuenta de Vicho no usa código (atajo sin token).
+let ATAJO_URL='';
+const apConectado=()=>S.gastos.some(g=>g.fuente==='atajo');
+const fone=(tt,body,tabs)=>`<div class="fone"><div class="scr"><div class="di"></div><div class="sb"><span>9:41</span><svg viewBox="0 0 46 11" width="38" height="9" fill="#fff"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/><path d="M25 3.2a7.5 7.5 0 0 1 9.5 0l-1.3 1.4a5.6 5.6 0 0 0-6.9 0zM26.9 5.9a4.6 4.6 0 0 1 5.7 0l-2.85 3.1z"/><rect x="37" y="1" width="8" height="9" rx="2.2" fill="none" stroke="#fff" stroke-opacity=".5"/><rect x="38.4" y="2.4" width="5.2" height="6.2" rx="1.2"/></svg></div><div class="tt">${tt}</div>${body}${tabs?`<div class="tabs">${tabs}</div>`:''}</div></div>`;
+// Marca dónde tocar: anillo + etiqueta amarilla (ab = etiqueta abajo, para lo que está arriba de la pantalla)
+const lbl=(t,ab)=>`<b class="lbl${ab?' ab':''}">${t}</b>`;
+const ico=(e,c)=>`<span class="ico" style="background:${c}">${e}</span>`;
+const tabsAtajos=sel=>['Atajos','Automatización','Galería'].map(t=>t===sel?`<span class="sel tap">${lbl('toca aquí')}${t}</span>`:`<span>${t}</span>`).join('');
+const GUIA_AP=[
+  {chat:1,t:'Tus compras con Apple Pay, anotadas solas',p:'Pagas con el iPhone y en 2 segundos te llega: <b>“✅ $4.500 · Comida · hoy te quedan $28.000”</b>. Cero teclear.',b:'Empezar (2 min)'},
+  {t:'Instala el atajo',p:'Toca el botón: copio tu código y te abro el atajo ya armado. No tienes que escribir nada.',
+   ui:()=>fone('Añadir atajo',`<div class="grp"><div class="rw">${ico('⚡','#5E5CE6')}<b>Finanzas: anotar compra</b></div><div class="rw dim">Pega tu código…</div></div><div class="bl tap" style="margin-top:16px">${lbl('tu código ya va copiado',1)}Añadir atajo</div>`),
+   b:'Copiar mi código y abrir',a:'guiaAPInstalar()'},
+  {t:'Pega tu código y toca “Añadir atajo”',p:'iOS te pregunta tu código: mantén el dedo en la cajita → <b>Pegar</b> → <b>Añadir atajo</b>.',
+   ui:()=>fone('Configura este atajo',`<div class="dim" style="margin:0 4px 8px">Finanzas: anotar compra pregunta:</div><div class="grp"><div class="rw tap">${lbl('mantén → Pegar',1)}Pega tu código</div></div><div class="bl" style="margin-top:40px">Añadir atajo</div>`),b:'Listo, lo añadí'},
+  {t:'Ahora la automatización',p:'Es lo único que Apple no deja hacer por ti. Abre Atajos y toca <b>Automatización</b>, abajo al medio.',
+   ui:()=>fone('Atajos',`<div class="grp"><div class="rw">${ico('⚡','#5E5CE6')}Finanzas: anotar compra</div></div>`,tabsAtajos('Automatización')),b:'Abrir Atajos',a:"location.href='shortcuts://';guiaAP(4)"},
+  {t:'Toca el +',p:'Arriba a la derecha. Si nunca has hecho una, toca <b>Nueva automatización</b>.',
+   ui:()=>fone('Automatización',`<div class="pl tap">${lbl('toca el +',1)}+</div><div class="dim" style="text-align:center;margin-top:90px">Sin automatizaciones</div>`,tabsAtajos('')),b:'Siguiente'},
+  {t:'Busca “Transacción”',p:'Baja en la lista o escríbelo arriba. Es la que tiene el ícono de Wallet.',
+   ui:()=>fone('Nueva automatización',`<div class="grp"><div class="rw dim">🔍 Buscar</div></div><div class="grp"><div class="rw">${ico('📍','#FF9F0A')}Llegar</div><div class="rw">${ico('🔋','#30D158')}Batería</div><div class="rw tap">${lbl('esta')}${ico('💳','#1C1C1E;border:1px solid #444')}Transacción</div><div class="rw">${ico('🔔','#FF453A')}Notificación</div></div>`),b:'Siguiente'},
+  {t:'Elige tus tarjetas',p:'Marca las que usas con Apple Pay (Scotia, BCI…). Abajo elige <b>Ejecutar inmediatamente</b> y toca <b>Siguiente</b>.',
+   ui:()=>fone('Transacción',`<div class="dim" style="margin:0 4px 6px">CUANDO USO</div><div class="grp"><div class="rw">${ico('💳','#C8102E')}Scotiabank Visa<em class="v">✓</em></div><div class="rw">${ico('💳','#0033A0')}BCI<em class="v">✓</em></div></div><div class="grp" style="margin-top:34px"><div class="rw tap">${lbl('elige esta')}Ejecutar inmediatamente<em class="v">✓</em></div><div class="rw">Preguntar antes<em></em></div></div>`),b:'Siguiente'},
+  {t:'Elige “Finanzas: anotar compra”',p:'Aparece en la lista de tus atajos. Tócalo y después <b>OK</b> arriba a la derecha. ¡Eso era todo!',
+   ui:()=>fone('Cuando uso mi tarjeta…',`<div class="grp"><div class="rw dim">＋ Nuevo atajo en blanco</div></div><div class="dim" style="margin:14px 4px 6px">MIS ATAJOS</div><div class="grp"><div class="rw tap">${lbl('este')}${ico('⚡','#5E5CE6')}Finanzas: anotar compra</div><div class="rw">${ico('📷','#FF9F0A')}Foto del día</div></div>`),b:'Siguiente'},
+  {big:'☕',t:'Pruébalo con una compra de verdad',p:'Paga algo chico con Apple Pay. Te tiene que llegar una notificación <b>“✅ $X · categoría”</b> y el gasto aparece solo en la app.',b:'Listo',a:'guiaAPFin()'}
+];
+function guiaAP(i){const g=GUIA_AP[i],N=GUIA_AP.length;
+  const h=`<div class="gu-top">${GUIA_AP.map((_,k)=>`<i class="${k<i?'on':k===i?'now':''}"></i>`).join('')}</div>
+  <div class="gu">${i?`<small class="n">Paso ${i} de ${N-1}</small>`:''}${g.chat?`<div class="chat"><span class="bub yo">quiero que mis compras con Apple Pay se anoten solas</span><br><span class="bub el">¡listo! te guío, son 2 minutos 👆</span></div>`:g.ui?g.ui():`<div class="big">${g.big}</div>`}
+  <h3>${g.t}</h3><p>${g.p}</p>
+  ${i===0&&apConectado()?`<div class="nota">✅ Ya te está funcionando: este mes entraron compras por Apple Pay. Úsala para conectar otra tarjeta o para un amigo.</div>`:''}
+  <button class="btn p" onclick="${g.a||`guiaAP(${i+1})`}">${g.b}</button>
+  ${i?`<button class="alt" onclick="guiaAP(${i-1})">‹ Atrás</button>`:''}</div>`;
+  // Entre pasos se repinta la misma hoja (sin apilar cada paso en el ‹ de las hojas)
+  if(sheetOn()&&$('sheet').querySelector('.gu'))pintaSheet(h,0);else openSheet(h)}
+async function guiaAPInstalar(){
+  if(!ATAJO_URL){toast('El atajo todavía no está listo para instalar: sigue la guía y lo terminas después');return guiaAP(2)}
+  // Safari (iOS) solo deja copiar dentro del toque: ClipboardItem recibe la promesa del código.
+  const cod=api('rpc/mi_token_atajo',{m:'POST',b:{}}).then(c=>new Blob([c||''],{type:'text/plain'}));
+  try{await navigator.clipboard.write([new ClipboardItem({'text/plain':cod})]);toast('Código copiado')}
+  catch(e){return toast('No pude copiar tu código. Intenta de nuevo')}
+  location.href=ATAJO_URL;guiaAP(2)}
+// ---------- Invitar (solo la cuenta de Vicho, rpc/es_admin): agrega el Gmail a secretos.google_emails ----------
+const APP_URL='https://finanzas-vicente.vercel.app';
+async function openInvitar(){let L=[];try{L=await api('rpc/invitados',{m:'POST',b:{}})||[]}catch(e){}
+  openSheet(`<h3>👥 Invitar a alguien</h3><p>Escribe su <b>Gmail</b>. Entra con “Continuar con Google” y parte con su app vacía: <b>no ve nada tuyo</b>.</p>
+  <input id="inv-mail" type="email" inputmode="email" autocapitalize="off" autocorrect="off" placeholder="nombre@gmail.com">
+  <button class="btn p" onclick="invitar()">Invitar</button>
+  ${L.length?`<div class="card" style="margin-top:14px">${L.map(i=>`<div class="crow" style="cursor:default"><div class="ic">${i.entro?'✅':'✉️'}</div><div class="cm"><b>${i.email}</b><small>${i.entro?'Ya está usando la app':'Invitado, todavía no entra'}</small></div><button class="chip" onclick="quitarInv('${i.email}')">Quitar</button></div>`).join('')}</div>`:''}
+  <p class="fine" style="margin-top:12px">Después de invitar, mándale el link: ${APP_URL}</p>`)}
+async function invitar(){const m=$('inv-mail').value.trim().toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m))return toast('Revisa el correo');
+  try{await api('rpc/invitar',{m:'POST',b:{p_email:m}});toast('✅ Invitado');
+    const txt=`Te invité a mi app de finanzas 💸 Entra con tu Google (${m}) acá: ${APP_URL}\nTus datos son solo tuyos.`;
+    if(navigator.share)navigator.share({text:txt}).catch(()=>{});else{try{await navigator.clipboard.writeText(txt);toast('✅ Invitado. Copié el mensaje para mandárselo')}catch(e){}}
+    openInvitar()}catch(e){toast('❌ No se pudo invitar');console.error(e)}}
+async function quitarInv(m){if(!confirm(`¿Quitar a ${m}? Si ya tiene cuenta, la conserva; solo deja de poder entrar si nunca entró.`))return;
+  try{await api('rpc/invitar',{m:'POST',b:{p_email:m,p_quitar:true}});openInvitar()}catch(e){toast('❌ Error')}}
+
+function guiaAPFin(){closeSheet();toast(apConectado()?'✅ Apple Pay conectado':'Cuando pagues con Apple Pay, el gasto aparece solo')}
 function openAvisos(){
   const y=new Date().getFullYear(),ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Finanzas Vicho//ES',
     icsEvt('sueldo','20261030T090000','💰 Llegó el sueldo: APV + Fintual PRIMERO','1) '+fmt(APV_MES)+' al APV régimen A\\n2) El resto del ahorro a Fintual\\n3) Actualiza tu patrimonio en la app\\nhttps://finanzas-vicente.vercel.app','FREQ=MONTHLY;BYMONTHDAY=28,29,30;BYSETPOS=-1'),
