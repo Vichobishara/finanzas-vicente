@@ -1,4 +1,4 @@
--- ⚠️ NO APLICADO todavía: se aplica en finanzas-vicho (caaewoxfvmdizzziyvfz) cuando Vicho dé el OK. Nada de TCG Logs.
+-- ✅ Aplicado en finanzas-vicho (caaewoxfvmdizzziyvfz) el 30-09-2026 (migración `arreglos_domingo_deseos`). Nada de TCG Logs.
 -- Arreglos chicos + avisos nuevos:
 --   1. anotar_atajo: si el monto llega vacío, la notificación dice "(vacío)" en vez de quedar en blanco.
 --   2. Seguridad (advisors): gastos_auto es un trigger, no una RPC → nadie la puede llamar por /rpc.
