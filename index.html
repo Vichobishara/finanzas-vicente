@@ -106,6 +106,11 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .sheet{width:100%;max-width:440px;margin:0 auto;background:var(--bg2);border-radius:28px 28px 0 0;padding:10px 20px calc(20px + var(--safe-b));max-height:90vh;overflow-y:auto;animation:up .28s cubic-bezier(.2,.9,.3,1)}
 @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
 .handle{width:40px;height:5px;background:#D0D5DD;border-radius:99px;margin:0 auto 16px}
+.sh-top{position:sticky;top:-10px;z-index:2;display:flex;align-items:center;justify-content:space-between;margin:-10px -20px 6px;padding:8px 14px 4px;background:var(--bg2);touch-action:none}
+.sh-top .handle{margin:0}
+.sh-x{width:34px;height:34px;border-radius:50%;border:none;background:var(--bg3);color:var(--sec);font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.sh-x.hid{visibility:hidden}
+.sheet{overscroll-behavior:contain}
 .sheet h3{font-size:21px;font-weight:700;letter-spacing:-.4px;margin-bottom:4px}
 .sheet p{font-size:13.5px;color:var(--sec);margin-bottom:14px;line-height:1.5}
 .sheet label{font-size:13px;color:var(--text);font-weight:600;display:block;margin:16px 0 8px}
@@ -235,8 +240,25 @@ const getEv=()=>((S.aj.evitado||{})[S.actual])||0;
 const addEv=x=>saveAj('evitado',{...(S.aj.evitado||{}),[S.actual]:getEv()+x});
 const apvOk=()=>!!(S.aj.apv&&S.aj.apv.abierto);
 const $v=n=>n>0?'$'+Math.round(n).toLocaleString('es-CL'):'';
-function openSheet(h){$('sheet').innerHTML='<div class="handle"></div>'+h;$('sheet-bg').classList.add('on')}
-function closeSheet(){$('sheet-bg').classList.remove('on')}
+// Sheets: ✕ cierra, ‹ vuelve al sheet anterior, deslizar hacia abajo también cierra.
+let SH=[];
+const shTit=h=>(h.match(/<h3>([\s\S]*?)<\/h3>/)||[])[1]||'';
+function openSheet(h){const el=$('sheet'),on=$('sheet-bg').classList.contains('on');
+  if(on&&el.dataset.h&&shTit(el.dataset.h)!==shTit(h))SH.push(el.dataset.h);else if(!on)SH=[];
+  el.dataset.h=h;paintSheet(h);$('sheet-bg').classList.add('on')}
+function paintSheet(h){const el=$('sheet');el.style.transform='';el.scrollTop=0;
+  el.innerHTML=`<div class="sh-top"><button class="sh-x ${SH.length?'':'hid'}" onclick="backSheet()" aria-label="Volver">‹</button><div class="handle"></div><button class="sh-x" onclick="closeSheet()" aria-label="Cerrar">✕</button></div>`+h}
+function backSheet(){const h=SH.pop();if(h==null)return closeSheet();$('sheet').dataset.h=h;paintSheet(h)}
+function closeSheet(){SH=[];const el=$('sheet');el.style.transform='';delete el.dataset.h;$('sheet-bg').classList.remove('on')}
+(()=>{let y0=null,dy=0;const el=()=>$('sheet');
+  document.addEventListener('touchstart',e=>{const s=el();if(!s||!s.contains(e.target))return;
+    if(s.scrollTop>0&&!e.target.closest('.sh-top'))return;y0=e.touches[0].clientY;dy=0;s.style.transition='none'},{passive:true});
+  document.addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;
+    if(dy>0)el().style.transform=`translateY(${dy}px)`;else{y0=null;el().style.transform=''}},{passive:true});
+  document.addEventListener('touchend',()=>{if(y0==null)return;const s=el();y0=null;s.style.transition='transform .2s';
+    if(dy>90)closeSheet();else s.style.transform='';dy=0});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('sheet-bg').classList.contains('on'))closeSheet()});
+})();
 
 $('greet').textContent=(h=>h<12?'Buenos días ☀️':h<20?'Buenas tardes 🌤':'Buenas noches 🌙')(new Date().getHours());
 

@@ -55,6 +55,10 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval("openFin()");checks['ahorro real en sueldos']=t('sheet').includes('Lo que de verdad ahorraste')&&t('sheet').includes('$439.000');
  w.eval("openAhorro()");checks['sheet ahorro']=!!d.getElementById('h-fin');
  w.eval("openPlata()");checks['colchón dinámico']=t('sheet').includes('te faltan')&&!t('sheet').includes('26,7');
+ w.eval('closeSheet()');w.eval('openAll()');w.eval("openCat('comida')");
+ checks['sheet: botón volver lleva a la lista']=!!d.querySelector('#sheet .sh-x:not(.hid)[aria-label=Volver]')&&(w.eval('backSheet()'),t('sheet').includes('Toca una categoría'));
+ d.querySelector('#sheet [aria-label=Cerrar]').click();
+ checks['sheet: ✕ cierra']=!d.getElementById('sheet-bg').classList.contains('on');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();
