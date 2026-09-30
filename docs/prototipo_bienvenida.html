@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bienvenida · prototipo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+/* Prototipo del onboarding para amigos (no conectado a datos). Mismo lenguaje visual que la app. */
+:root{--bg:#EEEEF3;--card:#FFFFFF;--bg3:#F4F4F7;--border:#E4E4EA;--text:#121217;--sec:#6E6E7A;--hint:#A3A3AE;--ac:#121217;--green:#12B76A;--green-d:#067647;--green-t:#ECFDF3;--sh:0 1px 2px rgba(18,18,23,.03),0 10px 30px -12px rgba(18,18,23,.08);--safe-t:env(safe-area-inset-top,20px);--safe-b:env(safe-area-inset-bottom,16px)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer;color:inherit;border:none;background:none}
+.app{max-width:440px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:calc(var(--safe-t) + 14px) 22px 0}
+.top{display:flex;align-items:center;gap:12px;height:44px}
+.atras{width:44px;height:44px;border-radius:50%;background:var(--card);box-shadow:var(--sh);font-size:22px;display:flex;align-items:center;justify-content:center}
+.atras[hidden]{visibility:hidden;display:flex}
+.prog{flex:1;height:6px;background:#E1E1E8;border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ac);border-radius:99px;transition:width .35s cubic-bezier(.2,.9,.3,1)}
+.paso{flex:1;display:flex;flex-direction:column;padding-top:18px;animation:entra .3s cubic-bezier(.2,.9,.3,1)}
+@keyframes entra{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+.emoji{font-size:40px;line-height:1;margin-bottom:12px}
+h1{font-size:28px;font-weight:800;letter-spacing:-.8px;line-height:1.15;margin-bottom:10px}
+.sub{font-size:17px;color:var(--sec);line-height:1.45;margin-bottom:18px}
+.grande{width:100%;font-size:28px;font-weight:700;padding:18px 20px;border-radius:20px;border:2px solid var(--border);background:var(--card);outline:none;color:var(--text)}
+.grande:focus{border-color:var(--ac)}
+.ops{display:flex;flex-direction:column;gap:10px}
+.op{display:flex;align-items:center;gap:14px;width:100%;min-height:58px;padding:12px 18px;border-radius:20px;background:var(--card);border:2px solid transparent;box-shadow:var(--sh);font-size:18px;font-weight:600;text-align:left;transition:transform .12s,border-color .15s}
+.op:active{transform:scale(.98)}
+.op.on{border-color:var(--ac)}
+.op .ic{font-size:28px;width:36px;text-align:center;flex-shrink:0}
+.op .tx{flex:1}
+.op .tx small{display:block;font-size:14px;font-weight:500;color:var(--sec);margin-top:2px;line-height:1.35}
+.op .ck{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;flex-shrink:0}
+.op.on .ck{background:var(--ac);border-color:var(--ac)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.banco{min-height:76px;border-radius:20px;background:var(--card);box-shadow:var(--sh);border:2px solid transparent;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;padding:14px;font-size:16px;font-weight:700;text-align:left;position:relative}
+.banco .dot{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800}
+.banco.on{border-color:var(--ac)}
+.banco.on:after{content:'✓';position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;background:var(--ac);color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center}
+.estrella{display:inline-block;font-size:14px;font-weight:800;color:var(--green-d);background:var(--green-t);padding:3px 8px;border-radius:99px;margin-bottom:4px}
+.pie{position:sticky;bottom:0;margin:auto -22px 0;padding:16px 22px calc(var(--safe-b) + 14px);display:flex;flex-direction:column;gap:4px;background:linear-gradient(rgba(238,238,243,0),var(--bg) 22px)}
+.btn{width:100%;padding:19px;border-radius:99px;font-size:18px;font-weight:700;background:var(--ac);color:#fff;transition:transform .12s,opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.3}
+.btn.g{background:var(--green)}
+.saltar{min-height:48px;padding:12px;font-size:16px;font-weight:600;color:var(--sec)}
+.pasos{background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:6px 18px}
+.pasos div{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--border);font-size:17px;line-height:1.4}
+.pasos div:last-child{border-bottom:none}
+.pasos b.n{width:30px;height:30px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.copiar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg3);border-radius:14px;padding:12px 14px;margin-top:8px;font-size:15px;font-weight:700;word-break:break-all}
+.copiar button{background:var(--ac);color:#fff;border-radius:99px;min-height:44px;padding:10px 18px;font-size:14px;font-weight:700;flex-shrink:0}
+.hero{border-radius:30px;padding:24px;color:#fff;background:linear-gradient(160deg,#2BCB85,#0B9A5C);box-shadow:0 16px 32px -14px rgba(11,154,92,.5);margin-bottom:14px}
+.hero small{font-size:15px;opacity:.85;font-weight:600}
+.hero b{display:block;font-size:52px;font-weight:800;letter-spacing:-2px;margin:6px 0 4px}
+.hero span{font-size:15px;opacity:.9}
+.lista{background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:4px 18px}
+.lista div{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);font-size:16px;font-weight:600}
+.lista div:last-child{border-bottom:none}
+.lista em{font-style:normal;font-size:14px;color:var(--green-d);font-weight:700}
+.lista em.no{color:var(--sec)}
+.toast{position:fixed;left:50%;bottom:calc(var(--safe-b) + 90px);transform:translate(-50%,20px);background:var(--ac);color:#fff;padding:12px 18px;border-radius:99px;font-size:15px;font-weight:600;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="app"><div class="top"><button class="atras" id="atras" onclick="atras()" aria-label="Volver">‹</button><div class="prog"><i id="prog"></i></div></div><div id="paso"></div></div>
+<div class="toast" id="toast"></div>
+<script>
+// ---------- Datos: qué formas de conectar ofrece cada banco ----------
+// apple: la tarjeta funciona en Apple Pay (automatización "Transacción" de iOS)
+// correo: el banco manda un correo por cada compra → reenvío a tu dirección de la app (como Kuanto)
+// cartola: siempre se puede (PDF o foto del estado de cuenta)
+const BANCOS=[
+ {id:'chile',n:'Banco de Chile',c:'#0033A0',ini:'BCh',apple:1,correo:1},
+ {id:'santander',n:'Santander',c:'#EC0000',ini:'S',apple:1,correo:1},
+ {id:'bci',n:'BCI',c:'#00A6E0',ini:'BCI',apple:1,correo:1},
+ {id:'falabella',n:'Falabella / CMR',c:'#3E9B35',ini:'F',apple:1,correo:1},
+ {id:'scotia',n:'Scotiabank',c:'#D81E05',ini:'Sc',apple:1,correo:0},
+ {id:'estado',n:'BancoEstado',c:'#F58220',ini:'BE',apple:1,correo:0},
+ {id:'itau',n:'Itaú',c:'#EC7000',ini:'It',apple:1,correo:1},
+ {id:'mach',n:'MACH / Tenpo',c:'#6B2BD9',ini:'M',apple:1,correo:0},
+];
+const S={nombre:'',sueldo:null,dia:null,tel:null,bancos:[],hechos:{},i:0,modo:null};
+const $=id=>document.getElementById(id);
+const fmt=n=>'$'+Math.round(n).toLocaleString('es-CL');
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2200)};
+
+// Formas de conectar para un banco, la mejor primero: en iPhone el atajo de Apple Pay (el que usa Vicho), después el correo
+function formas(b){const F=[];
+  if(b.apple&&S.tel==='iphone')F.push({k:'apple',ic:'📱',t:'Cuando pagas con el iPhone',s:'Pagas con Apple Pay y la compra se anota al tiro, con aviso de cuánto te queda.',min:'2 min'});
+  if(b.correo)F.push({k:'correo',ic:'📧',t:'Que lleguen solas por correo',s:'Cada compra que el banco te avisa por correo se anota sola. Lo haces una vez.',min:'2 min'});
+  F.push({k:'cartola',ic:'📄',t:'Foto de tu estado de cuenta',s:'Una vez al mes le sacas una foto y yo leo todo.',min:'30 seg'});
+  F.push({k:'mano',ic:'✍️',t:'Lo anoto yo',s:'Tocas + y pones el monto. Tres segundos.',min:''});
+  return F}
+
+// ---------- Pasos ----------
+const PASOS=[
+ ()=>({emoji:'👋',h:'¡Hola! Te ayudo a ordenar tu plata',sub:'Son 2 minutos. Solo tocas botones.',btn:'Empezar',ok:true}),
+ ()=>({emoji:'😊',h:'¿Cómo te llamo?',sub:'Tu nombre o apodo.',body:`<input class="grande" id="nom" placeholder="Tu nombre" autocomplete="given-name" enterkeyhint="next" value="${S.nombre}" oninput="S.nombre=this.value.trim();pinta(1)" onkeydown="if(event.key==='Enter'&&S.nombre)sig()">`,ok:!!S.nombre,foco:'nom'}),
+ ()=>({emoji:'💰',h:`${S.nombre?S.nombre+', ¿':'¿'}cuánto te llega al mes?`,sub:'Más o menos. Nadie más lo ve.',body:chips('sueldo',[[500000,'Menos de $600 mil'],[750000,'Entre $600 y $900 mil'],[1100000,'Entre $900 mil y $1,3 millones'],[1650000,'Entre $1,3 y $2 millones'],[2400000,'Más de $2 millones']]),ok:!!S.sueldo}),
+ ()=>({emoji:'📅',h:'¿Cuándo te pagan?',sub:'Así sé hasta cuándo te tiene que durar.',body:chips('dia',[['fin','🗓 A fin de mes'],['ini','🗓 A principio de mes'],['15','🗓 El 15'],['otro','🤷 Otro día']]),ok:!!S.dia}),
+ ()=>({emoji:'📱',h:'¿Qué celular tienes?',sub:'Para mostrarte lo que funciona en el tuyo.',body:chips('tel',[['iphone','📱 iPhone'],['android','🤖 Android']]),ok:!!S.tel}),
+ ()=>({emoji:'🏦',h:'¿Qué bancos o tarjetas usas?',sub:'Toca todos los que tengas.',body:`<div class="grid">${BANCOS.map(b=>`<button class="banco ${S.bancos.includes(b.id)?'on':''}" onclick="toggleB('${b.id}')"><span class="dot" style="background:${b.c}">${b.ini}</span>${b.n}</button>`).join('')}</div>`,ok:S.bancos.length>0,btn:S.bancos.length?`Seguir con ${S.bancos.length} banco${S.bancos.length>1?'s':''}`:'Elige al menos uno',saltar:'Solo uso efectivo'}),
+ ()=>{const b=BANCOS.find(x=>x.id===S.bancos[S.i]),F=formas(b);
+   return{emoji:'🔌',h:`Conectemos ${b.n}`,sub:`${S.bancos.length>1?`Banco ${S.i+1} de ${S.bancos.length}. `:''}Elige cómo quieres que se anoten tus compras.`,
+   body:`<div class="ops">${F.map((f,j)=>`<button class="op" onclick="elegir('${f.k}')"><span class="ic">${f.ic}</span><span class="tx">${j===0?'<span class="estrella">⭐ Lo más fácil</span><br>':''}${f.t}<small>${f.s}${f.min?' · '+f.min:''}</small></span><span style="font-size:22px;color:var(--hint)">›</span></button>`).join('')}</div>`,sinBtn:true}},
+ ()=>guia(),
+ ()=>{const P=presu();return{emoji:'🎯',h:'Tu plan del mes',sub:`Para que te sobre plata todos los meses, te sugiero:`,body:`<div class="lista"><div>Para gastar en el mes<span>${fmt(P.gasto)}</span></div><div>Para ahorrar<span style="color:var(--green-d)">${fmt(P.ahorro)}</span></div></div><p class="sub" style="margin:14px 2px 0;font-size:15px">Lo puedes cambiar cuando quieras.</p>`,btn:'Me parece',ok:true}},
+ ()=>{const P=presu(),d=diasHasta(),hoy=Math.round(P.gasto/30/1000)*1000;return{emoji:'🎉',h:`¡Listo${S.nombre?', '+S.nombre:''}!`,sub:'Esto es lo único que tienes que mirar cada día:',body:`<div class="hero"><small>Hoy puedes gastar</small><b>${fmt(hoy)}</b><span>Te quedan ${d} días hasta el próximo sueldo</span></div>
+   <div class="lista">${S.bancos.map(id=>{const b=BANCOS.find(x=>x.id===id),h=S.hechos[id];return`<div>${b.n}<em class="${h&&h!=='mano'?'':'no'}">${!h?'Pendiente':h==='mano'?'Lo anotas tú':'✓ Conectado'}</em></div>`}).join('')}</div>`,btn:'Ir a mi plata',ok:true,fin:true}},
+];
+const presu=()=>{const s=S.sueldo||800000;return{gasto:Math.round(s*.8/10000)*10000,ahorro:s-Math.round(s*.8/10000)*10000}};
+const diasHasta=()=>{const h=new Date(),f=S.dia==='15'?15:S.dia==='ini'?5:new Date(h.getFullYear(),h.getMonth()+1,0).getDate();let d=f-h.getDate();if(d<=0)d+=30;return d};
+const chips=(k,L)=>`<div class="ops">${L.map(([v,t])=>`<button class="op ${S[k]===v?'on':''}" onclick="S['${k}']=${typeof v==='string'?`'${v}'`:v};pinta();setTimeout(sig,220)"><span class="tx">${t}</span><span class="ck">${S[k]===v?'✓':''}</span></button>`).join('')}</div>`;
+
+// Mini guía de cada forma de conectar (en la app real abre la guía con el iPhone dibujado, el lector de cartolas, etc.)
+function guia(){const b=BANCOS.find(x=>x.id===S.bancos[S.i]);
+  if(S.modo==='correo')return{emoji:'📧',h:'Reenvía los correos del banco',sub:`Tu dirección para ${b.n}:`,body:`<div class="copiar"><span>vicho-7f3a@correos.tuplata.cl</span><button onclick="toast('📋 Copiado')">Copiar</button></div>
+   <div class="pasos" style="margin-top:14px"><div><b class="n">1</b><span>Toca <b>Abrir Gmail</b></span></div><div><b class="n">2</b><span>Pega la dirección donde dice <b>Reenviar a</b></span></div><div><b class="n">3</b><span>Listo. Yo confirmo el correo por ti</span></div></div>`,btn:'Abrir Gmail',ok:true,listo:'correo'};
+  if(S.modo==='apple')return{emoji:'📱',h:'Conectemos tu iPhone',sub:'Te muestro dónde tocar, paso a paso, con un dedito 👆.',body:`<div class="pasos"><div><b class="n">1</b><span>Instalar el atajo (un toque)</span></div><div><b class="n">2</b><span>Crear la automatización (5 toques, te guío)</span></div><div><b class="n">3</b><span>Pagar algo chico para probar</span></div></div>`,btn:'Empezar la guía',ok:true,listo:'apple'};
+  if(S.modo==='cartola')return{emoji:'📄',h:'Sácale una foto a tu estado de cuenta',sub:'El que te llega por correo o en la app del banco. Yo leo las compras y las cuotas.',body:`<div class="pasos"><div><b class="n">1</b><span>Toca <b>Sacar foto</b> o elige el PDF</span></div><div><b class="n">2</b><span>Revisa la lista que te muestro</span></div><div><b class="n">3</b><span>Toca <b>Guardar</b></span></div></div>`,btn:'Sacar foto o elegir PDF',ok:true,listo:'cartola'};
+  return{emoji:'✍️',h:'Perfecto, lo anotas tú',sub:'Abajo al medio siempre está el botón <b>+</b>. Pones el monto y listo: la categoría la pongo yo.',btn:'Entendido',ok:true,listo:'mano'}}
+
+// ---------- Navegación ----------
+let N=0,hist=[];
+function pinta(){const p=PASOS[N](),tot=PASOS.length-1;
+  $('prog').style.width=Math.max(4,N/tot*100)+'%';$('atras').hidden=N===0;
+  $('paso').innerHTML=`<div class="paso"><div class="emoji">${p.emoji}</div><h1>${p.h}</h1><p class="sub">${p.sub}</p>${p.body||''}
+   ${p.sinBtn?`<div class="pie"><button class="saltar" onclick="saltarBanco()">Después lo hago</button></div>`:`<div class="pie"><button class="btn ${p.listo?'g':''}" id="sig" ${p.ok?'':'disabled'} onclick="${p.listo?`hecho('${p.listo}')`:p.fin?`toast('Fin del prototipo 🙌')`:'sig()'}">${p.btn||'Siguiente'}</button>${p.saltar?`<button class="saltar" onclick="S.bancos=[];N=8;pinta()">${p.saltar}</button>`:''}</div>`}</div>`;
+  S._ultimo=p;if(p.foco)setTimeout(()=>{const e=$(p.foco);if(e&&document.activeElement!==e)e.focus()},50)}
+function sig(){if(!S._ultimo.ok)return;hist.push([N,S.i]);N++;pinta()}
+function atras(){const h=hist.pop();if(!h)return;[N,S.i]=h;pinta()}
+function toggleB(id){const i=S.bancos.indexOf(id);i<0?S.bancos.push(id):S.bancos.splice(i,1);pinta()}
+function elegir(k){S.modo=k;hist.push([N,S.i]);N=7;pinta()}
+function hecho(k){S.hechos[S.bancos[S.i]]=k;toast(k==='mano'?'👍 Anotado':'✅ '+BANCOS.find(x=>x.id===S.bancos[S.i]).n+' conectado');siguienteBanco()}
+function saltarBanco(){siguienteBanco()}
+function siguienteBanco(){hist.push([N,S.i]);if(S.i<S.bancos.length-1){S.i++;N=6}else N=8;pinta()}
+// La pantalla de "Me parece" (paso 8) avanza normal; la 9 es el final
+pinta();
+</script>
+</body>
+</html>
