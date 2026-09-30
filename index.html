@@ -144,13 +144,14 @@ body.lock{overflow:hidden}
 .btn.d{background:#FEF3F2;color:var(--red-d);margin-top:8px}
 .verdict{margin-top:16px;padding:14px 16px;border-radius:18px;font-size:14px;line-height:1.5;display:none;border:1px solid transparent}
 .verdict.on{display:block}
-.verdict b{font-size:16px;font-weight:700;display:block;margin-bottom:4px}
+.verdict .vt{font-size:16px;font-weight:700;display:block;margin-bottom:4px}
+.verdict b{font-weight:700}
 .verdict.ok{background:#ECFDF3;border-color:#ABEFC6}
-.verdict.ok b{color:var(--green-d)}
+.verdict.ok .vt{color:var(--green-d)}
 .verdict.warn{background:#FFFAEB;border-color:#FEDF89}
-.verdict.warn b{color:var(--amber-d)}
+.verdict.warn .vt{color:var(--amber-d)}
 .verdict.bad{background:#FEF3F2;border-color:#FECDCA}
-.verdict.bad b{color:var(--red-d)}
+.verdict.bad .vt{color:var(--red-d)}
 .ia{padding:16px 16px 14px;margin-bottom:16px}
 .ia h4{font-size:16px;font-weight:700;margin-bottom:2px}
 .ia p{font-size:13px;color:var(--sec)}
@@ -166,7 +167,7 @@ body.lock{overflow:hidden}
 .ia-q{align-self:flex-end;background:var(--navy);color:#fff}
 .ia-a{align-self:flex-start;background:var(--bg3)}
 .verdict.neg{background:#F4F3FF;border-color:#D9D6FE}
-.verdict.neg b{color:#5925DC}
+.verdict.neg .vt{color:#5925DC}
 .box{background:var(--card);border-radius:20px;padding:4px 16px;margin-bottom:12px}
 .row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);font-size:13.5px;gap:10px}
 .row:last-child{border-bottom:none}
@@ -174,7 +175,7 @@ body.lock{overflow:hidden}
 .row b{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
 .chart{display:flex;align-items:flex-end;gap:6px;height:140px;padding:16px 2px 8px}
 .chart div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px}
-.chart span{width:100%;border-radius:99px;background:#E2E2E9;min-height:3px}
+.chart span{width:100%;max-width:18px;border-radius:6px 6px 3px 3px;background:#E2E2E9;min-height:3px}
 .chart span.b{background:var(--green)}
 .chart small{font-size:10px;color:var(--hint);font-weight:500}
 .tip{display:flex;gap:12px;background:var(--card);border:none;border-radius:20px;box-shadow:var(--sh);padding:13px 14px;font-size:13.5px;line-height:1.5;color:var(--sec);margin-bottom:8px}
@@ -238,8 +239,11 @@ body.ready .nav{display:flex}
 .tab-s{font-size:13.5px;color:var(--sec);margin:-8px 0 14px}
 body.ready .app{padding-bottom:calc(110px + var(--safe-b))}
 body.ready .toast{bottom:calc(84px + max(14px,var(--safe-b)))}
-.toast{position:fixed;bottom:calc(30px + var(--safe-b));left:50%;transform:translate(-50%,10px);background:var(--navy);color:#fff;padding:13px 20px;border-radius:99px;font-size:14px;font-weight:500;opacity:0;transition:.25s;z-index:200;white-space:nowrap;pointer-events:none;box-shadow:0 12px 30px -8px rgba(18,18,23,.5)}
+.toast{position:fixed;bottom:calc(30px + var(--safe-b));left:50%;transform:translate(-50%,10px);background:var(--navy);color:#fff;padding:13px 20px;border-radius:99px;font-size:14px;font-weight:500;opacity:0;transition:.25s;z-index:200;white-space:nowrap;pointer-events:none;display:flex;align-items:center;gap:12px;box-shadow:0 12px 30px -8px rgba(18,18,23,.5)}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+.toast.act{white-space:normal;max-width:calc(100vw - 24px);width:max-content;line-height:1.35}
+.toast.on.act{pointer-events:auto}
+.toast button{white-space:nowrap;flex-shrink:0;border:none;background:rgba(255,255,255,.18);color:#fff;font-weight:700;font-size:13px;padding:6px 12px;border-radius:99px}
 .skel{height:220px;border-radius:30px;background:linear-gradient(90deg,#E4E4EA,#F4F4F7,#E4E4EA);background-size:200% 100%;animation:sk 1.2s infinite}
 @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
 </style>
@@ -347,13 +351,16 @@ const flag=k=>{try{return localStorage.getItem(k)==='1'}catch(e){return false}};
 const setFlag=k=>{try{localStorage.setItem(k,'1')}catch(e){}};
 const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const MESL=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-let S={periodo:null,actual:null,periodos:[],gastos:[],prev:[],cuotas:[],revisar:[],reglas:[],techos:{},pptos:{},ppto:1000000,card:'scotiabank',ing:{},ahorros:[],aj:{},nc:1,V:{}};
+let S={periodo:null,actual:null,periodos:[],gastos:[],prev:[],cuotas:[],revisar:[],reglas:[],techos:{},pptos:{},ppto:1000000,card:(()=>{try{return localStorage.getItem('tarjeta')||'scotiabank'}catch(e){return 'scotiabank'}})(),ing:{},ahorros:[],aj:{},nc:1,V:{}};
 
 let BUSY=0;
 const api=async(p,o={})=>{const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),12000);const w=o.m&&o.m!=='GET';if(w){BUSY++;$('sheet').classList.add('busy')}try{const r=await fetch(SB+'/rest/v1/'+p,{headers:{...H,'x-app-key':getKey(),...(o.h||{})},method:o.m||'GET',body:o.b?JSON.stringify(o.b):undefined,signal:ctl.signal});if(!r.ok)throw new Error(await r.text());const t=await r.text();return t?JSON.parse(t):null}finally{clearTimeout(to);if(w&&!--BUSY)$('sheet').classList.remove('busy')}};
 const $=s=>document.getElementById(s);
 const fmt=n=>(n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString('es-CL');
-let toastT;const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)};
+let toastT;const toast=(m,act)=>{const t=$('toast');t.textContent=m;t.classList.toggle('act',!!act);
+  if(act){const b=document.createElement('button');b.textContent=act[0];b.onclick=()=>{t.classList.remove('on');act[1]()};t.appendChild(b)}
+  t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),act?5000:2600)};
+const fechaL=f=>{const d=new Date(f+'T12:00:00');return d.toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'})};
 const perL=p=>{const[y,m]=p.split('-');return MESL[+m-1]+' '+y};
 const mdiff=(a,b)=>{const[ay,am]=a.split('-').map(Number),[by,bm]=b.split('-').map(Number);return(by-ay)*12+(bm-am)};
 const addM=(p,n)=>{let[y,m]=p.split('-').map(Number);m+=n;while(m>12){m-=12;y++}while(m<1){m+=12;y--}return y+'-'+String(m).padStart(2,'0')};
@@ -679,14 +686,15 @@ function renderMeta(){
 function openMeta(){
   const p=PAT(),tot=p.fintual+p.eth+p.cartas,{base,conBonos}=aportes(),metas=[[50e6,'$50M'],[100e6,'$100M'],[250e6,'$250M'],[950e6,'USD 1 millón*']];
   const d10=x=>x*Math.pow(1+RENT,10);
-  const ahorroCom=200000,rC=proyMeta(PERF().meta,base+ahorroCom),rB=proyMeta(PERF().meta,base);
+  const tc=Object.entries(S.V.ptot||{}).filter(([k])=>k!=='otros').sort((a,b)=>b[1]-a[1])[0]||['comida',0],catN=(CAT[tc[0]]||CAT.otros).n.toLowerCase();
+  const ahorroCom=Math.max(20000,Math.round(Math.max(tc[1]-(S.techos[tc[0]]||0),tc[1]*.2)/10000)*10000),rC=proyMeta(PERF().meta,base+ahorroCom),rB=proyMeta(PERF().meta,base);
   openSheet(`<h3>🏆 Camino a millonario</h3><p>Hoy tienes <b style="color:var(--text)">${fmtM(tot)}</b> (Fintual ${fmtM(p.fintual)}, cartas ${fmtM(p.cartas)}, ETH ${fmtM(p.eth)}). Tienes ${Math.floor(edadAhora())} años.</p>
   <div class="card"><div class="card-h"><h2>¿Cuándo llegas?</h2></div>
    <div class="mt h"><span>Meta</span><span>Solo el plan<br>${fmt(base)}/mes</span><span>+ mitad bonos<br>${fmt(conBonos)}/mes</span></div>
    ${metas.map(([T,l])=>{const a=proyMeta(T,base),b=proyMeta(T,conBonos);return`<div class="mt"><b>${l}</b><span>${Math.floor(a.e)} años · ${a.y}</span><span style="color:var(--green-d)">${Math.floor(b.e)} años · ${b.y}</span></div>`}).join('')}
   </div>
   <div class="card"><div class="card-h"><h2>Lo que más te acelera</h2></div>
-   <div class="lever"><i style="font-style:normal">🍽</i><div>Bajar comida a su tope (~<b>${fmt(ahorroCom)} menos al mes</b>) e invertirlo te hace llegar a tu meta <b>${Math.max(0,((rB.m-rC.m)/12)).toLocaleString('es-CL',{maximumFractionDigits:1})} años antes</b>.</div></div>
+   <div class="lever"><i style="font-style:normal">${(CAT[tc[0]]||CAT.otros).ic}</i><div>Gastar <b>${fmt(ahorroCom)} menos al mes</b> ${tc[1]?`en ${catN} (lo que más se te fue en ${S.V.pvL})`:''} e invertirlo te hace llegar a tu meta <b>${Math.max(0,((rB.m-rC.m)/12)).toLocaleString('es-CL',{maximumFractionDigits:1})} años antes</b>.</div></div>
    <div class="lever"><i style="font-style:normal">💸</i><div>Cada <b>$100.000</b> que no gastas hoy son <b>${fmt(d10(100000))}</b> en 10 años. Antes de comprar, toca ¿Me alcanza?</div></div>
    <div class="lever"><i style="font-style:normal">💳</i><div>Una cuota de $50.000 al mes por 12 meses son ${fmt(600000)} que no se invierten: <b>${fmt(d10(600000))}</b> menos en 10 años.</div></div>
    ${(()=>{const a=aportes();return a.real===null?`<div class="lever"><i style="font-style:normal">📊</i><div>Todavía no anotas cuánto inviertes de verdad. El día del sueldo toca <b>💰 Anotar</b> y aquí vas a ver si estás cumpliendo el plan.</div></div>`:`<div class="lever"><i style="font-style:normal">📊</i><div>Lo que de verdad has invertido: <b>${fmt(a.real)} al mes</b> en promedio (${a.nReal} ${a.nReal>1?'meses':'mes'}). El plan dice ${fmt(a.base)}. ${a.real>=a.base?'Vas cumpliendo 💪':'Te estás quedando corto.'}</div></div>`})()}
@@ -820,14 +828,13 @@ function tipsList(){
   return T;
 }
 function openFin(){
-  const b=S.ing,ks=Object.keys(b).sort().slice(-12),mx=Math.max(1,...ks.map(k=>b[k])),v=ks.map(k=>b[k]);
-  const avg=v.length?v.reduce((a,x)=>a+x,0)/v.length:0,med=v.length?[...v].sort((a,x)=>a-x)[Math.floor(v.length/2)]:0;
-  openSheet(`<h3>📈 Sueldos y patrimonio</h3><p>Lo que tienes y lo que te entra.</p>
-  <div class="box"><div class="row"><span>Fintual</span><b style="color:var(--green-d)">${fmt(PAT().fintual)}</b></div><div class="row"><span>Cartas Pokémon</span><b>${fmt(PAT().cartas)}</b></div><div class="row"><span>Ethereum</span><b>${fmt(PAT().eth)}</b></div><div class="row"><span style="color:var(--text);font-weight:700">Total</span><b style="color:var(--ac)">${fmt(PAT().fintual+PAT().cartas+PAT().eth)}</b></div></div><button class="chip" style="margin-bottom:12px" onclick="editPat()">✏️ Actualizar valores</button>
-  <div class="box"><div class="chart">${ks.map(k=>`<div><span class="${b[k]>SUELDO*1.1?'b':''}" style="height:${Math.max(3,b[k]/mx*100)}%"></span><small>${MES[+k.slice(5)-1][0]}</small></div>`).join('')}</div></div>
-  <div class="box"><div class="row"><span>Sueldo fijo que usa la app</span><b>${fmt(SUELDO)}</b></div><div class="row"><span>Tu sueldo típico (mediana 12 meses)</span><b>${fmt(med)}</b></div><div class="row"><span>Promedio 12 meses (con comisiones)</span><b>${fmt(avg)}</b></div>${[...ks].reverse().slice(0,6).map(k=>`<div class="row"><span>${perL(k)}</span><b style="color:var(--green-d)">${fmt(b[k])}</b></div>`).join('')}</div>
-  <div class="chips" style="margin-bottom:14px"><button class="chip" onclick="openIng()">➕ Agregar sueldo</button><button class="chip" onclick="editSueldo()">✏️ Cambiar sueldo fijo</button></div>
-  <div class="card"><div class="card-h"><h2>Lo que de verdad ahorraste</h2></div>${tasaAhorro()}</div>`);
+  const b=S.ing,hoyM=hoyISO().slice(0,7),ks=Array.from({length:12},(_,i)=>addM(hoyM,i-11)),con=ks.filter(k=>b[k]),v=con.map(k=>b[k]),mx=Math.max(1,...v);
+  const avg=v.length?v.reduce((a,x)=>a+x,0)/v.length:0,o=[...v].sort((a,x)=>a-x),h=o.length>>1,med=!o.length?0:o.length%2?o[h]:(o[h-1]+o[h])/2;
+  openSheet(`<h3>💼 Sueldos y ahorro real</h3><p>Lo que te entra y cuánto de eso de verdad ahorraste.</p>
+  <div class="card"><div class="card-h"><h2>Lo que de verdad ahorraste</h2></div>${tasaAhorro()}</div>
+  <div class="box"><div class="chart">${ks.map(k=>`<div><span class="${b[k]>SUELDO*1.1?'b':''}" style="height:${b[k]?Math.max(4,b[k]/mx*100):2}%"></span><small>${MES[+k.slice(5)-1][0]}</small></div>`).join('')}</div><small style="display:block;font-size:11.5px;color:var(--hint);padding:0 0 10px">Verde: meses con bono o comisión</small></div>
+  <div class="box"><div class="row"><span>Sueldo fijo que usa la app</span><b>${fmt(SUELDO)}</b></div>${v.length>2?`<div class="row"><span>Tu sueldo típico (mediana)</span><b>${fmt(med)}</b></div><div class="row"><span>Promedio con comisiones</span><b>${fmt(avg)}</b></div>`:''}${[...con].reverse().slice(0,6).map(k=>`<div class="row"><span>${perL(k)}</span><b style="color:var(--green-d)">${fmt(b[k])}</b></div>`).join('')}</div>
+  <div class="chips" style="margin-bottom:14px"><button class="chip" onclick="openIng()">➕ Agregar sueldo</button><button class="chip" onclick="editSueldo()">✏️ Cambiar sueldo fijo</button></div>`);
 }
 function tasaAhorro(){
   const pm={};S.ahorros.forEach(a=>{const k=a.periodo||a.fecha.slice(0,7);pm[k]=(pm[k]||0)+a.monto});const ks=Object.keys(pm).sort().reverse().slice(0,6);
@@ -868,16 +875,20 @@ async function saveAhorro(){
     closeSheet();toast(`💪 ${fmt(t)} invertidos. Así se llega.`);loadAll()}catch(e){toast('❌ Error');console.error(e)}}
 function openMeses(){openSheet(`<h3>🗓 Meses</h3><p>Elige un mes para ver cómo te fue.</p><div class="chips">${S.periodos.map(p=>`<button class="chip ${p===S.periodo?'on':''}" onclick="setPer('${p}')">${perL(p)}</button>`).join('')}</div>`)}
 
-function cardChips(){return `<div class="chips" id="a-cards">${['scotiabank','bci','santander','efectivo'].map(k=>`<button class="chip ${S.card===k?'on':''}" onclick="S.card='${k}';$('a-cards').outerHTML=cardChips()">${TJ[k]}</button>`).join('')}</div>`}
+function cardChips(){return `<div class="chips" id="a-cards">${['scotiabank','bci','santander','efectivo'].map(k=>`<button class="chip ${S.card===k?'on':''}" onclick="S.card='${k}';try{localStorage.setItem('tarjeta','${k}')}catch(e){};$('a-cards').outerHTML=cardChips()">${TJ[k]}</button>`).join('')}</div>`}
 function fmtIn(el){const v=el.value.replace(/\D/g,'');el.value=v?'$'+Number(v).toLocaleString('es-CL'):''}
 const val=id=>parseInt(($(id).value||'').replace(/\D/g,''))||0;
-const SUGS=['Jumbo','Almuerzo','Café','Delivery','Uber','Metro','Farmacia','Transferencia'];
+const SUGS=['Jumbo','Almuerzo','Café','Delivery','Uber','Metro','Farmacia'];
+// Lo que más anotas a mano va primero; se completa con las sugerencias de siempre.
+function sugs(){const n={};[...S.gastos,...S.prev].filter(g=>(g.fuente==='app'||g.fuente==='manual')&&!g.pulldex&&g.monto>0).forEach(g=>{const d=(g.descripcion||'').trim();if(d&&d.length<=18&&d!=='Gasto')n[d]=(n[d]||0)+1});
+  const top=Object.entries(n).filter(([,c])=>c>1).sort((a,b)=>b[1]-a[1]).map(([d])=>d);
+  return [...new Set([...top,...SUGS].map(x=>x[0].toUpperCase()+x.slice(1)))].slice(0,8)}
 
 function openAdd(pre){
   openSheet(`<h3>Anotar gasto</h3>
   <input id="a-monto" class="amt-in" inputmode="numeric" placeholder="$0" autocomplete="off" enterkeyhint="next" onkeydown="if(event.key==='Enter')$('a-desc').focus()" oninput="fmtIn(this)" value="${pre&&pre.m?'$'+pre.m.toLocaleString('es-CL'):''}">
   <label>¿En qué?</label><input id="a-desc" placeholder="ej: almuerzo" autocomplete="off" enterkeyhint="done" onkeydown="if(event.key==='Enter')saveAdd()" value="${pre&&pre.d?pre.d.replace(/"/g,'&quot;'):''}">
-  <div class="sugs">${SUGS.map(s=>`<button onclick="$('a-desc').value='${s}'">${s}</button>`).join('')}</div>
+  <div class="sugs">${sugs().map(s=>`<button onclick="$('a-desc').value=this.textContent;$('a-desc').focus()">${s.replace(/</g,'&lt;')}</button>`).join('')}</div>
   <label>Pagaste con</label>${cardChips()}
   <button class="btn p" onclick="saveAdd()">Guardar</button>`);
   if(!pre)$('a-monto').focus();
@@ -890,11 +901,13 @@ async function saveAdd(){
     const g=r[0],c=CAT[g.categoria_clave]||CAT.otros;closeSheet();
     // Siempre vuelve al mes de hoy (antes saltaba al mes siguiente si la tarjeta ya había cerrado).
     S.periodo=S.actual;await loadAll();
-    toast(g.pulldex?`✅ ${fmt(monto)} anotado como negocio`:g.periodo!==S.actual?`✅ ${c.ic} ${fmt(monto)} · va en la boleta de ${MESL[+g.periodo.slice(5)-1]}`:`✅ ${c.ic} ${fmt(monto)} · ${S.V.diario>=0?`hoy te quedan ${fmt(S.V.diario)}`:`desde mañana ${fmt(S.V.manana)} al día`}`);
+    toast(g.pulldex?`✅ ${fmt(monto)} anotado como negocio`:g.periodo!==S.actual?`✅ ${c.ic} ${fmt(monto)} · va en la boleta de ${MESL[+g.periodo.slice(5)-1]}`:`✅ ${c.ic} ${fmt(monto)} · ${S.V.diario>=0?`hoy te quedan ${fmt(S.V.diario)}`:`desde mañana ${fmt(S.V.manana)} al día`}`,['Deshacer',()=>undoAdd(g.id)]);
     if(g.categoria_clave==='otros'&&g.periodo===S.actual&&!sheetOn())setTimeout(()=>openTx(g.id),400);
   }catch(e){toast('❌ No se pudo guardar');console.error(e)}
 }
 
+// Deshacer lo recién anotado (lo creó la app, no viene de un correo: se puede borrar de verdad).
+async function undoAdd(id){try{await api('gastos?id=eq.'+id,{m:'DELETE'});if(sheetOn())closeSheet();toast('↩️ Listo, no se anotó');loadAll()}catch(e){toast('❌ No se pudo deshacer')}}
 function openCheck(){S.nc=1;
   openSheet(`<h3>🤔 ¿Me alcanza?</h3><p>Antes de comprar, pon cuánto sale. Te digo la verdad.</p>
   <input id="a-monto" class="amt-in" inputmode="numeric" placeholder="$0" autocomplete="off" oninput="fmtIn(this);evalCheck()">
@@ -925,7 +938,7 @@ function evalCheck(){
   else{c='warn';h='⚠️ Te alcanza, pero te aprieta';b=`Son <b>${eq} días</b> de tu plata diaria${x<=V.semana?', pero cabe en lo que te queda esta semana':''}. Desde mañana tendrías ${fmt(d2)} al día (hoy es ${fmt(V.cupoHoy)}).`}
   if(nc>1&&!(c==='bad'&&cuoP>=30))b+=`<br>💳 ${nc} cuotas de ${fmt(mc)}: te amarras hasta ${perL(addM(S.actual,nc))} y tus cuotas pasan al ${cuoP2}% del presupuesto.`;
   if(!neg)b+=`<br><span style="color:var(--sec);font-size:13px">💡 Invertidos, esos ${fmt(X)} serían ${fmt(X*Math.pow(1.06,10))} en 10 años.</span>`;
-  el.className='verdict on '+c;el.innerHTML=`<b>${h}</b>${b}`;
+  el.className='verdict on '+c;el.innerHTML=`<b class="vt">${h}</b>${b}`;
 }
 function ctxIA(){const V=S.V,ks=Object.keys(CAT);
   return{hoy:hoyISO(),dias_hasta_el_22:V.dias,presupuesto:S.ppto,cuotas_y_fijos_total:V.cuo,cuotas_pct_presupuesto:Math.round(V.cuo/S.ppto*100),
@@ -955,7 +968,7 @@ async function saveCuotaNueva(){const q=S.cq,pp=addM(periodoDe(hoyISO(),S.card),
 
 function openTx(id){
   const g=S.gastos.find(x=>x.id===id);if(!g)return;
-  openSheet(`<h3>${g.descripcion}</h3><p>${fmt(g.monto)} · ${TJ[g.tarjeta]||g.tarjeta} · ${g.fecha}</p>
+  openSheet(`<h3>${g.descripcion}</h3><p>${fmt(g.monto)} · ${TJ[g.tarjeta]||g.tarjeta} · ${fechaL(g.fecha)}</p>
   <label>¿Qué tipo de gasto es?</label><div class="chips">${Object.entries(CAT).filter(([k])=>k!=='otros').map(([k,c])=>`<button class="chip ${k===g.categoria_clave?'on':''}" onclick="document.querySelectorAll('#cat-ch .chip').forEach(b=>b.classList.remove('on'));this.classList.add('on');this.dataset.sel=1" data-k="${k}">${c.ic} ${c.n}</button>`).join('')}</div>
   <label>Es de</label><div class="chips" id="neg-ch"><button class="chip ${!g.pulldex?'on':''}" data-v="0" onclick="selNeg(this)">Personal</button><button class="chip ${g.pulldex?'on':''}" data-v="1" onclick="selNeg(this)">Negocio</button></div>
   <label>Monto${g.monto<0?' (venta)':''}</label><input id="e-monto" inputmode="numeric" oninput="fmtIn(this)" value="$${Math.abs(g.monto).toLocaleString('es-CL')}">
