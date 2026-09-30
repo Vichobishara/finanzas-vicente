@@ -64,6 +64,10 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   válida devuelve la clave, que la app guarda en localStorage. Tablas `passkeys`, `passkey_retos` y `secretos` (app_key)
   tienen RLS sin políticas: solo las lee la edge function con service role. El primer registro queda abierto hasta el
   13-10-2026; después, registrar otra passkey exige la clave (`accion:'nuevo'` + x-app-key).
+- **Continuar con Google** (fase 1 del proyecto amigos): Supabase Auth con Google (cliente OAuth en el proyecto Google Cloud
+  `finanzas-vicho`). La app va a `/auth/v1/authorize?provider=google`, vuelve con `#access_token` y la edge function
+  `acceso_google` revisa que el correo esté en `secretos.google_emails` (separados por coma) y devuelve la clave.
+  Quien no está en la lista ve "Pídele acceso a Vicho". En la fase 2 esto pasa a RLS por usuario.
 - Respaldo: "Usar una clave" en el candado, o el link `#k=CLAVE`. **La clave nunca va en el repo.**
 - Los scripts sin clave (el Apps Script BCI ya instalado) pueden insertar en `gastos` si fuente es bci_auto | transferencia | atajo.
   `importar_correos.gs` funciona sin clave para compras y transferencias; `APP_KEY` solo hace falta para los sueldos Toku (`ingresos`).
@@ -83,7 +87,8 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - **Avisos push** (Web Push, app instalada en inicio): `sw.js` los muestra; la app guarda la suscripción en `push_subs`
   (con x-app-key). La base decide qué mandar: trigger `trg_aviso_gasto` (BCI/transferencias), `trg_aviso_sueldo`, y pg_cron
   `avisos` cada hora → `privado.avisos_programados(p_ahora)` (lunes 9, viernes 18, día 23 10:00, 10:00 Fintual, 21:00 racha
-  y pendientes, hitos de $5M). `privado.push()` deja cada aviso en `avisos_log` (clave única = se manda una vez) y llama a la
+  y pendientes, hitos de $5M). Cron `avisos_extra` cada hora → `privado.avisos_extra(p_ahora)`: domingo 20:00 resumen de la
+  semana y lista de deseos a las 72 horas (`ajustes.deseos`). `privado.push()` deja cada aviso en `avisos_log` (clave única = se manda una vez) y llama a la
   edge function `push` vía pg_net con `x-avisos-token`. VAPID y token en `secretos`. Probar lógica: llamar
   `privado.avisos_programados('2026-10-23 10:00')` dentro de un DO que termina en RAISE (se revierte) y leer `avisos_log`.
 - `ajustes.fintual_pausa` {hasta}: mientras esté vigente, ni la app ni los avisos piden mandar plata a Fintual.

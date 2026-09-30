@@ -8,5 +8,18 @@
   "background_color": "#EEEEF3",
   "theme_color": "#EEEEF3",
   "lang": "es-CL",
-  "icons": [{"src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any"}]
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }

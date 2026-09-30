@@ -20,17 +20,32 @@ const DB={
 function run(url,claveOk){return new Promise(res=>{const heads=[];
  const dom=new JSDOM(html,{url,runScripts:'dangerously',pretendToBeVisual:true,beforeParse(w){
   w.scrollTo=()=>{};w.AbortController=AbortController;
-  w.fetch=async(u,o)=>{heads.push(o&&o.headers);(w.CALLS=w.CALLS||[]).push({u,m:o&&o.method,b:o&&o.body});if(u.includes('functions/v1/cartola')){w.__cart=JSON.parse(o.body);return{ok:true,json:async()=>({fecha_cartola:'',nota:'',cuotas:[{nombre:'Falabella iPhone',monto_cuota:95000,cuota_actual:4,total_cuotas:12,banco:'Scotiabank'},{nombre:'TOUS',monto_cuota:80800,cuota_actual:1,total_cuotas:3,banco:'Scotiabank'}]})}}if(u.includes('functions/v1/consejo')){w.__ia=JSON.parse(o.body);return{ok:true,json:async()=>({respuesta:'🔴 **No**, cero cuotas nuevas'})}}if(u.includes('rpc/clave_ok'))return{ok:true,text:async()=>JSON.stringify(claveOk)};
+  w.fetch=async(u,o)=>{heads.push(o&&o.headers);(w.CALLS=w.CALLS||[]).push({u,m:o&&o.method,b:o&&o.body});if(u.includes('functions/v1/cartola')){w.__cart=JSON.parse(o.body);return{ok:true,json:async()=>({fecha_cartola:'',nota:'',cuotas:[{nombre:'Falabella iPhone',monto_cuota:95000,cuota_actual:4,total_cuotas:12,banco:'Scotiabank'},{nombre:'TOUS',monto_cuota:80800,cuota_actual:1,total_cuotas:3,banco:'Scotiabank'}]})}}if(u.includes('functions/v1/acceso_google')){const t=(o.headers.Authorization||'').split(' ')[1];return{ok:true,json:async()=>t==='tok-vicho'?{clave:'test123',nombre:'Vicente Bishara'}:{error:'no_invitado',email:'amigo@gmail.com'}}}if(u.includes('functions/v1/consejo')){w.__ia=JSON.parse(o.body);return{ok:true,json:async()=>({respuesta:'🔴 **No**, cero cuotas nuevas'})}}if(u.includes('rpc/clave_ok'))return{ok:true,text:async()=>JSON.stringify(claveOk)};
    const k=u.includes('ahorros')?'ahorros':u.includes('categorias')?'categorias':u.includes('select=periodo')?'periodos':u.includes('cuotas')?'cuotas':u.includes('presupuestos')?null:u.includes('reglas')?'reglas':u.includes('ajustes')?'ajustes':u.includes('estado=eq.revisar')?'revisar':u.includes('gastos')?'gastos':u.includes('ingresos')?'ingresos':null;
    const rows=k?DB[k]:[];return{ok:true,text:async()=>JSON.stringify(u.includes('pulldex=eq.true')?rows.filter(g=>g.pulldex):rows)}};
  }});setTimeout(()=>res({dom,heads}),1200)})}
 (async()=>{
  const checks={};
  // Sin clave: pantalla de clave, sin pedir datos
- {const {dom,heads}=await run('https://finanzas-vicente.vercel.app/',true);const t=dom.window.document.getElementById('hero-w').textContent;
+ {const {dom,heads}=await run('https://finanzas-vicente.vercel.app/',true);const t=dom.window.document.getElementById('login').textContent;
   checks['sin clave muestra candado']=t.includes('clave')&&heads.length===0;}
+ // Candado con botón de Google
+ {const {dom}=await run('https://finanzas-vicente.vercel.app/',true);checks['candado ofrece Continuar con Google']=dom.window.document.getElementById('login').textContent.includes('Continuar con Google');}
+ // Vuelta de Google: cuenta permitida → guarda la clave y limpia la URL
+ {const {dom}=await run('https://finanzas-vicente.vercel.app/#access_token=tok-vicho&token_type=bearer',true);const w=dom.window;
+  checks['Google: tu cuenta entra y guarda la clave']=w.localStorage.getItem('app-key')==='test123'&&!w.location.hash&&!w.document.getElementById('login').classList.contains('on')&&w.document.body.classList.contains('ready');}
+ // Vuelta de Google: cuenta que no está invitada
+ {const {dom}=await run('https://finanzas-vicente.vercel.app/#access_token=tok-otro',true);const w=dom.window;
+  checks['Google: cuenta no invitada no entra']=!w.localStorage.getItem('app-key')&&w.document.getElementById('login').textContent.includes('Pídele acceso a Vicho');}
+ // Pantalla de entrada: Face ID primero; si este aparato no tiene Face ID, Google primero
+ {const {dom}=await run('https://finanzas-vicente.vercel.app/',true);const d=dom.window.document,b=[...d.querySelectorAll('#login .lg-b')];
+  checks['entrada: pantalla completa con Face ID primero']=d.getElementById('login').classList.contains('on')&&b[0].id==='fid-btn'&&b[0].classList.contains('p');
+  dom.window.localStorage.setItem('fid-no','1');dom.window.eval('lock()');const b2=[...d.querySelectorAll('#login .lg-b')];
+  checks['entrada: sin Face ID en el aparato, Google va primero']=b2[0].id==='g-btn'&&b2[0].classList.contains('p');
+  dom.window.localStorage.setItem('nombre','Vicente');dom.window.eval("lock('Esa clave no funciona','mal')");
+  checks['entrada: saluda por nombre y muestra el error']=d.getElementById('login').textContent.includes('Hola de nuevo')&&!!d.querySelector('#login .lg-msg.mal');}
  // Clave mala
- {const {dom}=await run('https://finanzas-vicente.vercel.app/#k=mala',false);checks['clave mala avisa']=dom.window.document.getElementById('hero-w').textContent.includes('no funciona');}
+ {const {dom}=await run('https://finanzas-vicente.vercel.app/#k=mala',false);checks['clave mala avisa']=dom.window.document.getElementById('login').textContent.includes('no funciona');}
  // Clave buena por link
  const {dom,heads}=await run('https://finanzas-vicente.vercel.app/#k=test123',true);
  const w=dom.window,d=w.document,t=id=>(d.getElementById(id)||{}).textContent||'';
