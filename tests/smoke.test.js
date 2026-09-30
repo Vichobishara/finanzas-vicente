@@ -92,6 +92,8 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval("S.aj.fintual_pausa={hasta:'2099-01-01'};render()");checks['pausa Fintual: sin nudge ni promesa de Fintual']=!t('nudges').includes('Fintual')&&!t('hero-w').includes('a Fintual')&&t('fin').includes('primero las tarjetas');
  w.eval("delete S.aj.fintual_pausa;render()");
  w.eval('closeSheet()');checks['cerrar hoja']=!d.getElementById('sheet-bg').classList.contains('on')&&!d.body.classList.contains('lock');
+ d.querySelector('.mes-b').click();checks['tocar el mes abre el selector con fechas']=d.getElementById('sheet').textContent.includes('23 ')&&d.getElementById('sheet').textContent.includes('este mes');w.eval('closeSheet()');
+ checks['fecha de hoy arriba']=/\d/.test(t('greet'));
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();
