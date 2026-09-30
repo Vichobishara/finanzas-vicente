@@ -134,7 +134,8 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 ## Pendientes / ideas
 - [x] Seguridad: RLS con clave `x-app-key` (ver arriba). Si algún día hay más usuarios: Supabase Auth + RLS por usuario.
 - [x] Atajo de iOS con disparador "Transacción" (Apple Pay Scotia) → `rpc/anotar_atajo` (ver docs/atajo_apple_pay.md).
-- [ ] Cuadratura mensual Scotia: comparar el total del estado de cuenta con lo anotado y crear el ajuste "sin anotar".
+- [x] Cuadrar con la cartola (Gastos → "Cuadrar con la cartola"): `cartola` con `modo:'compras'` lee todas las compras,
+  la app las compara con lo anotado (monto ±$1, fecha ±3 días) y ofrece agregar las que faltan (salta las en cuotas).
 - [ ] Revisar si Scotiabank permite alertas por correo o SMS, para sumarlas al script.
 - [ ] Alertas por correo desde Apps Script (categoría > 80%, resumen semanal).
 - [ ] Actualización automática del saldo de Fintual (hoy es manual, desde la app).
