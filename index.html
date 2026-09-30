@@ -328,9 +328,18 @@ function render(){
   pers.forEach(g=>{tot[g.categoria_clave]=(tot[g.categoria_clave]||0)+g.monto;(items[g.categoria_clave]=items[g.categoria_clave]||[]).push(g)});
   S.prev.forEach(g=>ptot[g.categoria_clave]=(ptot[g.categoria_clave]||0)+g.monto);
   const nt=neg.reduce((s,g)=>s+g.monto,0),mes=MESL[m-1],pvL=MESL[+addM(S.periodo,-1).slice(5)-1];
-  const com=tot.comida||0,tc=S.techos.comida||250000,diario=queda/dias;
+  const com=tot.comida||0,tc=S.techos.comida||250000;
+  // Cupo del día fijo: se calcula con lo que quedaba al empezar el día, y lo que gastas hoy lo va bajando.
+  // (Antes se recalculaba con cada gasto: gastabas 10 veces el cupo y el número apenas se movía.)
+  const H=hoyISO(),gastHoy=pers.filter(g=>g.fecha===H).reduce((s,g)=>s+g.monto,0);
+  const cupoHoy=(queda+gastHoy)/dias,diario=cupoHoy-gastHoy,manana=dias>1?queda/(dias-1):queda;
+  // Semana (lunes a domingo, sin pasar del 22): misma lógica, para las compras que no caben en un día.
+  const lun=new Date(hoy);lun.setDate(hoy.getDate()-(hoy.getDay()+6)%7);const ini=new Date(y,m-2,23),w0=lun<ini?ini:lun;
+  const dom=new Date(lun);dom.setDate(lun.getDate()+6);const w1=dom<cierre?dom:cierre,ISO=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const gastSem=pers.filter(g=>g.fecha>=ISO(w0)).reduce((s,g)=>s+g.monto,0),D0=Math.max(1,Math.round((cierre-w0)/864e5)+1),Wd=Math.round((w1-w0)/864e5)+1;
+  const semana=(queda+gastSem)*Wd/D0-gastSem,diasSem=Math.round((w1-hoy)/864e5)+1;
   const base=esActual?Math.max(total,S.ppto):total,libre=Math.max(0,SUELDO-base),fin=Math.round(libre/2);
-  S.V={tot,items,ptot,nt,neg,mes,pvL,CQ,cuo,gast,total,queda,dias,esActual,diario,proy:{base,libre,fin,col:libre-fin,over:total>S.ppto}};
+  S.V={tot,items,ptot,nt,neg,mes,pvL,CQ,cuo,gast,total,queda,dias,esActual,diario,cupoHoy,gastHoy,manana,semana,proy:{base,libre,fin,col:libre-fin,over:total>S.ppto}};
 
   $('mes-t').textContent=mes;
   $('viendo').innerHTML=esActual?'':`<div class="nudge"><div>👀 Estás viendo <b>${perL(S.periodo)}</b></div><button onclick="setPer(S.actual)">Volver a hoy</button></div>`;
@@ -338,13 +347,15 @@ function render(){
   let cls,lbl,amt,l1,msg;
   if(!esActual){cls='';lbl=queda>=0?`Te sobró en ${mes}`:`Te pasaste en ${mes}`;amt=fmt(Math.abs(queda));l1=`Gastaste ${fmt(total)} de ${fmt(S.ppto)}`;msg=queda>=0?'<span>Mes cerrado en positivo.</span>':'<span>Mes cerrado en rojo. Que no se repita.</span>';}
   else if(queda<0){cls='bad';lbl='Te pasaste por';amt=fmt(-queda);l1='Hasta el 22 cada peso sale de tu ahorro';msg='<span>Freno total: solo súper y transporte hasta el 22.</span>';}
+  else if(diario<0){cls='warn';lbl='Hoy te pasaste por';amt=fmt(-diario);
+    msg=`<span>Tenías ${fmt(cupoHoy)} para hoy. No se pierde el mes: lo repartí en los ${dias-1} días que quedan y desde mañana tienes <b>${fmt(manana)} por día</b>.</span>`;}
   else{
-    lbl=`Hoy puedes gastar <small style="opacity:.75">(por día, hasta el 22)</small>`;amt=fmt(diario);l1=`Te quedan ${fmt(queda)} hasta el 22`;
+    lbl='Hoy puedes gastar';amt=fmt(diario);
     if(com>tc*.8){cls='warn';msg=`<span>Comida va al ${Math.round(com/tc*100)}%. Cero delivery y restoranes hasta el 22.</span>`;}
-    else if(diario<15000){cls='warn';msg='<span>Margen justo. Cocina en casa y posterga cualquier compra.</span>';}
+    else if(cupoHoy<15000){cls='warn';msg='<span>Margen justo. Cocina en casa y posterga cualquier compra.</span>';}
     else{cls='ok';msg=`<span>Vas bien. Si te mantienes, fin de mes van <b>${fmt(fin)}</b> a Fintual.</span>`;}
   }
-  $('hero-w').innerHTML=`<div class="hero ${cls}"><div class="h-lbl">${lbl}</div><div class="h-amt">${amt}</div>${esActual&&queda>=0?`<div class="h-sum"><div><span>Plata del mes</span><span>${fmt(S.ppto)}</span></div><div><span>− Cuotas y fijos</span><span>${fmt(cuo)}</span></div><div><span>− Ya gastaste</span><span>${fmt(gast)}</span></div><div class="t"><span>Te quedan (${dias} días)</span><span>${fmt(queda)}</span></div></div>`:`<div class="h-l1">${l1}</div><div class="h-l2">Incluye ${fmt(cuo)} de cuotas y fijos</div>`}<div class="h-bar"><div style="width:${p}%"></div></div><div class="h-msg">${HICO(cls,queda)}${msg}</div></div>`;
+  $('hero-w').innerHTML=`<div class="hero ${cls}"><div class="h-lbl">${lbl}</div><div class="h-amt">${amt}</div>${esActual&&queda>=0?`${gastHoy>0&&diario>=0?`<div class="h-l2" style="margin:-6px 0 10px">De ${fmt(cupoHoy)} para hoy, ya usaste ${fmt(gastHoy)}</div>`:''}<div class="h-sum"><div class="t" style="border:none;margin:0 0 6px;padding:0"><span>${semana>=0?`Esta semana te quedan${diasSem>1?` <small style="opacity:.75;font-weight:500">(${diasSem} días)</small>`:''}`:'Esta semana te pasaste por'}</span><span>${fmt(Math.abs(semana))}</span></div><div><span>Plata del mes</span><span>${fmt(S.ppto)}</span></div><div><span>− Cuotas y fijos</span><span>${fmt(cuo)}</span></div><div><span>− Ya gastaste</span><span>${fmt(gast)}</span></div><div class="t"><span>Te quedan (${dias} días)</span><span>${fmt(queda)}</span></div></div>`:`<div class="h-l1">${l1}</div><div class="h-l2">Incluye ${fmt(cuo)} de cuotas y fijos</div>`}<div class="h-bar"><div style="width:${p}%"></div></div><div class="h-msg">${HICO(cls,queda)}${msg}</div></div>`;
 
   const ev=getEv();$('win').innerHTML=esActual&&ev?`<div class="win">💪 Este mes te aguantaste ${fmt(ev)} en compras</div>`:'';
 
@@ -644,7 +655,7 @@ async function saveAdd(){
     const g=r[0],c=CAT[g.categoria_clave]||CAT.otros;closeSheet();
     // Siempre vuelve al mes de hoy (antes saltaba al mes siguiente si la tarjeta ya había cerrado).
     S.periodo=S.actual;await loadAll();
-    toast(g.pulldex?`✅ ${fmt(monto)} anotado como negocio`:g.periodo!==S.actual?`✅ ${c.ic} ${fmt(monto)} · va en la boleta de ${MESL[+g.periodo.slice(5)-1]}`:`✅ ${c.ic} ${fmt(monto)} · hoy te quedan ${fmt(Math.max(0,S.V.diario))}`);
+    toast(g.pulldex?`✅ ${fmt(monto)} anotado como negocio`:g.periodo!==S.actual?`✅ ${c.ic} ${fmt(monto)} · va en la boleta de ${MESL[+g.periodo.slice(5)-1]}`:`✅ ${c.ic} ${fmt(monto)} · ${S.V.diario>=0?`hoy te quedan ${fmt(S.V.diario)}`:`desde mañana ${fmt(S.V.manana)} al día`}`);
     if(g.categoria_clave==='otros'&&g.periodo===S.actual)setTimeout(()=>openTx(g.id),400);
   }catch(e){toast('❌ No se pudo guardar');console.error(e)}
 }
@@ -667,15 +678,15 @@ function evalCheck(){
   $('chk-btns').style.display='block';
   const t=S.techos[cat]||0,s=V.tot[cat]||0,catN=cat!=='otros'&&CAT[cat]?CAT[cat].n:null;
   const X=x,nc=S.nc||1,mc=Math.round(X/nc);x=nc>1?mc:X;const cuoP=Math.round(V.cuo/S.ppto*100),cuoP2=Math.round((V.cuo+mc)/S.ppto*100);
-  const q2=V.queda-x,d2=q2/V.dias,fin2=Math.round(Math.max(0,SUELDO-Math.max(V.total+x,S.ppto))/2);
+  const q2=V.queda-x,d2=V.dias>1?q2/(V.dias-1):q2,dd=Math.max(1,V.cupoHoy),eq=Math.round(x/dd*10)/10,fin2=Math.round(Math.max(0,SUELDO-Math.max(V.total+x,S.ppto))/2);
   let c,h,b;
   if(neg){c='neg';h='🧩 Es para el negocio';b=`No toca tu presupuesto personal, pero son ${fmt(x)} que tienen que volver con ventas.`}
   else if(cat==='coleccionables'&&!t){c='bad';h='🚫 No. Cartas bloqueadas este mes';b=`Este mes los coleccionables personales tienen tope $0. Si es para PULLDEX, escribe "pulldex" en la descripción.`}
   else if(nc>1&&cuoP>=30){c='bad';h='🔴 No: cero cuotas nuevas';b=`Ya tienes ${fmt(V.cuo)} al mes amarrados en cuotas y fijos (${cuoP}% de tu presupuesto). Con esta quedarías en ${cuoP2}%. Si no te alcanza al contado, no te alcanza.`}
   else if(q2<0){c='bad';h='🔴 No te alcanza';b=`Te pasarías del mes por ${fmt(-q2)} y eso sale de tu ahorro: a Fintual irían ${fmt(fin2)} en vez de ${fmt(V.proy.fin)}.`}
   else if(x<=Math.max(0,V.diario)){c='ok';h='✅ Sí, te alcanza';b=`Después de esto, hoy te quedarían ${fmt(V.diario-x)}. Fintual sigue intacto.`}
-  else if(catN&&t&&s+x>t){c='warn';h=`⚠️ Te alcanza, pero te pasas en ${catN}`;b=`Quedarías ${fmt(s+x-t)} sobre el tope de ${catN}. Tu gasto diario bajaría a ${fmt(d2)} hasta el 22.`}
-  else{c='warn';h='⚠️ Te alcanza, pero te aprieta';b=`Es más de lo que te toca hoy. Los próximos ${V.dias} días bajarías a ${fmt(d2)} al día.`}
+  else if(catN&&t&&s+x>t){c='warn';h=`⚠️ Te alcanza, pero te pasas en ${catN}`;b=`Quedarías ${fmt(s+x-t)} sobre el tope de ${catN}. Son ${eq} días de tu plata diaria: desde mañana tendrías ${fmt(d2)} al día (hoy es ${fmt(V.cupoHoy)}).`}
+  else{c='warn';h='⚠️ Te alcanza, pero te aprieta';b=`Son <b>${eq} días</b> de tu plata diaria${x<=V.semana?', pero cabe en lo que te queda esta semana':''}. Desde mañana tendrías ${fmt(d2)} al día (hoy es ${fmt(V.cupoHoy)}).`}
   if(nc>1&&!(c==='bad'&&cuoP>=30))b+=`<br>💳 ${nc} cuotas de ${fmt(mc)}: te amarras hasta ${perL(addM(S.actual,nc))} y tus cuotas pasan al ${cuoP2}% del presupuesto.`;
   if(!neg)b+=`<br><span style="color:var(--sec);font-size:13px">💡 Invertidos, esos ${fmt(X)} serían ${fmt(X*Math.pow(1.06,10))} en 10 años.</span>`;
   el.className='verdict on '+c;el.innerHTML=`<b>${h}</b>${b}`;

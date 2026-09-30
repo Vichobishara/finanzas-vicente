@@ -1,19 +1,19 @@
 // Prueba básica: carga index.html con datos falsos y revisa que las piezas clave rendericen.
 const {JSDOM}=require('jsdom');const fs=require('fs');const path=require('path');
 const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
-const hoy=new Date();const per=(d=>{const x=new Date(d);if(x.getDate()>22)x.setMonth(x.getMonth()+1);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')})(hoy);
+const hoy=new Date(),HOY=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-'+String(hoy.getDate()).padStart(2,'0');const per=(d=>{const x=new Date(d);if(x.getDate()>22)x.setMonth(x.getMonth()+1);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')})(hoy);
 const DB={
  categorias:[{clave:'comida',techo:250000},{clave:'fijo',techo:200000},{clave:'tech',techo:100000},{clave:'coleccionables',techo:0}],
  periodos:[{periodo:per}],
  cuotas:[{nombre:'Santander',monto_cuota:160000,recurrente:true,tarjeta:'santander'},{nombre:'Crossfit',monto_cuota:100000,recurrente:true,tarjeta:'scotiabank'},{nombre:'TOUS',monto_cuota:80800,total_cuotas:3,primer_periodo:per,tarjeta:'scotiabank'}],
  reglas:[{palabra:'jumbo',categoria_clave:'comida',negocio:false},{palabra:'cartas',categoria_clave:'coleccionables',negocio:false}],
  ajustes:[{clave:'patrimonio',valor:{fintual:13000000,colchon:2700000,cartas:5000000,eth:1400000}},{clave:'perfil',valor:{nacimiento:'1999-12-03',meta:100000000,sueldo:1900000}}],
- gastos:[{id:1,fecha:hoy.toISOString().slice(0,10),descripcion:'Jumbo',monto:50000,categoria_clave:'comida',tarjeta:'scotiabank',periodo:per,pulldex:false,fuente:'app',estado:'ok'},
-  {id:4,fecha:hoy.toISOString().slice(0,10),descripcion:'Transferencia a Eduardo',monto:1455000,categoria_clave:'otros',tarjeta:'otro',periodo:per,pulldex:false,fuente:'transferencia',estado:'ignorado',destinatario:'Eduardo'},
-  {id:5,fecha:hoy.toISOString().slice(0,10),descripcion:'Transferencia a Gustavo',monto:40000,categoria_clave:'otros',tarjeta:'otro',periodo:per,pulldex:false,fuente:'transferencia',estado:'revisar',destinatario:'Gustavo'},
-  {id:2,fecha:hoy.toISOString().slice(0,10),descripcion:'Sobres',monto:30000,categoria_clave:'coleccionables',tarjeta:'bci',periodo:per,pulldex:true,fuente:'bci_auto'},
-  {id:3,fecha:hoy.toISOString().slice(0,10),descripcion:'Venta: Charizard',monto:-80000,categoria_clave:'coleccionables',tarjeta:'otro',periodo:per,pulldex:true,fuente:'app'}],
- revisar:[{id:5,fecha:hoy.toISOString().slice(0,10),descripcion:'Transferencia a Gustavo',monto:40000,categoria_clave:'otros',tarjeta:'otro',periodo:per,pulldex:false,fuente:'transferencia',estado:'revisar',destinatario:'Gustavo'}],
+ gastos:[{id:1,fecha:HOY,descripcion:'Jumbo',monto:50000,categoria_clave:'comida',tarjeta:'scotiabank',periodo:per,pulldex:false,fuente:'app',estado:'ok'},
+  {id:4,fecha:HOY,descripcion:'Transferencia a Eduardo',monto:1455000,categoria_clave:'otros',tarjeta:'otro',periodo:per,pulldex:false,fuente:'transferencia',estado:'ignorado',destinatario:'Eduardo'},
+  {id:5,fecha:HOY,descripcion:'Transferencia a Gustavo',monto:40000,categoria_clave:'otros',tarjeta:'otro',periodo:per,pulldex:false,fuente:'transferencia',estado:'revisar',destinatario:'Gustavo'},
+  {id:2,fecha:HOY,descripcion:'Sobres',monto:30000,categoria_clave:'coleccionables',tarjeta:'bci',periodo:per,pulldex:true,fuente:'bci_auto'},
+  {id:3,fecha:HOY,descripcion:'Venta: Charizard',monto:-80000,categoria_clave:'coleccionables',tarjeta:'otro',periodo:per,pulldex:true,fuente:'app'}],
+ revisar:[{id:5,fecha:HOY,descripcion:'Transferencia a Gustavo',monto:40000,categoria_clave:'otros',tarjeta:'otro',periodo:per,pulldex:false,fuente:'transferencia',estado:'revisar',destinatario:'Gustavo'}],
  ingresos:[{fecha:'2026-04-30',monto:8240127,base_tributable:9708178,impuesto:1768051},{fecha:'2026-09-29',monto:1970880,base_tributable:1700157,impuesto:29277}],
  ahorros:[{fecha:'2026-09-30',monto:239000,destino:'apv',periodo:'2026-09'},{fecha:'2026-09-30',monto:200000,destino:'fintual',periodo:'2026-09'}]
 };
@@ -61,6 +61,12 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['editar monto con puntos']=JSON.parse(w.CALLS.find(c=>c.m==='PATCH').b).monto===12990;
  w.eval('openTx(3)');d.getElementById('e-monto').value='90.000';w.CALLS=[];w.eval('saveTx(3)');await new Promise(r=>setTimeout(r,50));
  checks['editar venta mantiene el signo']=JSON.parse(w.CALLS.find(c=>c.m==='PATCH').b).monto===-90000;
+ // Cupo del día fijo: lo que gastas hoy lo baja; si te pasas, se reparte en los días que quedan
+ {const V=w.eval('S.V');checks['cupo de hoy descuenta lo de hoy']=Math.round(V.cupoHoy-V.diario)===50000&&Math.round(V.cupoHoy*V.dias)===Math.round(V.queda+50000);
+  w.eval("S.gastos.push({id:9,fecha:hoyISO(),descripcion:'Zapatillas',monto:Math.round(S.V.cupoHoy*10),categoria_clave:'otros',tarjeta:'scotiabank',periodo:S.actual,pulldex:false});render()");
+  checks['gasto grande: te pasaste hoy y desde mañana']=w.eval('S.V').dias>1?t('hero-w').includes('Hoy te pasaste')&&t('hero-w').includes('desde mañana'):true;
+  checks['hero muestra la semana']=t('hero-w').includes('Esta semana');
+  w.eval('S.gastos.pop();render()');}
  w.eval('closeSheet()');checks['cerrar hoja']=!d.getElementById('sheet-bg').classList.contains('on')&&!d.body.classList.contains('lock');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
