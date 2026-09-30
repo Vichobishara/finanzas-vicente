@@ -50,8 +50,8 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .h-bar div{height:100%;background:#fff;border-radius:99px;width:0;transition:width .6s}
 .h-msg svg.i{width:18px;height:18px;margin-top:1px}
 .h-msg{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.16);border:none;border-radius:18px;padding:11px 13px;font-size:13px;line-height:1.45;position:relative;z-index:1;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
-.act{border:none;border-radius:99px;padding:8px 14px 8px 8px;font-size:15px;white-space:nowrap;font-weight:600;display:flex;align-items:center;gap:10px;text-align:left;letter-spacing:-.2px}
+.actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:16px 0}
+.act{min-width:0;border:none;border-radius:99px;padding:8px 14px 8px 8px;font-size:15px;white-space:nowrap;font-weight:600;display:flex;align-items:center;gap:10px;text-align:left;letter-spacing:-.2px}
 .act i{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .act.p{background:var(--ac);color:#fff;box-shadow:0 12px 24px -10px rgba(18,18,23,.55)}
 .act.p i{background:#fff;color:var(--ac)}
@@ -59,7 +59,7 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .act.s i{background:var(--ac-t);color:var(--ac)}
 .act:active{transform:scale(.97)}
 /* Pantallas chicas (iPhone SE/mini): "¿Me alcanza?" cabe sin cortarse */
-@media (max-width:380px){.actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.act{font-size:14px;gap:7px;padding:6px 10px 6px 6px;min-width:0}.act i{width:34px;height:34px}}
+@media (max-width:400px){.actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.act{font-size:14px;gap:7px;padding:6px 10px 6px 6px;min-width:0}.act i{width:34px;height:34px}}
 .win{margin:-4px 0 14px;padding:10px 14px;border-radius:99px;text-align:center;font-size:13px;color:var(--green-d);font-weight:600;background:#ECFDF3}
 .nudge{margin-bottom:10px;padding:12px 12px 12px 16px;border-radius:22px;background:var(--card);box-shadow:var(--sh);font-size:13.5px;display:flex;justify-content:space-between;align-items:center;gap:10px}
 .nudge button{border:none;background:var(--navy);color:#fff;font-weight:600;font-size:13px;padding:9px 14px;border-radius:99px;white-space:nowrap}
@@ -163,6 +163,27 @@ body.lock{overflow:hidden}
 .ia p{font-size:13px;color:var(--sec)}
 .ia .chips{margin:10px 0 2px}
 .ia .chip{font-size:12.5px;padding:7px 11px}
+/* Chat con Claude: vive en una píldora negra arriba (como el Dynamic Island) y se abre a casi pantalla completa */
+.hdr-r{display:flex;align-items:center;gap:8px}
+.isla{height:36px;padding:0 14px 0 11px;border-radius:99px;border:none;background:#0B0B0F;color:#fff;font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.isla i,.chat-av i{width:9px;height:9px;border-radius:50%;background:#12B76A;box-shadow:0 0 0 3px rgba(18,183,106,.22);animation:late 2.4s ease-in-out infinite}
+@keyframes late{50%{box-shadow:0 0 0 6px rgba(18,183,106,0)}}
+.isla:active{transform:scale(.95)}
+.chat-bg{position:fixed;inset:0;z-index:109;background:rgba(18,18,23,.35);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .3s}
+.chat-bg.on{opacity:1;pointer-events:auto}
+.chat{position:fixed;z-index:110;top:calc(var(--safe-t) + 6px);left:50%;width:min(calc(100% - 16px),440px);height:calc(88dvh - var(--safe-t));transform:translateX(-50%);
+  background:var(--bg2);border-radius:34px;box-shadow:0 20px 60px rgba(0,0,0,.25);display:none;flex-direction:column;overflow:hidden}
+.chat.on{display:flex}
+.chat-h{display:flex;align-items:center;gap:11px;padding:14px 14px 12px 16px;border-bottom:1px solid var(--border);background:#0B0B0F;color:#fff}
+.chat-av{width:36px;height:36px;border-radius:50%;background:#1C1C22;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chat-t{flex:1;min-width:0}.chat-t b{display:block;font-size:15.5px}.chat-t small{font-size:12.5px;color:#A3A3AE}
+.chat-n{border:none;background:#1C1C22;color:#fff;font-size:13px;font-weight:600;border-radius:99px;padding:8px 13px}
+.chat-x{width:34px;height:34px;border-radius:50%;border:none;background:#1C1C22;color:#fff;font-size:20px;line-height:1}
+.chat-b{flex:1;overflow-y:auto;padding:6px 14px 10px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.chat-b .ia-log:empty+.chips{margin-top:14px}
+.chat-in{margin:0;padding:10px 12px calc(10px + var(--safe-b));border-top:1px solid var(--border)}
+.chat-in button{width:46px;padding:0;font-size:20px;border-radius:50%}
+
 .ia-in{display:flex;gap:8px;margin-top:10px}
 .ia-in input{flex:1;min-width:0;padding:13px 16px;border-radius:99px;border:1.5px solid transparent;background:var(--bg3);color:var(--text);font-size:16px;-webkit-appearance:none;outline:none}
 .ia-in input:focus{border-color:var(--ac);background:#fff}
@@ -382,7 +403,8 @@ body:not(.ready) .mes-b .chev{display:none}
 <div class="app">
   <div class="hdr">
     <div class="who"><div class="avatar" id="avatar">🙂</div><div><small id="greet">Hola</small><button class="mes-b" onclick="openMeses()" aria-label="Elegir mes"><h1 id="mes-t">Hoy</h1><span class="chev"></span></button></div></div>
-    <button class="refresh" id="refresh" onclick="refresh()" aria-label="Actualizar"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/></svg></button>
+    <div class="hdr-r"><button class="isla" id="isla" onclick="openChat()" aria-label="Pregúntale a Claude"><i></i>Claude</button>
+    <button class="refresh" id="refresh" onclick="refresh()" aria-label="Actualizar"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/></svg></button></div>
   </div>
   <section class="tab" data-tab="hoy">
   <div id="viendo"></div>
@@ -436,10 +458,8 @@ body:not(.ready) .mes-b .chev{display:none}
   <h2 class="tab-t">Coach</h2>
   <div id="coach-hab"></div>
   <div class="card" id="deseos-c"></div>
-  <div class="card ia"><h4>🤖 Pregúntale a Claude</h4><p>Con tus números de este mes. Pregunta como le hablarías a un amigo.</p>
-    <div class="ia-log" id="ia-log"></div>
-    <div class="chips" id="ia-sug"></div>
-    <div class="ia-in"><input id="ia-in" placeholder="Escribe tu pregunta…" autocomplete="off" enterkeyhint="send" onkeydown="if(event.key==='Enter')askIA()"><button class="btn p" id="ia-btn" onclick="askIA()">Preguntar</button></div>
+  <div class="card ia"><h4>🤖 Pregúntale a Claude</h4><p>Con tus números, tus cuotas, tu fondo y tus deudas. Pregunta como le hablarías a un amigo.</p>
+    <button class="btn p" style="margin:4px 0 14px" onclick="openChat()">Abrir el chat</button>
   </div>
   <h3 class="sec-t" id="m-tips">Consejos con tus números</h3>
   <div id="coach"></div>
@@ -457,6 +477,13 @@ body:not(.ready) .mes-b .chev{display:none}
   <button data-t="coach" onclick="tab('coach')"><svg class="i" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/></svg><span>Coach</span></button></div>
 </nav>
 
+<div class="chat-bg" id="chat-bg" onclick="closeChat()"></div>
+<div class="chat" id="chat" role="dialog" aria-label="Chat con Claude">
+  <div class="chat-h"><div class="chat-av"><i></i></div><div class="chat-t"><b>Claude</b><small>Tu CFO, con tus números</small></div>
+    <button class="chat-n" onclick="nuevoChat()">Nuevo</button><button class="chat-x" onclick="closeChat()" aria-label="Cerrar">×</button></div>
+  <div class="chat-b" id="chat-b"><div class="ia-log" id="ia-log"></div><div class="chips" id="ia-sug"></div></div>
+  <div class="ia-in chat-in"><input id="ia-in" placeholder="Escribe tu pregunta…" autocomplete="off" enterkeyhint="send" onkeydown="if(event.key==='Enter')askIA()"><button class="btn p" id="ia-btn" onclick="askIA()" aria-label="Enviar">↑</button></div>
+</div>
 <div class="login" id="login"></div>
 <div class="sheet-bg" id="sheet-bg" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
@@ -819,7 +846,6 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
   $('m-movs').textContent=S.gastos.length?`Ver todos (${S.gastos.length})`:'Ver todos';
   {const vivas=S.cuotas.filter(c=>!c.recurrente&&c.primer_periodo&&(infoCuota(c,S.periodo).por||0)>0),fin=vivas.map(c=>addM(c.primer_periodo,c.total_cuotas-1)).sort().pop();
    $('m-cuo').textContent=`${fmt(cuo)} al mes`+(fin?` · libre de cuotas en ${perL(fin)}`:' · se suman solas');}
-  if(!(S.iaH||[]).length&&!$('ia-log').children.length)$('ia-sug').innerHTML=IA_SUG.map(q=>`<button class="chip" onclick="askIA(this.textContent)">${q}</button>`).join('');
   $('m-ppto').textContent=`${fmt(S.ppto)} (incluye cuotas)`;
   renderGastos();renderCoach();renderPlata();entrar();
 }
@@ -1415,9 +1441,11 @@ function ctxIA(){const V=S.V,ks=Object.keys(CAT);
     cuotas_y_fijos:V.CQ.map(c=>({nombre:c.nombre,monto:c.monto_cuota,detalle:c.label})),ya_gastaste:V.gast,te_quedan:V.queda,diario:Math.round(V.diario),
     categorias:ks.filter(k=>V.tot[k]||S.techos[k]).map(k=>({categoria:CAT[k].n,gastado:V.tot[k]||0,tope:S.techos[k]||null,mes_pasado:V.ptot[k]||0})),
     ultimos_gastos:S.gastos.filter(g=>!g.pulldex).slice(0,25).map(g=>({fecha:g.fecha,que:g.descripcion,monto:g.monto,categoria:(CAT[g.categoria_clave]||CAT.otros).n})),
-    te_aguantaste_este_mes:getEv(),sueldo:SUELDO,a_fintual_si_te_mantienes:V.proy.fin,patrimonio:S.aj.patrimonio||null}}
+    te_aguantaste_este_mes:getEv(),sueldo:SUELDO,a_fintual_si_te_mantienes:V.proy.fin,patrimonio:S.aj.patrimonio||null,
+    nombre:NOMBRE()||null,edad:Math.floor(edadAhora()),fondo_ahorro:S.aj.fondo||null,deudas_por_pagar:DEU().map(d=>({que:d.que,monto:d.monto,nota:d.nota||''})),
+    lista_de_deseos:DES().filter(d=>d.estado==='espera').map(d=>({que:d.que,monto:d.monto,desde:d.desde}))}}
 const mdIA=t=>t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
-const IA_SUG=['¿Cómo voy este mes?','¿En qué se me está yendo la plata?','¿Cuánto puedo gastar este finde?'];
+const IA_SUG=['¿Cómo voy este mes?','¿En qué se me está yendo la plata?','¿Cuánto puedo gastar este finde?','¿Cómo llego a mi fondo más rápido?'];
 const chkQ=()=>{const x=val('a-monto'),d=$('a-desc').value.trim();return x?`¿Me alcanza para ${d||'esto'} de ${fmt(x)}${(S.nc||1)>1?` en ${S.nc} cuotas`:' al contado'}?`:''};
 // Segunda opinión dentro de ¿Me alcanza?: Claude recibe el veredicto de la app (la regla manda) y suma lo que la regla no ve.
 async function askCheck(){const q=chkQ(),el=$('chk-ia'),btn=$('chk-ia-btn');if(!q){$('a-monto').focus();return}if(btn.disabled)return;
@@ -1427,18 +1455,37 @@ async function askCheck(){const q=chkQ(),el=$('chk-ia'),btn=$('chk-ia-btn');if(!
   S.chkIA=q;btn.disabled=true;btn.textContent='🤖 Claude está pensando…';el.innerHTML='<div class="ia-a" style="margin-top:12px;max-width:100%" aria-label="Pensando"><span class="dots"><i></i><i></i><i></i></span></div>';
   const a=await callIA(q,datos,[]);
   if(S.chkIA!==q)return;btn.disabled=false;btn.textContent='🤖 Preguntar de nuevo';
-  el.innerHTML=`<div class="ia-a" style="margin-top:12px;max-width:100%">${mdIA(a.texto)}</div>${a.ok?`<button class="chip" style="margin-top:8px" onclick="seguirIA()">Seguir conversando en Coach →</button>`:''}`;
+  el.innerHTML=`<div class="ia-a" style="margin-top:12px;max-width:100%">${mdIA(a.texto)}</div>${a.ok?`<button class="chip" style="margin-top:8px" onclick="seguirIA()">Seguir conversando →</button>`:''}`;
   if(a.ok)S.chkPar=[q,a.texto];}
 // Lleva la pregunta y la respuesta al chat del Coach para seguir ahí.
-function seguirIA(){const[q,a]=S.chkPar||[];closeSheet();tab('coach');if(!q)return;S.iaH=S.iaH||[];S.iaH.push({role:'user',content:q},{role:'assistant',content:a});$('ia-sug').innerHTML='';
-  $('ia-log').insertAdjacentHTML('beforeend',`<div class="ia-q">${mdIA(q)}</div><div class="ia-a">${mdIA(a)}</div>`);$('ia-in').focus()}
+function seguirIA(){const[q,a]=S.chkPar||[];closeSheet();if(q){chatPintar();S.iaH.push({role:'user',content:q},{role:'assistant',content:a});chatGuardar()}setTimeout(openChat,250)}
+// ---------- Chat con Claude a casi pantalla completa. Se abre desde la píldora "Claude" (animación tipo Dynamic Island)
+// y recuerda la conversación en este aparato (localStorage 'chat-h', últimos 30 mensajes). ----------
+const CHAT_K='chat-h';
+function chatGuardar(){try{localStorage.setItem(CHAT_K,JSON.stringify((S.iaH||[]).slice(-30)))}catch(e){}}
+function chatPintar(){const log=$('ia-log');S.iaH=S.iaH||(()=>{try{return JSON.parse(localStorage.getItem(CHAT_K)||'[]')}catch(e){return[]}})();
+  log.innerHTML=S.iaH.map(m=>`<div class="ia-${m.role==='user'?'q':'a'}">${mdIA(m.content)}</div>`).join('');
+  $('ia-sug').innerHTML=S.iaH.length?'':IA_SUG.map(q=>`<button class="chip" onclick="askIA(this.textContent)">${q}</button>`).join('')}
+function chatAbajo(){const b=$('chat-b');if(b)b.scrollTop=b.scrollHeight}
+function openChat(){const c=$('chat'),p=$('isla');if(c.classList.contains('on'))return;chatPintar();
+  c.classList.add('on');$('chat-bg').classList.add('on');document.body.classList.add('lock');chatAbajo();
+  // Se "abre" desde la píldora: recorte que parte del tamaño de la píldora y crece hasta el chat completo
+  try{const r=p.getBoundingClientRect(),k=c.getBoundingClientRect();
+    c.animate([{clipPath:`inset(${Math.max(0,r.top-k.top)}px ${Math.max(0,k.right-r.right)}px ${Math.max(0,k.bottom-r.bottom)}px ${Math.max(0,r.left-k.left)}px round 20px)`},{clipPath:'inset(0 0 0 0 round 34px)'}],{duration:420,easing:'cubic-bezier(.2,.9,.25,1)'})}catch(e){}
+  setTimeout(()=>{if(!S.iaH.length)$('ia-in').focus()},430)}
+function closeChat(){const c=$('chat'),p=$('isla');if(!c.classList.contains('on'))return;if(document.activeElement)document.activeElement.blur();$('chat-bg').classList.remove('on');document.body.classList.remove('lock');
+  const fin=()=>c.classList.remove('on');
+  try{const r=p.getBoundingClientRect(),k=c.getBoundingClientRect();
+    c.animate([{clipPath:'inset(0 0 0 0 round 34px)'},{clipPath:`inset(${Math.max(0,r.top-k.top)}px ${Math.max(0,k.right-r.right)}px ${Math.max(0,k.bottom-r.bottom)}px ${Math.max(0,r.left-k.left)}px round 20px)`}],{duration:300,easing:'cubic-bezier(.4,0,.6,1)'}).onfinish=fin}catch(e){fin()}}
+function nuevoChat(){S.iaH=[];chatGuardar();chatPintar();$('ia-in').focus()}
+
 async function callIA(q,datos,hist){try{const r=await fetch(SB+'/functions/v1/consejo',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json','x-app-key':getKey()},body:JSON.stringify({pregunta:q,datos,historial:hist})});
     const j=await r.json();return j.respuesta?{ok:true,texto:j.respuesta}:{ok:false,texto:({sin_api:'Falta conectar tu API de Anthropic (paso 3 de la guía).',api_mala:'La API key de Anthropic no funciona. Revísala en Supabase.',limite:'Muchas preguntas seguidas. Espera un minuto.',clave:'Tu sesión venció. Vuelve a entrar.'}[j.error]||'No pude responder. Intenta de nuevo.')}}
   catch(e){console.error(e);return{ok:false,texto:'Sin conexión. Intenta de nuevo.'}}}
 async function askIA(pre){const inp=$('ia-in'),btn=$('ia-btn');let q=(pre||inp.value).trim();if(!q)return inp.focus();if(btn.disabled)return;
-  S.iaH=S.iaH||[];$('ia-sug').innerHTML='';
+  if(!S.iaH)chatPintar();$('ia-sug').innerHTML='';
   const log=$('ia-log');log.insertAdjacentHTML('beforeend',`<div class="ia-q">${mdIA(q)}</div><div class="ia-a" id="ia-w" aria-label="Pensando"><span class="dots"><i></i><i></i><i></i></span></div>`);inp.value='';btn.disabled=true;
-  const r=await callIA(q,ctxIA(),S.iaH),a=r.texto;if(r.ok)S.iaH.push({role:'user',content:q},{role:'assistant',content:a});
+  chatAbajo();const r=await callIA(q,ctxIA(),S.iaH),a=r.texto;if(r.ok){S.iaH.push({role:'user',content:q},{role:'assistant',content:a});chatGuardar()}
   const w=$('ia-w');if(w){w.innerHTML=mdIA(a);w.removeAttribute('id')}btn.disabled=false;w&&w.scrollIntoView&&w.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
 function skipBuy(){const x=val('a-monto');if(x)addEv(x);closeSheet();toast(`💪 Bien ahí, te ahorraste ${fmt(x)}`);render()}

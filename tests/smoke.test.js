@@ -84,8 +84,8 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['¿Me alcanza? frena cuotas nuevas']=t('verdict').includes('cero cuotas');
  w.eval('askCheck()');await new Promise(r=>setTimeout(r,50));
  checks['Claude en ¿Me alcanza? (misma hoja, con el veredicto)']=d.getElementById('sheet-bg').classList.contains('on')&&d.querySelector('#chk-ia .ia-a b')?.textContent==='No'&&w.__ia.datos.veredicto_app.resultado.includes('cero cuotas');
- w.eval('seguirIA()');
- checks['pregúntale a Claude']=!d.querySelector('[data-tab=coach]').hidden&&d.querySelector('#ia-log .ia-a b')?.textContent==='No'&&w.eval('S.iaH.length')===2&&w.__ia.pregunta.includes('zapatillas')&&w.__ia.pregunta.includes('6 cuotas')&&w.__ia.datos.te_quedan===w.eval('S.V.queda')&&w.__ia.datos.cuotas_y_fijos.length===3;
+ w.eval('seguirIA()');await new Promise(r=>setTimeout(r,300));
+ checks['pregúntale a Claude']=d.getElementById('chat').classList.contains('on')&&d.querySelector('#ia-log .ia-a b')?.textContent==='No'&&w.eval('S.iaH.length')===2&&w.__ia.pregunta.includes('zapatillas')&&w.__ia.pregunta.includes('6 cuotas')&&w.__ia.datos.te_quedan===w.eval('S.V.queda')&&w.__ia.datos.cuotas_y_fijos.length===3;
  w.eval("openNeg()");await new Promise(r=>setTimeout(r,300));
  checks['negocio muestra resultado']=t('sheet').includes('Ganaste')&&t('neg-tot').includes('Vas ganando');
  w.eval("openFin()");checks['ahorro real en sueldos']=t('sheet').includes('Lo que de verdad ahorraste')&&t('sheet').includes('$439.000');
@@ -146,6 +146,9 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.CALLS=[];await w.eval('bv3()');await new Promise(r=>setTimeout(r,80));
  {const c=w.CALLS.find(c=>c.u.includes('ajustes')&&c.b&&c.b.includes('perfil'));checks['bienvenida: guarda perfil y presupuesto']=!!c&&c.b.includes('Pedro')&&c.b.includes('1500000')&&w.CALLS.some(c=>c.u.includes('presupuestos')&&c.b.includes('1200000'));}
  w.eval('closeSheet()');
+ // El chat recuerda la conversación en este aparato
+ checks['chat: se guarda y se puede empezar de nuevo']=JSON.parse(w.localStorage.getItem('chat-h')||'[]').length===2&&(w.eval('nuevoChat()'),w.eval('S.iaH.length')===0&&d.querySelectorAll('#ia-sug .chip').length===4);
+ w.eval('closeChat()');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();

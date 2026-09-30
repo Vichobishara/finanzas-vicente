@@ -16,7 +16,7 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - `scripts/importar_correos.gs`: Google Apps Script que cada 15 min lee correos (compras tarjeta BCI, transferencias
   hechas desde BCI y Scotia, sueldos Toku) y los inserta en Supabase.
 - `supabase/migrations/`: SQL aplicado a mano en Supabase (registro de cambios de esquema).
-- `supabase/functions/consejo`: edge function "Pregúntale a Claude" (chat en la pestaña Coach; en ¿Me alcanza? da una "segunda opinión" dentro de la misma hoja: recibe `veredicto_app` y no lo contradice, y se puede seguir la conversación en Coach). Exige x-app-key; usa el secreto
+- `supabase/functions/consejo`: edge function "Pregúntale a Claude" (chat que se abre desde la píldora negra "Claude" del encabezado, animación tipo Dynamic Island, a casi pantalla completa; recuerda la conversación en `localStorage['chat-h']`; en ¿Me alcanza? da una "segunda opinión" dentro de la misma hoja: recibe `veredicto_app` y no lo contradice, y se puede seguir la conversación en Coach). Exige x-app-key; usa el secreto
   `ANTHROPIC_API_KEY` de finanzas-vicho (workspace Anthropic aparte de TCG). La app le manda los números ya calculados
   (`ctxIA()`); las reglas de CFO van en el prompt de la función. Guía: `docs/preguntale_a_claude.md`.
 - `supabase/functions/cartola`: lee una cartola de tarjeta (PDF o foto) con Claude y devuelve las compras en cuotas vigentes
