@@ -1,0 +1,74 @@
+// "Pregúntale a Claude": responde preguntas de plata con los números del mes que manda la app.
+// Exige la misma clave x-app-key de la app. La API key de Anthropic va en el secreto ANTHROPIC_API_KEY
+// de este proyecto (finanzas-vicho), nunca en el repo ni en el navegador.
+import { createClient } from 'npm:@supabase/supabase-js@2';
+import Anthropic from 'npm:@anthropic-ai/sdk';
+
+const ORIGIN = 'https://finanzas-vicente.vercel.app';
+const cors = { 'Access-Control-Allow-Origin': ORIGIN, 'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-app-key, x-client-info', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
+const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
+const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, 'Content-Type': 'application/json' } });
+
+const SISTEMA = `Eres el CFO personal de Vicho: 26 años, Santiago, sueldo base ~$2.000.000 líquido. Se describe como procrastinador, desordenado y gastador. Su meta: gastar con control, ahorrar todos los meses en Fintual/APV y llegar a millonario.
+
+Cómo funciona su plata (la app ya hizo las cuentas, vienen en DATOS):
+- El mes va del 23 al 22. "presupuesto" es toda la plata del mes e INCLUYE cuotas y fijos.
+- "te_quedan" = presupuesto − cuotas y fijos − lo gastado. "diario" = te_quedan / días hasta el 22.
+- Lo que no gasta del presupuesto se reparte 50% Fintual / 50% colchón.
+- Montos en pesos chilenos (CLP). Gastos del negocio (PULLDEX / TCG Logs) no cuentan en lo personal.
+
+Reglas que no se negocian:
+- Cero cuotas nuevas mientras cuotas y fijos sean ≥ 30% del presupuesto. Si no le alcanza al contado, no le alcanza.
+- Coleccionables (cartas) personales con tope $0: bloqueados, salvo que sea para el negocio.
+- Si una compra lo hace pasarse del mes, la respuesta es no: eso sale de su ahorro.
+- Muestra el costo en 10 años de las compras grandes (6% real anual: monto × 1,79).
+- Premia el autocontrol cuando decide no comprar.
+
+Cómo responder:
+- Español chileno simple y directo, como un amigo que sabe de plata. Nada de jerga ("periodo", "cierre" → "hasta el 22").
+- Empieza con el veredicto en una línea (✅ Sí / ⚠️ Sí, pero... / 🔴 No) cuando te pregunten si puede comprar algo. Luego 2 a 4 líneas con los números que lo justifican.
+- Corto: se lee en el celular. Usa **negritas** solo para los números clave. Sin tablas ni títulos.
+- Usa solo los números de DATOS; si falta algo, dilo en vez de inventar.
+- Si pregunta de inversiones, impuestos o APV, responde con sentido común y cierra con "(no soy asesor financiero)".`;
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+  try {
+    const { data: sec } = await db.from('secretos').select('valor').eq('clave', 'app_key').single();
+    if (!sec || req.headers.get('x-app-key') !== sec.valor) return json({ error: 'clave' }, 401);
+    const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    if (!apiKey) return json({ error: 'sin_api' }, 503);
+
+    const { pregunta, datos, historial } = await req.json();
+    const q = String(pregunta || '').trim().slice(0, 600);
+    if (!q) return json({ error: 'pregunta' }, 400);
+    const previos = (Array.isArray(historial) ? historial : []).slice(-6)
+      .filter((m) => (m?.role === 'user' || m?.role === 'assistant') && typeof m.content === 'string')
+      .map((m) => ({ role: m.role, content: m.content.slice(0, 2000) }));
+    if (previos[0]?.role === 'assistant') previos.shift();
+
+    const client = new Anthropic({ apiKey });
+    // deno-lint-ignore no-explicit-any
+    const r: any = await client.beta.messages.create({
+      model: 'claude-opus-5-5',
+      max_tokens: 2000,
+      output_config: { effort: 'low' },
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',
+      system: [
+        { type: 'text', text: SISTEMA },
+        { type: 'text', text: 'DATOS (JSON):\n' + JSON.stringify(datos ?? {}).slice(0, 20000) },
+      ],
+      messages: [...previos, { role: 'user', content: q }],
+    // deno-lint-ignore no-explicit-any
+    } as any);
+    if (r.stop_reason === 'refusal') return json({ respuesta: 'No puedo responder eso. Prueba preguntándolo de otra forma.' });
+    const texto = (r.content || []).filter((b: { type: string }) => b.type === 'text').map((b: { text: string }) => b.text).join('\n').trim();
+    return json({ respuesta: texto || 'No tengo respuesta, intenta de nuevo.' });
+  } catch (e) {
+    console.error(e);
+    if (e instanceof Anthropic.AuthenticationError) return json({ error: 'api_mala' }, 502);
+    if (e instanceof Anthropic.RateLimitError) return json({ error: 'limite' }, 429);
+    return json({ error: String((e as Error)?.message || e) }, 500);
+  }
+});

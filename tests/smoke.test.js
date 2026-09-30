@@ -20,7 +20,7 @@ const DB={
 function run(url,claveOk){return new Promise(res=>{const heads=[];
  const dom=new JSDOM(html,{url,runScripts:'dangerously',pretendToBeVisual:true,beforeParse(w){
   w.scrollTo=()=>{};w.AbortController=AbortController;
-  w.fetch=async(u,o)=>{heads.push(o&&o.headers);(w.CALLS=w.CALLS||[]).push({u,m:o&&o.method,b:o&&o.body});if(u.includes('rpc/clave_ok'))return{ok:true,text:async()=>JSON.stringify(claveOk)};
+  w.fetch=async(u,o)=>{heads.push(o&&o.headers);(w.CALLS=w.CALLS||[]).push({u,m:o&&o.method,b:o&&o.body});if(u.includes('functions/v1/consejo')){w.__ia=JSON.parse(o.body);return{ok:true,json:async()=>({respuesta:'🔴 **No**, cero cuotas nuevas'})}}if(u.includes('rpc/clave_ok'))return{ok:true,text:async()=>JSON.stringify(claveOk)};
    const k=u.includes('ahorros')?'ahorros':u.includes('categorias')?'categorias':u.includes('select=periodo')?'periodos':u.includes('cuotas')?'cuotas':u.includes('presupuestos')?null:u.includes('reglas')?'reglas':u.includes('ajustes')?'ajustes':u.includes('estado=eq.revisar')?'revisar':u.includes('gastos')?'gastos':u.includes('ingresos')?'ingresos':null;
    const rows=k?DB[k]:[];return{ok:true,text:async()=>JSON.stringify(u.includes('pulldex=eq.true')?rows.filter(g=>g.pulldex):rows)}};
  }});setTimeout(()=>res({dom,heads}),1200)})}
@@ -50,6 +50,8 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['¿Me alcanza? bloquea cartas']=t('verdict').includes('bloqueadas');
  d.getElementById('a-desc').value='zapatillas';w.eval("S.nc=6;evalCheck()");
  checks['¿Me alcanza? frena cuotas nuevas']=t('verdict').includes('cero cuotas');
+ w.eval('askIA()');await new Promise(r=>setTimeout(r,50));
+ checks['pregúntale a Claude']=d.querySelector('#ia-log .ia-a b')?.textContent==='No'&&w.__ia.pregunta.includes('zapatillas')&&w.__ia.pregunta.includes('6 cuotas')&&w.__ia.datos.te_quedan===w.eval('S.V.queda')&&w.__ia.datos.cuotas_y_fijos.length===3;
  w.eval("openNeg()");await new Promise(r=>setTimeout(r,300));
  checks['negocio muestra resultado']=t('sheet').includes('Ganaste')&&t('neg-tot').includes('Vas ganando');
  w.eval("openFin()");checks['ahorro real en sueldos']=t('sheet').includes('Lo que de verdad ahorraste')&&t('sheet').includes('$439.000');
