@@ -156,6 +156,10 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  d.querySelector('#sheet .gu .btn').click();d.querySelector('#sheet .gu .btn').click();checks['guía Apple Pay avanza sin apilar ‹ (vista previa sin link)']=t('sheet').includes('Paso 2 de 8')&&!!d.querySelector('#sheet .tap')&&!d.querySelector('#sheet .bk');
  d.querySelector('#sheet .gu .alt').click();checks['guía Apple Pay: atrás']=t('sheet').includes('Paso 1 de 8');
  w.eval('closeSheet()');
+ // Invitar: solo aparece para la cuenta de Vicho
+ w.eval('S.admin=false;renderCoach()');const invOff=d.getElementById('m-inv').style.display==='none';
+ w.eval('S.admin=true;renderCoach()');await w.eval('openInvitar()');
+ checks['invitar: solo admin y abre la hoja']=invOff&&d.getElementById('m-inv').style.display===''&&t('sheet').includes('Invitar a alguien');w.eval('closeSheet()');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();

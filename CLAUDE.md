@@ -71,7 +71,10 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - Alta: `acceso_google` deja entrar a los correos de `secretos.google_emails` (o a quien ya tiene cuenta) y llama
   `crear_cuenta(email, nombre)` → cuenta vacía con sus categorías. En la app, sin `ajustes.perfil` se abre la bienvenida
   (nombre, edad, sueldo, presupuesto sugerido 80%) y después la guía para ponerla en inicio y Face ID.
-- Para invitar a alguien: agregar su Gmail a `secretos.google_emails` (separados por coma).
+- Para invitar a alguien: Coach → **Invitar a alguien** (solo la cuenta de Vicho: `rpc/es_admin`, `rpc/invitados`,
+  `rpc/invitar(p_email, p_quitar)`), que maneja `secretos.google_emails`.
+- Coach → **Conecta Apple Pay**: guía que copia el código de la persona (`rpc/mi_token_atajo`) y abre el atajo de iCloud
+  (`secretos.atajo_url`, `rpc/atajo_url`). Cómo se arma el atajo maestro: `docs/atajo_amigos.md`.
 - `anotar_atajo(monto_txt, comercio, token)`: con token (`cuentas.token_atajo`, `rpc/mi_token_atajo`) anota en esa cuenta.
   Cada llamada queda en `atajo_log` (diagnóstico). La automatización de iOS debe estar en **Ejecutar inmediatamente**.
 
