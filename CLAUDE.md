@@ -78,6 +78,15 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - `anotar_atajo(monto_txt, comercio, token)`: con token (`cuentas.token_atajo`, `rpc/mi_token_atajo`) anota en esa cuenta.
   Cada llamada queda en `atajo_log` (diagnóstico). La automatización de iOS debe estar en **Ejecutar inmediatamente**.
 
+## Metas, hábitos y extras (30-09-2026)
+- `ajustes.casa` {arriendo, muebles, ahorrado, mensual}: meta **Independizarme** (Plata). Necesitas = arriendo × 2,5
+  (garantía + primer mes + corretaje) + muebles. ¿Me alcanza? dice cuántas semanas atrasa la mudanza.
+- Racha (🔥 en el hero de Hoy) = `racha()` en JS, misma regla que `privado.racha()`. Mejor racha en `localStorage['racha-max']`.
+  Logros en Coach (`renderLogros`).
+- Gastos → **Suscripciones**: gastos `fijo` de 3 meses agrupados + fijos recurrentes; "La di de baja" → `ajustes.bajas`.
+- ¿Me alcanza? → **¿Cuál me compro?** compara 2 opciones (costo real con reventa, atraso de metas, 10 años).
+- Coach → **Widget en tu inicio**: script de Scriptable (`widgetJS`) con el código personal → `rpc/widget(token)`.
+
 ## Seguridad (clave x-app-key)
 - Todas las tablas exigen el header `x-app-key`. La función `privado.autorizado()` compara su sha256 con el hash guardado
   (el esquema `privado` no está expuesto). `rpc/clave_ok` devuelve true/false para la pantalla de candado.
