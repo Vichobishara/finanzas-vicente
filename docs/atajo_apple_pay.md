@@ -41,3 +41,14 @@ Después vuelve a poner la variable **Monto**.
 - Si el comercio no tiene regla, cae en "Sin categoría" y la app te pide ordenarlo (y aprende).
 - Compras en dólares con Apple Pay (viajes) no se convierten: anótalas a mano.
 - No necesita la clave de la app (`x-app-key`): `anotar_atajo` corre con permisos propios. Basta la anon key.
+
+## Si no se anota (lo que aprendimos el 30-09-2026)
+Cada llamada queda en `atajo_log` (la persona ve la última en Coach → Conecta Apple Pay → "Ya pagué: revisar").
+
+| Qué ves | Qué pasa | Arreglo |
+|---|---|---|
+| Nada: ni notificación de Atajos ni fila en `atajo_log` | La automatización está en **"Después de confirmación"** | Automatización → arriba → **Ejecutar inmediatamente** |
+| "Error en la automatización" y en `atajo_log` monto `(vacío)` | `monto_txt`/`comercio` usan variables sueltas, no la entrada | Borrar la variable y elegir **Entrada del atajo** → Cantidad / Comercio |
+| "✅ $X · Por revisar" | Comercio nuevo sin regla | Corregir la categoría una vez en la app (queda la regla) |
+
+No hace falta gastar para probar: la prueba es la próxima compra normal con Apple Pay.

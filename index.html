@@ -761,7 +761,7 @@ async function bv3(){const p=val('bv-ppto');if(p<100000)return toast('Pon un pre
     await Promise.all(Object.entries(S.techos).filter(([,t])=>t>0).map(([c,t])=>api('categorias?clave=eq.'+c,{m:'PATCH',b:{techo:Math.round(t*p/1e6/5000)*5000}})));
     await saveAj('perfil',{nombre:BV.nombre,sueldo:BV.sueldo,nacimiento:y+'-06-30',meta:100000000},true);
     toast(`🎉 Listo, ${BV.nombre}. Tu app está armada`);await loadAll();
-    setTimeout(()=>{if(!standalone)guiaInicio();else ofrecerFaceId()},900);
+    setTimeout(armaApp,900);
   }catch(e){console.error(e);toast('❌ No se guardó. Revisa tu internet e intenta de nuevo');bienvenida()}}
 
 function ofrecerFaceId(){if(LS('fid-ok')==='1'||!window.PublicKeyCredential||!S.aj.perfil)return;
@@ -780,7 +780,7 @@ async function faceId(nuevo){
     try{localStorage.setItem('app-key',fin.clave)}catch(e){}
     LS('fid-ok','1');LS('fid-no',null);
     if(ini.modo==='registro')toast('✅ Face ID activado: la próxima vez entras directo');
-    enFaceId=false;if(nuevo){closeSheet();return}salirLogin();loadAll();
+    enFaceId=false;if(nuevo){closeSheet();if(LS('arma-ok')!=='1')setTimeout(armaApp,500);return}salirLogin();loadAll();
   }catch(e){console.error(e);enFaceId=false;
     if(nuevo){closeSheet();if(e&&e.name==='InvalidStateError'){LS('fid-ok','1');return toast('✅ Este aparato ya tenía tu Face ID')}return toast('No se activó Face ID. Puedes hacerlo después desde el candado.')}
     // Sin Face ID guardado en este aparato, iOS lo muestra como "cancelado": la próxima vez Google va primero.
@@ -896,6 +896,7 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
 
   let nz='';const rev=items.otros||[],tr=S.revisar||[];
   if(tr.length)nz+=`<div class="nudge"><div>🔁 <b>${tr.length} transferencia${tr.length>1?'s':''} por revisar</b> · no cuentan hasta que me digas</div><button onclick="openRev()">Revisar</button></div>`;
+  if(esActual&&S.aj.perfil&&LS('arma-ok')!=='1'&&LS('arma-cerrado')!==hoyISO()){const P=armaPasos(),n=P.filter(p=>p.ok).length;if(n<P.length)nz+=`<div class="nudge"><div>🧩 <b>Arma tu app</b> · ${n} de ${P.length} listos</div><button onclick="armaApp()">Seguir</button></div>`;else LS('arma-ok','1')}
   if(esActual&&[0,1].includes(hoy.getDay())&&!LS('revision-'+semanaDe()))nz+=`<div class="nudge"><div>🗓 <b>Revisión de la semana</b> · 2 minutos y cierras la semana ordenado</div><button onclick="openRevision()">Hacer</button></div>`;
   if(esActual){const dd=hoy.getDate(),u=S.ahorros[0],dsA=u?Math.round((hoy-new Date(u.fecha+'T00:00:00'))/864e5):99;
     if((dd>=27||dd<=10)&&dsA>15&&!pausaFin())nz+=`<div class="nudge"><div>💰 <b>¿Ya mandaste a Fintual?</b> Anota cuánto y queda tu ahorro real</div><button onclick="openAhorro()">Anotar</button></div>`;}
@@ -1219,18 +1220,18 @@ const GUIA_AP=[
    ui:()=>fone('Automatización',`<div class="pl tap">${lbl('toca el +',1)}+</div><div class="dim" style="text-align:center;margin-top:90px">Sin automatizaciones</div>`,tabsAtajos('')),b:'Siguiente'},
   {t:'Busca “Transacción”',p:'Baja en la lista o escríbelo arriba. Es la que tiene el ícono de Wallet.',
    ui:()=>fone('Nueva automatización',`<div class="grp"><div class="rw dim">🔍 Buscar</div></div><div class="grp"><div class="rw">${ico('📍','#FF9F0A')}Llegar</div><div class="rw">${ico('🔋','#30D158')}Batería</div><div class="rw tap">${lbl('esta')}${ico('💳','#1C1C1E;border:1px solid #444')}Transacción</div><div class="rw">${ico('🔔','#FF453A')}Notificación</div></div>`),b:'Siguiente'},
-  {t:'Elige tus tarjetas',p:'Marca las que usas con Apple Pay (Scotia, BCI…). Abajo elige <b>Ejecutar inmediatamente</b> y toca <b>Siguiente</b>.',
-   ui:()=>fone('Transacción',`<div class="dim" style="margin:0 4px 6px">CUANDO USO</div><div class="grp"><div class="rw">${ico('💳','#C8102E')}Scotiabank Visa<em class="v">✓</em></div><div class="rw">${ico('💳','#0033A0')}BCI<em class="v">✓</em></div></div><div class="grp" style="margin-top:34px"><div class="rw tap">${lbl('elige esta')}Ejecutar inmediatamente<em class="v">✓</em></div><div class="rw">Preguntar antes<em></em></div></div>`),b:'Siguiente'},
+  {t:'Elige tus tarjetas y “Ejecutar inmediatamente”',p:'Marca las que usas con Apple Pay (Scotia, BCI…). Abajo elige <b>Ejecutar inmediatamente</b>. <b>Ojo:</b> si queda en “Después de confirmación”, el iPhone no anota nada solo.',
+   ui:()=>fone('Transacción',`<div class="dim" style="margin:0 4px 6px">CUANDO USO</div><div class="grp"><div class="rw">${ico('💳','#C8102E')}Scotiabank Visa<em class="v">✓</em></div><div class="rw">${ico('💳','#0033A0')}BCI<em class="v">✓</em></div></div><div class="grp" style="margin-top:34px"><div class="rw tap">${lbl('elige esta')}Ejecutar inmediatamente<em class="v">✓</em></div><div class="rw" style="text-decoration:line-through;opacity:.6">Después de confirmación<em></em></div></div>`),b:'Siguiente'},
   {t:'Elige “Finanzas: anotar compra”',p:'Aparece en la lista de tus atajos. Tócalo y después <b>OK</b> arriba a la derecha. ¡Eso era todo!',
    ui:()=>fone('Cuando uso mi tarjeta…',`<div class="grp"><div class="rw dim">＋ Nuevo atajo en blanco</div></div><div class="dim" style="margin:14px 4px 6px">MIS ATAJOS</div><div class="grp"><div class="rw tap">${lbl('este')}${ico('⚡','#5E5CE6')}Finanzas: anotar compra</div><div class="rw">${ico('📷','#FF9F0A')}Foto del día</div></div>`),b:'Siguiente'},
-  {big:'☕',t:'Pruébalo con una compra de verdad',p:'Paga algo chico con Apple Pay. Te tiene que llegar una notificación <b>“✅ $X · categoría”</b> y el gasto aparece solo en la app.',b:'Listo',a:'guiaAPFin()'}
+  {big:'☕',t:'Listo: pruébalo con tu próxima compra',p:'No tienes que gastar extra. La próxima vez que pagues con Apple Pay te llega <b>“✅ $X · categoría”</b> y el gasto aparece solo. Después vuelve acá y toca <b>Revisar</b>.',b:'Ya pagué: revisar',a:'revisarAtajo()',b2:'Lo pruebo después',a2:'guiaAPFin()'}
 ];
 function guiaAP(i){const g=GUIA_AP[i],N=GUIA_AP.length;
   const h=`<div class="gu-top">${GUIA_AP.map((_,k)=>`<i class="${k<i?'on':k===i?'now':''}"></i>`).join('')}</div>
   <div class="gu">${i?`<small class="n">Paso ${i} de ${N-1}</small>`:''}${g.chat?`<div class="chat"><span class="bub yo">quiero que mis compras con Apple Pay se anoten solas</span><br><span class="bub el">¡listo! te guío, son 2 minutos 👆</span></div>`:g.ui?g.ui():`<div class="big">${g.big}</div>`}
   <h3>${g.t}</h3><p>${g.p}</p>
   ${i===0&&apConectado()?`<div class="nota">✅ Ya te está funcionando: este mes entraron compras por Apple Pay. Úsala para conectar otra tarjeta o para un amigo.</div>`:''}
-  <button class="btn p" onclick="${g.a||`guiaAP(${i+1})`}">${g.b}</button>
+  <button class="btn p" onclick="${g.a||`guiaAP(${i+1})`}">${g.b}</button>${g.b2?`<button class="alt" onclick="${g.a2}">${g.b2}</button>`:''}
   ${i?`<button class="alt" onclick="guiaAP(${i-1})">‹ Atrás</button>`:''}</div>`;
   // Entre pasos se repinta la misma hoja (sin apilar cada paso en el ‹ de las hojas)
   if(sheetOn()&&$('sheet').querySelector('.gu'))pintaSheet(h,0);else openSheet(h)}
@@ -1297,6 +1298,34 @@ async function copiarWidget(){
   const js=api('rpc/mi_token_atajo',{m:'POST',b:{}}).then(c=>new Blob([widgetJS(typeof c==='string'?c:'')],{type:'text/plain'}));
   try{await navigator.clipboard.write([new ClipboardItem({'text/plain':js})]);toast('✅ Widget copiado: pégalo en Scriptable')}
   catch(e){try{const c=await api('rpc/mi_token_atajo',{m:'POST',b:{}});await navigator.clipboard.writeText(widgetJS(c||''));toast('✅ Widget copiado')}catch(e2){toast('No pude copiarlo. Intenta de nuevo')}}}
+
+// Revisa la última llamada del atajo de esta cuenta (rpc/mi_ultimo_atajo) y explica qué arreglar si algo falló.
+async function revisarAtajo(){let u=null;try{u=await api('rpc/mi_ultimo_atajo',{m:'POST',b:{}})}catch(e){}
+  const ok=u&&/^✅/.test(u.resultado||''),vacio=u&&/\(vacío\)/.test(u.resultado||''),hace=u?Math.round((Date.now()-new Date(u.creado))/6e4):null;
+  const fix=(t,s)=>`<div class="step"><div class="n">!</div><div><b>${t}</b><small>${s}</small></div></div>`;
+  openSheet(ok?`<div style="text-align:center"><div style="font-size:56px;margin:6px 0">🎉</div><h3>¡Funciona!</h3><p>Llegó tu compra <b>${u.comercio||''} · ${u.monto_txt}</b>${hace!==null?` (hace ${hace<60?hace+' min':Math.round(hace/60)+' h'})`:''}. Desde ahora tus compras con Apple Pay se anotan solas.</p></div><button class="btn p" onclick="LS('ap-ok','1');closeSheet();armaApp()">Seguir</button>`
+   :vacio?`<h3>Casi: llegó sin monto</h3><p>El atajo se ejecutó, pero la <b>Cantidad</b> y el <b>Comercio</b> llegaron vacíos. Se arregla en 1 minuto:</p>
+     ${fix('Abre el atajo “Finanzas: anotar compra”','En “Obtener contenido de”, toca el valor de <b>monto_txt</b> → Borrar variable.')}
+     ${fix('Elige “Entrada del atajo” → Cantidad','Toca el campo vacío → Seleccionar variable → <b>Entrada del atajo</b> → tócala y elige <b>Cantidad</b>. Igual con <b>comercio</b> → <b>Comercio</b>.')}
+     <button class="btn p" onclick="closeSheet()">Lo arreglé</button>`
+   :`<h3>Todavía no llega nada</h3><p>${u?`Lo último que llegó fue hace ${hace<60?hace+' min':Math.round(hace/60)+' h'}: ${u.resultado}`:'Tu atajo aún no ha anotado ninguna compra.'}</p>
+     ${fix('¿Está en “Ejecutar inmediatamente”?','Atajos → Automatización → tu automatización de Transacción. Arriba debe decir <b>Ejecutar inmediatamente</b>, no “Después de confirmación”.')}
+     ${fix('¿Pagaste con Apple Pay y con esa tarjeta?','Tiene que ser acercando el iPhone (o Apple Pay en la web) y con una tarjeta marcada en la automatización.')}
+     ${fix('¿Te llegó “Error en la automatización”?','Revisa que las variables salgan de <b>Entrada del atajo</b> (Cantidad y Comercio).')}
+     <button class="btn p" onclick="closeSheet()">Entendido</button>`)}
+
+// ---------- Arma tu app (después de la bienvenida y como aviso en Hoy hasta completarlo) ----------
+// Orden importante en iPhone: 1) Face ID en Safari (la passkey queda en el llavero), 2) ponerla en inicio y entrar desde el
+// ícono con Face ID (el ícono no comparte sesión con Safari), 3) conectar Apple Pay.
+function armaPasos(){const ios=esIOS;return[
+  {k:'fid',t:'Entrar con tu cara',s:'Face ID: así no dependes de Google cada vez',ok:LS('fid-ok')==='1'||!window.PublicKeyCredential,a:'faceId(true)'},
+  {k:'ini',t:'Ponla en tu inicio',s:ios?'Después la abres desde el ícono y entras con Face ID':'Para abrirla con un toque',ok:standalone||LS('ini-ok')==='1',a:"LS('ini-ok','1');guiaInicio()"},
+  ...(ios?[{k:'ap',t:'Conecta Apple Pay',s:'Tus compras se anotan solas',ok:LS('ap-ok')==='1'||S.gastos.some(g=>g.fuente==='atajo'),a:'guiaAP(0)'}]:[])]}
+function armaApp(){const P=armaPasos(),n=P.filter(p=>p.ok).length;
+  if(n===P.length){LS('arma-ok','1');return toast('🎉 Tu app está lista')}
+  openSheet(`<h3>Arma tu app</h3><p>${n} de ${P.length} listos. Toma 3 minutos y después se usa sola.</p>
+  <div class="card">${P.map((p,i)=>`<div class="hab"><div class="ck ${p.ok?'ok':''}">${p.ok?'✓':i+1}</div><div class="cm"><b>${p.t}</b><small>${p.s}</small></div>${p.ok?'':`<button onclick="${p.a}" ${P.findIndex(x=>!x.ok)===i?'':'style="background:var(--bg2);color:var(--text);border:1px solid var(--border)"'}>Hacer</button>`}</div>`).join('')}</div>
+  <button class="lg-link" style="display:block;margin:8px auto 0" onclick="LS('arma-cerrado',hoyISO());closeSheet()">Lo termino después</button>`)}
 
 function guiaAPFin(){closeSheet();toast(apConectado()?'✅ Apple Pay conectado':'Cuando pagues con Apple Pay, el gasto aparece solo')}
 function openAvisos(){

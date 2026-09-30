@@ -184,6 +184,11 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  // Suscripciones y logros
  await w.eval('openSubs()');checks['suscripciones: abre con total al año']=t('sheet').includes('Pagas al mes')&&t('sheet').includes('al año');w.eval('closeSheet()');
  w.eval('renderLogros()');checks['logros: se muestran']=t('logros-c').includes('Logros')&&t('logros-c').includes('7 días seguidos');
+ // Arma tu app: pasos en orden (Face ID antes de ponerla en inicio) y revisar el atajo
+ w.eval("localStorage.removeItem('fid-ok');localStorage.removeItem('ap-ok');armaApp()");
+ checks['arma tu app: Face ID primero, luego inicio y Apple Pay']=/Entrar con tu cara[\s\S]*pantalla de inicio/.test(t('sheet'))&&t('sheet').includes('de 3 listos')||t('sheet').includes('de 2 listos');
+ w.eval('closeSheet()');
+ w.eval("guiaAP(8)");checks['guía Apple Pay: último paso revisa sin gastar extra']=t('sheet').includes('Ya pagué: revisar')&&t('sheet').includes('No tienes que gastar extra');w.eval('closeSheet()');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();
