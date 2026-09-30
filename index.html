@@ -2,18 +2,22 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Finanzas">
 <meta name="theme-color" content="#F3F4F8">
 <title>Finanzas Vicho</title>
+<link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="icon" href="/apple-touch-icon.png">
 <style>
 :root{--bg:#F3F4F8;--bg2:#FFFFFF;--bg3:#F2F4F7;--card:#FFFFFF;--border:#EAECF0;--text:#101828;--sec:#667085;--hint:#98A2B3;--ac:#0B1B3A;--ac-d:#0B1B3A;--ac-t:#F2F4F7;--navy:#0B1B3A;--green:#12B76A;--green-d:#067647;--red:#F04438;--red-d:#B42318;--amber:#F79009;--amber-d:#B54708;--sh:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.05);--safe-t:env(safe-area-inset-top,20px);--safe-b:env(safe-area-inset-bottom,16px)}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{min-height:100%}
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overscroll-behavior-y:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,select,textarea{-webkit-user-select:text;user-select:text;touch-action:manipulation}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;letter-spacing:-.01em}
 button{font-family:inherit;cursor:pointer;color:inherit;transition:transform .15s,background .2s,box-shadow .2s}
 svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
@@ -249,6 +253,10 @@ const $v=n=>n>0?'$'+Math.round(n).toLocaleString('es-CL'):'';
 function openSheet(h){const sh=$('sheet');sh.classList.remove('busy');sh.style.transform='';sh.innerHTML='<div class="handle"></div><button class="x" onclick="closeSheet()" aria-label="Cerrar">×</button>'+h;sh.scrollTop=0;$('sheet-bg').classList.add('on');document.body.classList.add('lock')}
 function closeSheet(){if(document.activeElement)document.activeElement.blur();$('sheet-bg').classList.remove('on');document.body.classList.remove('lock')}
 const sheetOn=()=>$('sheet-bg').classList.contains('on');
+// Que se sienta app: sin zoom al pellizcar ni al tocar dos veces (Safari ignora user-scalable=no)
+const esIOS=/iP(hone|ad|od)/.test(navigator.userAgent),standalone=navigator.standalone||!!(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+['gesturestart','gesturechange'].forEach(t=>document.addEventListener(t,e=>e.preventDefault()));
+document.addEventListener('touchmove',e=>{if(e.scale&&e.scale!==1)e.preventDefault()},{passive:false});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetOn())closeSheet()});
 // Deslizar hacia abajo para cerrar (desde la manija o con la hoja arriba del todo)
 (()=>{let y0=null,dy=0;const sh=()=>$('sheet');
@@ -355,6 +363,7 @@ function render(){
   if(rev.length)nz+=`<div class="nudge"><div>❓ <b>${rev.length} gasto${rev.length>1?'s':''} sin categoría</b></div><button onclick="openCat('otros')">Ordenar</button></div>`;
   if(esActual){const man=S.gastos.filter(g=>g.tarjeta==='scotiabank'||g.tarjeta==='efectivo').map(g=>g.fecha).sort().pop();const ds=man?Math.round((hoy-new Date(man+'T00:00:00'))/864e5):null;
     if(ds===null||ds>=2)nz+=`<div class="nudge"><div>✍️ ${ds===null?'No has anotado gastos de Scotia':`Llevas <b>${ds} días</b> sin anotar lo de Scotia`}</div><button onclick="openAdd()">Anotar</button></div>`;}
+  if(esActual&&esIOS&&!standalone&&!localStorage.getItem('no-inicio'))nz+=`<div class="nudge"><div>📲 <b>Úsala como app:</b> toca Compartir ⬆️ y luego "Agregar a inicio"</div><button onclick="localStorage.setItem('no-inicio',1);this.parentNode.remove()">Listo</button></div>`;
   $('nudges').innerHTML=nz;
 
   const tops=Object.entries(tot).filter(([k])=>k!=='otros').sort((a,b)=>b[1]-a[1]).slice(0,3);
