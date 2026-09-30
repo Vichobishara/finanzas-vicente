@@ -299,8 +299,40 @@ body:not(.ready) .mes-b .chev{display:none}
 .toast{transition:opacity .25s,transform .45s cubic-bezier(.3,1.5,.5,1)!important}
 .toast:not(.on){transform:translate(-50%,16px) scale(.92)!important}
 @media (prefers-reduced-motion:reduce){.sk,.enter>*,.dots i,.tab-in>*,.sheet>*,.sheet-bg,.sheet-bg .sheet,.bar div,.h-bar div,.hero.bump,.chip.on{animation:none!important}}
-.g-btn{margin-top:8px!important;background:rgba(255,255,255,.15)!important;color:#fff!important;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:none!important}
-.g-btn svg{background:#fff;border-radius:50%;padding:3px;width:24px;height:24px}
+/* Pantalla de entrada */
+.login{position:fixed;inset:0;z-index:150;display:none;flex-direction:column;justify-content:space-between;padding:calc(var(--safe-t) + 48px) 26px calc(var(--safe-b) + 26px);color:#fff;overflow-y:auto;
+  background:radial-gradient(90% 55% at 85% 8%,rgba(43,203,133,.55),transparent 60%),radial-gradient(80% 50% at 0% 40%,rgba(98,70,234,.45),transparent 60%),linear-gradient(170deg,#101318,#07080a)}
+.login.on{display:flex;animation:lgIn .5s cubic-bezier(.2,.9,.3,1)}
+.login.fuera{animation:lgOut .45s cubic-bezier(.4,0,.2,1) both;pointer-events:none}
+@keyframes lgIn{from{opacity:0}to{opacity:1}}
+@keyframes lgOut{to{opacity:0;transform:scale(1.06);filter:blur(6px)}}
+.login.sacude .lg-msg{animation:sacude .45s}
+@keyframes sacude{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.lg-top{max-width:440px;width:100%;margin:0 auto}
+.lg-logo{width:72px;height:72px;border-radius:20px;box-shadow:0 14px 34px -10px rgba(43,203,133,.7);animation:flotaL 4s ease-in-out infinite}
+@keyframes flotaL{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.login h1{font-size:40px;font-weight:800;letter-spacing:-1.4px;line-height:1.05;margin:26px 0 12px;animation:sube .6s .08s both cubic-bezier(.2,.9,.3,1)}
+.login .lg-top p{font-size:16px;line-height:1.5;color:rgba(255,255,255,.72);max-width:330px;animation:sube .6s .16s both cubic-bezier(.2,.9,.3,1)}
+@keyframes sube{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.lg-bot{max-width:440px;width:100%;margin:28px auto 0;display:flex;flex-direction:column;gap:10px;animation:sube .6s .24s both cubic-bezier(.2,.9,.3,1)}
+.lg-b{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:17px;border-radius:99px;border:none;font-size:16.5px;font-weight:700;letter-spacing:-.2px;transition:transform .15s,opacity .2s}
+.lg-b:active{transform:scale(.97)}
+.lg-b.p{background:#fff;color:#0c0d10;box-shadow:0 14px 34px -12px rgba(255,255,255,.45)}
+.lg-b.s{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.16);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.lg-b .gi{width:22px;height:22px;background:#fff;border-radius:50%;padding:2px}
+.lg-b svg.i{width:22px;height:22px}
+.lg-b:disabled{opacity:.55}
+.lg-b.carga{opacity:1}
+.lg-b.carga svg{display:none}
+.lg-b.carga:before{content:'';width:18px;height:18px;border-radius:50%;border:2.5px solid currentColor;border-right-color:transparent;animation:spin .7s linear infinite}
+.lg-msg{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:18px;padding:12px 14px;font-size:14px;line-height:1.45;color:#fff;margin-bottom:4px}
+.lg-msg.mal{background:rgba(240,68,56,.18);border-color:rgba(240,68,56,.4)}
+.lg-k{display:none;flex-direction:column;gap:10px}
+.lg-k.on{display:flex}
+.lg-k input{width:100%;padding:16px 18px;border-radius:18px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-size:16px;outline:none}
+.lg-k input::placeholder{color:rgba(255,255,255,.45)}
+.lg-link{background:none;border:none;color:rgba(255,255,255,.62);font-size:14px;font-weight:600;padding:8px}
+.lg-fine{text-align:center;font-size:12px;color:rgba(255,255,255,.4)}
 </style>
 </head>
 <body>
@@ -381,6 +413,7 @@ body:not(.ready) .mes-b .chev{display:none}
   <button data-t="coach" onclick="tab('coach')"><svg class="i" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/></svg><span>Coach</span></button></div>
 </nav>
 
+<div class="login" id="login"></div>
 <div class="sheet-bg" id="sheet-bg" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 
@@ -509,32 +542,58 @@ function navPill(x){const n=$('nav'),p=$('nav-pill'),b=n&&n.querySelector('butto
   n.addEventListener('click',e=>{if(Date.now()-(n._sinClick||0)<500){e.stopPropagation();e.preventDefault()}},true);
   n.addEventListener('pointerup',fin);n.addEventListener('pointercancel',fin);n.addEventListener('pointerleave',fin);
   addEventListener('resize',()=>navPill());if(document.fonts)document.fonts.ready.then(()=>navPill())})();
-function lock(msg){document.body.classList.remove('ready');tab('hoy');$('hero-w').innerHTML=`<div class="hero"><div class="h-lbl">🔒 Tus finanzas están protegidas</div><div class="h-l1" style="margin:8px 0 14px">${msg||'Entra con tu cara, como en el banco.'}</div><button id="fid-btn" class="btn p" style="margin-top:0;background:#fff;color:#121217" onclick="faceId()">Entrar con Face ID</button><button class="btn p g-btn" onclick="google()"><svg viewBox="0 0 48 48" width="20" height="20"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Continuar con Google</button><div id="k-box" style="display:none;margin-top:10px"><input id="k-in" placeholder="clave" autocomplete="off" autocapitalize="off" autocorrect="off" enterkeyhint="go" onkeydown="if(event.key==='Enter')setKey()" style="width:100%;padding:14px;border-radius:14px;border:none;font-size:16px;margin-bottom:10px"><button class="btn p" style="margin-top:0;background:rgba(255,255,255,.15);color:#fff" onclick="setKey()">Entrar con clave</button></div><div style="text-align:center;margin-top:12px"><button style="border:none;background:none;color:rgba(255,255,255,.7);font-size:12.5px;text-decoration:underline" onclick="$('k-box').style.display='block';this.style.display='none';$('k-in').focus()">Usar una clave</button></div></div>`}
-function setKey(){const k=($('k-in').value||'').trim();if(!k){$('k-in').focus();return}try{localStorage.setItem('app-key',k)}catch(e){}loadAll()}
+// Pantalla de entrada: una sola pantalla, lo más importante primero (Face ID si este aparato ya lo tiene; si no, Google).
+const LS=(k,v)=>{try{return v===undefined?localStorage.getItem(k):v===null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){return null}};
+const G_SVG=`<svg class="gi" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>`,FACE_SVG=`<svg class="i" viewBox="0 0 24 24"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3M9 9v1M15 9v1M12 9v4h-1M9 16c1.7 1.3 4.3 1.3 6 0"/></svg>`;
+function lock(msg,tipo){document.body.classList.remove('ready');tab('hoy');$('hero-w').innerHTML='';
+  const fidPrimero=LS('fid-no')!=='1',nom=LS('nombre'),L=$('login');
+  const bFid=`<button id="fid-btn" class="lg-b ${fidPrimero?'p':'s'}" onclick="faceId()">${FACE_SVG}<span>Entrar con Face ID</span></button>`,
+        bG=`<button id="g-btn" class="lg-b ${fidPrimero?'s':'p'}" onclick="google()">${G_SVG}<span>Continuar con Google</span></button>`;
+  L.innerHTML=`<div class="lg-top"><img class="lg-logo" src="/apple-touch-icon.png" alt=""><h1>${nom?`Hola de nuevo,<br>${nom} 👋`:'Tu plata,<br>en orden.'}</h1>
+    <p>${nom?'Entra y mira cuánto puedes gastar hoy.':'Sabes cuánto puedes gastar hoy, tus compras se anotan solas y cada peso que no gastas va camino al millón.'}</p></div>
+  <div class="lg-bot">${msg?`<div class="lg-msg ${tipo||''}">${msg}</div>`:''}
+    ${fidPrimero?bFid+bG:bG+bFid}
+    <div id="k-box" class="lg-k"><input id="k-in" placeholder="Tu clave" autocomplete="off" autocapitalize="off" autocorrect="off" enterkeyhint="go" onkeydown="if(event.key==='Enter')setKey()"><button class="lg-b s" onclick="setKey()"><span>Entrar con clave</span></button></div>
+    <button class="lg-link" onclick="$('k-box').classList.add('on');this.remove();$('k-in').focus()">Usar una clave</button>
+    <div class="lg-fine">🔒 Tus datos solo los ves tú</div></div>`;
+  L.classList.remove('fuera');L.classList.add('on');if(msg&&tipo==='mal'){L.classList.remove('sacude');void L.offsetWidth;L.classList.add('sacude')}}
+// Botón ocupado mientras abre Face ID o Google
+function ocupado(id,txt){const b=$(id);if(!b)return;b.disabled=true;b.classList.add('carga');b.querySelector('span').textContent=txt;document.querySelectorAll('.lg-b').forEach(x=>x.disabled=true)}
+function salirLogin(){const L=$('login');if(!L||!L.classList.contains('on'))return;L.classList.add('fuera');setTimeout(()=>L.classList.remove('on','fuera'),450)}
+function setKey(){const k=($('k-in').value||'').trim();if(!k){$('k-in').focus();return}try{localStorage.setItem('app-key',k)}catch(e){}ocupado('fid-btn','Entrando…');loadAll()}
 // Corta la espera si algo se cuelga (red lenta, CDN caído): así el botón nunca queda pegado.
 const plazo=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
 // Continuar con Google → Supabase Auth → vuelve con access_token → acceso_google revisa que seas tú y entrega la clave.
-function google(){location.href=SB+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+'/')}
-async function entrarGoogle(){const t=G_TOK;G_TOK=null;
+function google(){ocupado('g-btn','Abriendo Google…');location.href=SB+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+'/')}
+async function entrarGoogle(){const t=G_TOK;G_TOK=null;lock();ocupado('g-btn','Entrando…');
   try{const r=await plazo(fetch(SB+'/functions/v1/acceso_google',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+t,'Content-Type':'application/json'},body:'{}'}).then(r=>r.json()),15000);
-    if(!r.clave)return lock(r.error==='no_invitado'?`Entraste como ${r.email}, pero esa cuenta no tiene acceso. Pídele acceso a Vicho.`:'No se pudo entrar con Google. Prueba de nuevo o usa Face ID.');
-    try{localStorage.setItem('app-key',r.clave)}catch(e){}toast(`✅ Hola${r.nombre?' '+r.nombre.split(' ')[0]:''}, entraste con Google`);loadAll()}
-  catch(e){console.error(e);lock('Se demoró mucho con Google. Toca el botón de nuevo.')}}
+    if(!r.clave)return lock(r.error==='no_invitado'?`Entraste como <b>${r.email}</b>, pero esa cuenta no tiene acceso. Pídele acceso a Vicho.`:'No se pudo entrar con Google. Prueba de nuevo o usa Face ID.','mal');
+    try{localStorage.setItem('app-key',r.clave)}catch(e){}if(r.nombre)LS('nombre',r.nombre.split(' ')[0]);
+    toast(`✅ Hola${r.nombre?' '+r.nombre.split(' ')[0]:''}, entraste con Google`);await loadAll();ofrecerFaceId()}
+  catch(e){console.error(e);lock('Se demoró mucho con Google. Toca el botón de nuevo.','mal')}}
+// Después de entrar con Google en un aparato sin Face ID: ofrecer activarlo (acceso con accion 'nuevo' + x-app-key).
+function ofrecerFaceId(){if(LS('fid-ok')==='1'||!window.PublicKeyCredential)return;
+  openSheet(`<div style="text-align:center"><div style="font-size:56px;margin:4px 0 6px">🙂</div><h3>¿Entrar con tu cara la próxima vez?</h3><p>Activa Face ID en este aparato y no vuelves a pasar por Google.</p></div>
+  <button class="btn p" onclick="faceId(true)">Activar Face ID</button><button class="btn p" style="margin-top:8px;background:var(--bg3);color:var(--text);box-shadow:none" onclick="LS('fid-ok','0');closeSheet()">Ahora no</button>`)}
 let enFaceId=false;
-async function faceId(){
+async function faceId(nuevo){
   if(enFaceId)return;enFaceId=true;
-  const b=$('fid-btn');if(b){b.disabled=true;b.textContent='Abriendo Face ID…'}
+  ocupado('fid-btn','Abriendo Face ID…');
   try{
     const W=await plazo(import('https://esm.sh/@simplewebauthn/browser@13'),15000);
     const fx=body=>plazo(fetch(SB+'/functions/v1/acceso',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',...(getKey()?{'x-app-key':getKey()}:{})},body:JSON.stringify(body)}).then(r=>r.json()),15000);
-    const ini=await fx({accion:'inicio'});if(ini.error)throw new Error(ini.error);
+    const ini=await fx({accion:nuevo?'nuevo':'inicio'});if(ini.error)throw new Error(ini.error);
     const respuesta=ini.modo==='login'?await W.startAuthentication({optionsJSON:ini.opciones}):await W.startRegistration({optionsJSON:ini.opciones});
     const fin=await fx({accion:ini.modo,id:ini.id,respuesta});if(!fin.clave)throw new Error(fin.error||'sin clave');
     try{localStorage.setItem('app-key',fin.clave)}catch(e){}
-    if(ini.modo==='registro')toast('✅ Listo: la próxima vez entras directo');
-    enFaceId=false;loadAll();
+    LS('fid-ok','1');LS('fid-no',null);
+    if(ini.modo==='registro')toast('✅ Face ID activado: la próxima vez entras directo');
+    enFaceId=false;if(nuevo){closeSheet();return}salirLogin();loadAll();
   }catch(e){console.error(e);enFaceId=false;
-    lock(e&&e.name==='NotAllowedError'?'Face ID se canceló. Toca el botón para intentar de nuevo.':e&&e.message==='timeout'?'Se demoró mucho (¿internet lento?). Toca el botón de nuevo.':'No se pudo con Face ID. Toca el botón de nuevo o usa tu clave.')}
+    if(nuevo){closeSheet();if(e&&e.name==='InvalidStateError'){LS('fid-ok','1');return toast('✅ Este aparato ya tenía tu Face ID')}return toast('No se activó Face ID. Puedes hacerlo después desde el candado.')}
+    // Sin Face ID guardado en este aparato, iOS lo muestra como "cancelado": la próxima vez Google va primero.
+    if(e&&e.name==='NotAllowedError'&&LS('fid-ok')!=='1')LS('fid-no','1');
+    lock(e&&e.name==='NotAllowedError'?(LS('fid-ok')==='1'?'Face ID se canceló. Toca el botón para intentar de nuevo.':'¿Este aparato no tiene tu Face ID? Entra con Google y lo activamos.'):e&&e.message==='timeout'?'Se demoró mucho (¿internet lento?). Toca el botón de nuevo.':e&&e.message==='cerrado'?'Este aparato todavía no tiene Face ID. Entra con Google y lo activamos.':'No se pudo con Face ID. Prueba con Google o con tu clave.','mal')}
 }
 let cargando=null;
 function loadAll(){if(!cargando)cargando=_loadAll().finally(()=>{cargando=null});return cargando}
@@ -548,7 +607,7 @@ async function _loadAll(){
       api('cuotas?activa=eq.true&order=monto_cuota.desc'),api('presupuestos?select=*'),
       api('reglas_categoria?select=palabra,categoria_clave,negocio'),api('ajustes?select=clave,valor')
     ]);
-    if(!ok)return lock('Esa clave no funciona. Revisa que esté bien copiada.');
+    if(!ok)return lock('Esa clave no funciona. Revisa que esté bien copiada.','mal');
     S.aj={};(aj||[]).forEach(a=>S.aj[a.clave]=a.valor);S.ahorros=ahorros||[];
     SUELDO=PERF().sueldo||SUELDO;
     cats.forEach(c=>S.techos[c.clave]=c.techo);
@@ -652,7 +711,7 @@ function render(){
   const ks=['comida','fijo','tech','transporte','salud','ocio','coleccionables','viajes','otros'].filter(k=>tot[k]||(S.techos[k]&&k!=='otros'));
   $('top3').innerHTML=tops.length?ks.map(catRow).join('')+`<button class="crow" onclick="openCuotas()"><div class="ic">💳</div><div class="cm"><b>Cuotas y fijos</b><small>se descuentan solas</small></div><div class="ca">${fmt(cuo)}</div></button>`:'<div class="empty">Aún no hay gastos este mes 🎉</div>';
   const pend=(S.revisar||[]).length+(items.otros||[]).length,nb=$('nav-b');nb.textContent=pend;nb.classList.toggle('on',pend>0);
-  document.body.classList.add('ready');navPill();
+  document.body.classList.add('ready');salirLogin();navPill();
 
   $('m-movs').textContent=S.gastos.length?`Ver todos (${S.gastos.length})`:'Ver todos';
   $('m-cuo').textContent=`${fmt(cuo)} al mes · se suman solas`;
@@ -1181,7 +1240,7 @@ async function loadIngresos(){try{const all=await api('ingresos?order=fecha.asc'
     S.tax={y,pagado,debido,dev:Math.max(0,pagado-debido),baseAnual,marg:TR.find(([l])=>last/UTM<=l)[1],abril:rows.find(r=>r.fecha.slice(5,7)==='04')};}
   if(S.V.mes)renderPlata();}catch(e){console.error(e)}}
 
-if(G_TOK)entrarGoogle();else if(G_ERR)lock('Google no te dejó entrar: '+G_ERR);else loadAll();
+if(G_TOK)entrarGoogle();else if(G_ERR)lock('Google no te dejó entrar: '+G_ERR,'mal');else loadAll();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&getKey()&&!enFaceId&&!sheetOn())loadAll()});
 window.addEventListener('online',()=>{if(getKey()&&!sheetOn())loadAll()});
 </script>

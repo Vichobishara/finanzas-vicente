@@ -27,18 +27,25 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
 (async()=>{
  const checks={};
  // Sin clave: pantalla de clave, sin pedir datos
- {const {dom,heads}=await run('https://finanzas-vicente.vercel.app/',true);const t=dom.window.document.getElementById('hero-w').textContent;
+ {const {dom,heads}=await run('https://finanzas-vicente.vercel.app/',true);const t=dom.window.document.getElementById('login').textContent;
   checks['sin clave muestra candado']=t.includes('clave')&&heads.length===0;}
  // Candado con botón de Google
- {const {dom}=await run('https://finanzas-vicente.vercel.app/',true);checks['candado ofrece Continuar con Google']=dom.window.document.getElementById('hero-w').textContent.includes('Continuar con Google');}
+ {const {dom}=await run('https://finanzas-vicente.vercel.app/',true);checks['candado ofrece Continuar con Google']=dom.window.document.getElementById('login').textContent.includes('Continuar con Google');}
  // Vuelta de Google: cuenta permitida → guarda la clave y limpia la URL
  {const {dom}=await run('https://finanzas-vicente.vercel.app/#access_token=tok-vicho&token_type=bearer',true);const w=dom.window;
-  checks['Google: tu cuenta entra y guarda la clave']=w.localStorage.getItem('app-key')==='test123'&&!w.location.hash&&!w.document.getElementById('hero-w').textContent.includes('protegidas');}
+  checks['Google: tu cuenta entra y guarda la clave']=w.localStorage.getItem('app-key')==='test123'&&!w.location.hash&&!w.document.getElementById('login').classList.contains('on')&&w.document.body.classList.contains('ready');}
  // Vuelta de Google: cuenta que no está invitada
  {const {dom}=await run('https://finanzas-vicente.vercel.app/#access_token=tok-otro',true);const w=dom.window;
-  checks['Google: cuenta no invitada no entra']=!w.localStorage.getItem('app-key')&&w.document.getElementById('hero-w').textContent.includes('Pídele acceso a Vicho');}
+  checks['Google: cuenta no invitada no entra']=!w.localStorage.getItem('app-key')&&w.document.getElementById('login').textContent.includes('Pídele acceso a Vicho');}
+ // Pantalla de entrada: Face ID primero; si este aparato no tiene Face ID, Google primero
+ {const {dom}=await run('https://finanzas-vicente.vercel.app/',true);const d=dom.window.document,b=[...d.querySelectorAll('#login .lg-b')];
+  checks['entrada: pantalla completa con Face ID primero']=d.getElementById('login').classList.contains('on')&&b[0].id==='fid-btn'&&b[0].classList.contains('p');
+  dom.window.localStorage.setItem('fid-no','1');dom.window.eval('lock()');const b2=[...d.querySelectorAll('#login .lg-b')];
+  checks['entrada: sin Face ID en el aparato, Google va primero']=b2[0].id==='g-btn'&&b2[0].classList.contains('p');
+  dom.window.localStorage.setItem('nombre','Vicente');dom.window.eval("lock('Esa clave no funciona','mal')");
+  checks['entrada: saluda por nombre y muestra el error']=d.getElementById('login').textContent.includes('Hola de nuevo')&&!!d.querySelector('#login .lg-msg.mal');}
  // Clave mala
- {const {dom}=await run('https://finanzas-vicente.vercel.app/#k=mala',false);checks['clave mala avisa']=dom.window.document.getElementById('hero-w').textContent.includes('no funciona');}
+ {const {dom}=await run('https://finanzas-vicente.vercel.app/#k=mala',false);checks['clave mala avisa']=dom.window.document.getElementById('login').textContent.includes('no funciona');}
  // Clave buena por link
  const {dom,heads}=await run('https://finanzas-vicente.vercel.app/#k=test123',true);
  const w=dom.window,d=w.document,t=id=>(d.getElementById(id)||{}).textContent||'';
