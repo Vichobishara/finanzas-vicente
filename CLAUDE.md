@@ -68,7 +68,10 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - Para cambiar la clave: recalcular el hash en `privado.autorizado()` y actualizar `secretos.app_key`.
 
 ## Lógica de negocio clave
-- "Hoy puedes gastar" = (presupuesto − gastos personales − cuotas del periodo) / días hasta el cierre del 22.
+- "Hoy puedes gastar" = cupo del día − lo gastado hoy. Cupo del día = lo que quedaba al empezar el día
+  (presupuesto − cuotas − gastos de días anteriores) / días hasta el 22. Es fijo durante el día: si te pasas, el hero
+  dice "Hoy te pasaste por $X" y cuánto queda por día desde mañana. Debajo va "Esta semana te quedan" (lun–dom, sin
+  pasar del 22) para las compras que no caben en un día.
 - Sueldo base esperado: $2.000.000. Lo que no se gasta del presupuesto se reparte 50% Fintual / 50% colchón.
 - APV régimen A: 40 UTM/año ($239k/mes) → bono 15%, tope 6 UTM. UTM hardcodeada en 71.649: **actualizar cada año**.
 - Reliquidación anual del impuesto único (art. 47, un empleador): se estima con base_tributable e impuesto de `ingresos`.
