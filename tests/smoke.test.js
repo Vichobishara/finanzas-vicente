@@ -169,6 +169,9 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval("$('ia-log').insertAdjacentHTML('beforeend',accionHTML({tipo:'anotar_gasto',monto:5000,descripcion:'Almuerzo'}))");
  w.CALLS=[];await w.eval("hacerAccion(document.querySelector('.ia-acc').id)");await new Promise(r=>setTimeout(r,60));
  checks['chat: anota el gasto al confirmar']=w.CALLS.some(c=>c.m==='POST'&&c.u.includes('gastos')&&c.b.includes('Almuerzo')&&c.b.includes('5000'))&&t('ia-log').includes('Anotado');
+ // Revisión de la semana
+ w.eval('openRevision()');checks['revisión de la semana: resumen, pendientes y meta']=t('sheet').includes('Tu semana en 2 minutos')&&t('sheet').includes('Gastaste esta semana')&&t('sheet').includes('Para la próxima semana');
+ w.eval('cerrarSemana()');checks['revisión: se marca hecha']=w.localStorage.getItem('revision-'+w.eval('semanaDe()'))==='1';
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();

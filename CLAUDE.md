@@ -109,7 +109,8 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   (con x-app-key). La base decide qué mandar: trigger `trg_aviso_gasto` (BCI/transferencias), `trg_aviso_sueldo`, y pg_cron
   `avisos` cada hora → `privado.avisos_programados(p_ahora)` (lunes 9, viernes 18, día 23 10:00, 10:00 Fintual, 21:00 racha
   y pendientes, hitos de $5M). Cron `avisos_extra` cada hora → `privado.avisos_extra(p_ahora)`: domingo 20:00 resumen de la
-  semana y lista de deseos a las 72 horas (`ajustes.deseos`). `privado.push()` deja cada aviso en `avisos_log` (clave única = se manda una vez) y llama a la
+  semana (abre `/?revision`: hoja "Tu semana en 2 minutos" con resumen, pendientes y meta; también en Coach y como aviso en
+  Hoy domingo/lunes, hecha = `localStorage['revision-<lunes>']`) y lista de deseos a las 72 horas (`ajustes.deseos`). `privado.push()` deja cada aviso en `avisos_log` (clave única = se manda una vez) y llama a la
   edge function `push` vía pg_net con `x-avisos-token`. VAPID y token en `secretos`. Probar lógica: llamar
   `privado.avisos_programados('2026-10-23 10:00')` dentro de un DO que termina en RAISE (se revierte) y leer `avisos_log`.
 - `ajustes.fintual_pausa` {hasta}: mientras esté vigente, ni la app ni los avisos piden mandar plata a Fintual.
