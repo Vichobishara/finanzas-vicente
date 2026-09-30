@@ -84,8 +84,10 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 
 ## Principios de UX (no negociables)
 1. La pestaña **Hoy** es una pantalla y dos botones: **Anotar gasto** y **¿Me alcanza?** (más los avisos). Lo demás vive
-   en la barra de abajo: **Gastos** (categorías, movimientos, cuotas, negocio, meses, presupuesto), **Plata** (Fintual,
-   próximo movimiento, meta, sueldos, impuestos) y **Coach** (consejos y avisos). Nada importante bajo el scroll de Hoy.
+   en la barra de abajo: **Gastos** (cómo vas vs. donde deberías ir hoy, pendientes, categorías, últimos gastos, cuotas,
+   negocio, meses, presupuesto), **Plata** (camino a la meta, próximo movimiento, plan de ahorro del mes, APV e impuestos
+   explicados a la vista; bono, sueldos y patrimonio en hojas) y **Coach** (hábitos del mes con puntaje y botón para
+   resolver cada uno, Pregúntale a Claude, consejos con acción, avisos). Nada importante bajo el scroll de Hoy.
 2. El número principal es "hoy puedes gastar", y su color (verde, amarillo, rojo) ES el semáforo.
 3. Lenguaje chileno simple. Nada de jerga ("periodo", "cierre" → "hasta el 22").
 4. Anotar un gasto debe tomar menos de 3 segundos. La categoría es automática.
