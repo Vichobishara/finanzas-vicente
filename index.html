@@ -224,19 +224,23 @@ body.lock{overflow:hidden}
 .lead b{color:var(--text)}
 .card .btn{margin:6px 0 14px}
 .empty{text-align:center;color:var(--hint);font-size:13.5px;padding:22px}
-.nav{position:fixed;left:50%;bottom:max(14px,var(--safe-b));transform:translateX(-50%);z-index:50;display:none;align-items:center;gap:2px;padding:6px;background:rgba(18,18,23,.94);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-radius:99px;box-shadow:0 14px 34px -10px rgba(18,18,23,.55)}
+.nav{position:fixed;left:50%;bottom:max(14px,var(--safe-b));transform:translateX(-50%);z-index:50;display:none;align-items:center;gap:2px;padding:6px;background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(22px) saturate(1.8);backdrop-filter:blur(22px) saturate(1.8);border-radius:99px;border:.5px solid rgba(255,255,255,.8);box-shadow:inset 0 1px 1px rgba(255,255,255,.9),inset 0 -1px 1px rgba(18,18,23,.05),0 14px 34px -10px rgba(18,18,23,.28);touch-action:none}
 body.ready .nav{display:flex}
-.nav button{border:none;background:none;display:flex;align-items:center;justify-content:center;gap:7px;height:50px;min-width:54px;padding:0 15px;border-radius:99px;font-size:14px;font-weight:700;color:rgba(255,255,255,.55);position:relative;transition:background .25s,color .25s,padding .25s}
+.nav-pill{position:absolute;top:6px;left:0;height:50px;width:0;border-radius:99px;background:linear-gradient(180deg,#34343E,var(--navy));box-shadow:inset 0 1px 1px rgba(255,255,255,.25),0 6px 16px -6px rgba(18,18,23,.5);transition:transform .55s cubic-bezier(.34,1.45,.5,1),width .55s cubic-bezier(.34,1.45,.5,1),scale .25s;pointer-events:none}
+.nav.drag .nav-pill{transition:width .3s,scale .25s;scale:1.12 1.08;opacity:.92}
+.nav button{border:none;background:none;display:flex;align-items:center;justify-content:center;gap:7px;height:50px;min-width:54px;padding:0 15px;border-radius:99px;font-size:14px;font-weight:700;color:var(--sec);position:relative;z-index:1;transition:color .3s,transform .15s}
 .nav button svg.i{width:22px;height:22px}
 .nav button span{display:none}
-.nav button.on{background:#fff;color:var(--navy);padding:0 18px 0 14px}
-.nav button.on span{display:inline}
+.nav button.on{color:#fff;padding:0 18px 0 14px}
+.nav button.on span{display:inline;animation:navIn .35s}
+@keyframes navIn{from{opacity:0;transform:translateX(-4px)}}
 .nav button:active{transform:scale(.94)}
-.nav i{position:absolute;top:6px;left:calc(50% + 4px);min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--red);color:#fff;font-size:10.5px;font-style:normal;font-weight:700;line-height:15px;border:1.5px solid #121217;display:none}
-.nav button.on i{left:auto;right:-3px;top:-3px;border-color:#fff}
+.nav i{position:absolute;top:6px;left:calc(50% + 4px);min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--red);color:#fff;font-size:10.5px;font-style:normal;font-weight:700;line-height:15px;border:1.5px solid #fff;display:none}
+.nav button.on i{left:auto;right:-3px;top:-3px}
 .nav i.on{display:block}
-.nav button.add{background:#fff;color:var(--navy);width:50px;min-width:50px;padding:0;margin:0 4px;box-shadow:0 4px 14px -4px rgba(255,255,255,.35)}
+.nav button.add{background:#fff;color:var(--navy);width:50px;min-width:50px;padding:0;margin:0 4px;box-shadow:inset 0 -1px 1px rgba(18,18,23,.06),0 4px 14px -4px rgba(18,18,23,.3)}
 .nav button.add svg.i{width:24px;height:24px;stroke-width:2.6}
+@media (prefers-reduced-motion:reduce){.nav-pill{transition:none}}
 .tab-t{font-size:28px;font-weight:800;letter-spacing:-.8px;margin:2px 0 16px}
 .tab-s{font-size:13.5px;color:var(--sec);margin:-8px 0 14px}
 body.ready .app{padding-bottom:calc(110px + var(--safe-b))}
@@ -343,6 +347,7 @@ body:not(.ready) .mes-b .chev{display:none}
   </section>
 </div>
 <nav class="nav" id="nav">
+  <b class="nav-pill" id="nav-pill"></b>
   <button data-t="hoy" class="on" onclick="tab('hoy')"><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Hoy</span></button>
   <button data-t="gastos" onclick="tab('gastos')"><svg class="i" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>Gastos</span><i id="nav-b"></i></button>
   <button class="add" onclick="openAdd()" aria-label="Anotar gasto"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -436,7 +441,25 @@ function skel(){S.sk=true;
   $('meta').innerHTML='<i class="sk" style="width:38%;height:10px"></i><i class="sk" style="width:60%;height:26px;margin:12px 0 10px;border-radius:10px"></i><i class="sk" style="width:80%;height:10px"></i>'}
 function entrar(){if(!S.sk)return;S.sk=false;document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('enter');void t.offsetWidth;t.classList.add('enter')});setTimeout(()=>document.querySelectorAll('.tab').forEach(t=>t.classList.remove('enter')),900)}
 
-function tab(t){document.querySelectorAll('.tab').forEach(x=>x.hidden=x.dataset.tab!==t);document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));window.scrollTo(0,0)}
+function tab(t){document.querySelectorAll('.tab').forEach(x=>x.hidden=x.dataset.tab!==t);document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));navPill();window.scrollTo(0,0)}
+// Barra "liquid glass": la píldora se desliza con rebote y se estira al moverse; se puede arrastrar con el dedo.
+function navPill(x){const n=$('nav'),p=$('nav-pill'),b=n&&n.querySelector('button.on');if(!p||!b||!b.offsetWidth)return;
+  const w=b.offsetWidth,to=x==null?b.offsetLeft:Math.max(6,Math.min(n.clientWidth-w-6,x-w/2)),from=p._x;
+  if(from==null)p.style.transition='none';
+  p.style.width=w+'px';p.style.transform=`translateX(${to}px)`;p._x=to;
+  if(from==null){p.offsetWidth;p.style.transition=''}
+  else if(x==null&&Math.abs(to-from)>20&&p.animate&&!matchMedia('(prefers-reduced-motion:reduce)').matches)p.animate([{scale:'1 1'},{scale:'1.18 .84',offset:.35},{scale:'1 1'}],{duration:500,easing:'ease-out'})}
+(()=>{const n=$('nav');let d=null;
+  const bajo=x=>[...n.querySelectorAll('button[data-t]')].find(b=>{const r=b.getBoundingClientRect();return x>=r.left-1&&x<=r.right+1});
+  n.addEventListener('pointerdown',e=>{d={x0:e.clientX,mov:false}});
+  n.addEventListener('pointermove',e=>{if(!d)return;if(!d.mov&&Math.abs(e.clientX-d.x0)<8)return;
+    d.mov=true;n.classList.add('drag');const b=bajo(e.clientX);if(b&&!b.classList.contains('on'))n.querySelectorAll('button[data-t]').forEach(x=>x.classList.toggle('on',x===b));
+    navPill(e.clientX-n.getBoundingClientRect().left)});
+  const fin=e=>{if(!d)return;const mov=d.mov;d=null;n.classList.remove('drag');if(!mov)return;
+    const b=n.querySelector('button.on');if(b)tab(b.dataset.t);n._sinClick=Date.now()};
+  n.addEventListener('click',e=>{if(Date.now()-(n._sinClick||0)<500){e.stopPropagation();e.preventDefault()}},true);
+  n.addEventListener('pointerup',fin);n.addEventListener('pointercancel',fin);n.addEventListener('pointerleave',fin);
+  addEventListener('resize',()=>navPill());if(document.fonts)document.fonts.ready.then(()=>navPill())})();
 function lock(msg){document.body.classList.remove('ready');tab('hoy');$('hero-w').innerHTML=`<div class="hero"><div class="h-lbl">🔒 Tus finanzas están protegidas</div><div class="h-l1" style="margin:8px 0 14px">${msg||'Entra con tu cara, como en el banco.'}</div><button id="fid-btn" class="btn p" style="margin-top:0;background:#fff;color:#121217" onclick="faceId()">Entrar con Face ID</button><div id="k-box" style="display:none;margin-top:10px"><input id="k-in" placeholder="clave" autocomplete="off" autocapitalize="off" autocorrect="off" enterkeyhint="go" onkeydown="if(event.key==='Enter')setKey()" style="width:100%;padding:14px;border-radius:14px;border:none;font-size:16px;margin-bottom:10px"><button class="btn p" style="margin-top:0;background:rgba(255,255,255,.15);color:#fff" onclick="setKey()">Entrar con clave</button></div><div style="text-align:center;margin-top:12px"><button style="border:none;background:none;color:rgba(255,255,255,.7);font-size:12.5px;text-decoration:underline" onclick="$('k-box').style.display='block';this.style.display='none';$('k-in').focus()">Usar una clave</button></div></div>`}
 function setKey(){const k=($('k-in').value||'').trim();if(!k){$('k-in').focus();return}try{localStorage.setItem('app-key',k)}catch(e){}loadAll()}
 // Corta la espera si algo se cuelga (red lenta, CDN caído): así el botón nunca queda pegado.
@@ -572,7 +595,7 @@ function render(){
   const ks=['comida','fijo','tech','transporte','salud','ocio','coleccionables','viajes','otros'].filter(k=>tot[k]||(S.techos[k]&&k!=='otros'));
   $('top3').innerHTML=tops.length?ks.map(catRow).join('')+`<button class="crow" onclick="openCuotas()"><div class="ic">💳</div><div class="cm"><b>Cuotas y fijos</b><small>se descuentan solas</small></div><div class="ca">${fmt(cuo)}</div></button>`:'<div class="empty">Aún no hay gastos este mes 🎉</div>';
   const pend=(S.revisar||[]).length+(items.otros||[]).length,nb=$('nav-b');nb.textContent=pend;nb.classList.toggle('on',pend>0);
-  document.body.classList.add('ready');
+  document.body.classList.add('ready');navPill();
 
   $('m-movs').textContent=S.gastos.length?`Ver todos (${S.gastos.length})`:'Ver todos';
   $('m-cuo').textContent=`${fmt(cuo)} al mes · se suman solas`;
