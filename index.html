@@ -235,6 +235,8 @@ body.ready .nav{display:flex}
 .nav i{position:absolute;top:6px;left:calc(50% + 4px);min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--red);color:#fff;font-size:10.5px;font-style:normal;font-weight:700;line-height:15px;border:1.5px solid #121217;display:none}
 .nav button.on i{left:auto;right:-3px;top:-3px;border-color:#fff}
 .nav i.on{display:block}
+.nav button.add{background:#fff;color:var(--navy);width:50px;min-width:50px;padding:0;margin:0 4px;box-shadow:0 4px 14px -4px rgba(255,255,255,.35)}
+.nav button.add svg.i{width:24px;height:24px;stroke-width:2.6}
 .tab-t{font-size:28px;font-weight:800;letter-spacing:-.8px;margin:2px 0 16px}
 .tab-s{font-size:13.5px;color:var(--sec);margin:-8px 0 14px}
 body.ready .app{padding-bottom:calc(110px + var(--safe-b))}
@@ -320,6 +322,7 @@ body.ready .toast{bottom:calc(84px + max(14px,var(--safe-b)))}
 <nav class="nav" id="nav">
   <button data-t="hoy" class="on" onclick="tab('hoy')"><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Hoy</span></button>
   <button data-t="gastos" onclick="tab('gastos')"><svg class="i" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>Gastos</span><i id="nav-b"></i></button>
+  <button class="add" onclick="openAdd()" aria-label="Anotar gasto"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
   <button data-t="plata" onclick="tab('plata')"><svg class="i" viewBox="0 0 24 24"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg><span>Plata</span></button>
   <button data-t="coach" onclick="tab('coach')"><svg class="i" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/></svg><span>Coach</span></button>
 </nav>
