@@ -1,6 +1,6 @@
 // "Subir cartola": lee el estado de cuenta de una tarjeta de crédito (PDF o foto) y devuelve las compras en cuotas
 // que siguen vivas. La app muestra la lista para que la persona revise antes de guardar en `cuotas`; esto no guarda nada.
-// Misma seguridad que `consejo`: exige x-app-key. La API key de Anthropic es el secreto ANTHROPIC_API_KEY de finanzas-vicho.
+// Misma seguridad que `consejo`: exige la x-app-key de una cuenta. La API key de Anthropic es el secreto ANTHROPIC_API_KEY de finanzas-vicho.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import Anthropic from 'npm:@anthropic-ai/sdk';
 
@@ -8,6 +8,15 @@ const ORIGIN = 'https://finanzas-vicente.vercel.app';
 const cors = { 'Access-Control-Allow-Origin': ORIGIN, 'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-app-key, x-client-info', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
 const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, 'Content-Type': 'application/json' } });
+
+// Fase 2: cada persona tiene su clave. La cuenta sale del hash de x-app-key (tabla `cuentas`, solo service role).
+async function cuentaDe(req: Request) {
+  const k = req.headers.get('x-app-key') || '';
+  if (!k) return null;
+  const h = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(k)))).map((b) => b.toString(16).padStart(2, '0')).join('');
+  const { data } = await db.from('cuentas').select('id, nombre, email, legado').eq('clave_hash', h).maybeSingle();
+  return data as { id: string; nombre: string | null; email: string | null; legado: boolean } | null;
+}
 
 const TIPOS = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_B64 = 14_000_000; // ~10 MB de archivo
@@ -53,8 +62,7 @@ const ESQUEMA = {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   try {
-    const { data: sec } = await db.from('secretos').select('valor').eq('clave', 'app_key').single();
-    if (!sec || req.headers.get('x-app-key') !== sec.valor) return json({ error: 'clave' }, 401);
+    if (!(await cuentaDe(req))) return json({ error: 'clave' }, 401);
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
     if (!apiKey) return json({ error: 'sin_api' }, 503);
 

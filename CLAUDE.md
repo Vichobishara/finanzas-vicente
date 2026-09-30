@@ -59,6 +59,22 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   Al guardar desde la app se suma a `ajustes.patrimonio`.
 - Ventas del negocio = filas en `gastos` con `pulldex = true` y `monto` negativo (P&L en la sheet Negocio).
 
+## Varias personas (fase 2, aplicada el 30-09-2026)
+- Tabla `cuentas` (email, nombre, clave, clave_hash, token_atajo, legado): **cada persona tiene su propia x-app-key**.
+  `privado.uid()` = cuenta dueña de la clave del request, o `app.user_id` cuando trabaja la base sola (cron, atajo).
+  Todas las tablas tienen `user_id` (default `privado.uid()`) y RLS `user_id = privado.uid()`. `reglas_categoria` con
+  `user_id` null = reglas comunes para todos. Vicho es la cuenta `legado`: lo que llega sin clave (Apps Script, atajo sin
+  token) es suyo, así que su atajo y su script siguen igual.
+- Funciones de cálculo y avisos (estado_mes, racha, resumen_hoy, avisos_*…) son del rol `finanzas_calc`, que respeta RLS.
+  El cron llama `privado.avisos_todos()` que recorre las cuentas. `privado.push` manda `user_id` y la edge function `push`
+  solo manda a los celulares de esa cuenta.
+- Alta: `acceso_google` deja entrar a los correos de `secretos.google_emails` (o a quien ya tiene cuenta) y llama
+  `crear_cuenta(email, nombre)` → cuenta vacía con sus categorías. En la app, sin `ajustes.perfil` se abre la bienvenida
+  (nombre, edad, sueldo, presupuesto sugerido 80%) y después la guía para ponerla en inicio y Face ID.
+- Para invitar a alguien: agregar su Gmail a `secretos.google_emails` (separados por coma).
+- `anotar_atajo(monto_txt, comercio, token)`: con token (`cuentas.token_atajo`, `rpc/mi_token_atajo`) anota en esa cuenta.
+  Cada llamada queda en `atajo_log` (diagnóstico). La automatización de iOS debe estar en **Ejecutar inmediatamente**.
+
 ## Seguridad (clave x-app-key)
 - Todas las tablas exigen el header `x-app-key`. La función `privado.autorizado()` compara su sha256 con el hash guardado
   (el esquema `privado` no está expuesto). `rpc/clave_ok` devuelve true/false para la pantalla de candado.

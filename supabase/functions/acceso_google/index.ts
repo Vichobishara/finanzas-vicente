@@ -1,7 +1,6 @@
-// "Continuar con Google" (fase 1 del proyecto amigos): la app vuelve de Google con el access_token de Supabase Auth,
-// esta función revisa que ese usuario sea uno permitido y le devuelve la clave x-app-key (igual que `acceso` con Face ID).
-// Permitidos: secretos.google_emails (correos separados por coma). Cualquiera puede iniciar sesión con Google, pero si su
-// correo no está en la lista no recibe nada. En la fase 2 esto se reemplaza por RLS por usuario (user_id = auth.uid()).
+// "Continuar con Google": la app vuelve de Google con el access_token de Supabase Auth y esta función le devuelve
+// la clave x-app-key DE ESA PERSONA (fase 2: cada cuenta ve solo sus datos). La primera vez crea la cuenta vacía.
+// Solo entran invitados: secretos.google_emails (correos separados por coma) o quien ya tiene cuenta.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const ORIGIN = 'https://finanzas-vicente.vercel.app';
@@ -17,11 +16,15 @@ Deno.serve(async (req) => {
     if (error || !user?.email) return json({ error: 'sesion' }, 401);
     // Solo cuentas de Google con correo verificado
     if (user.app_metadata?.provider !== 'google' && !(user.identities || []).some((i) => i.provider === 'google')) return json({ error: 'sesion' }, 401);
-    const { data: S } = await db.from('secretos').select('clave, valor').in('clave', ['google_emails', 'app_key']);
-    const v = (k: string) => (S || []).find((s) => s.clave === k)?.valor || '';
-    const permitidos = v('google_emails').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
-    if (!permitidos.includes(user.email.toLowerCase())) return json({ error: 'no_invitado', email: user.email }, 403);
-    return json({ clave: v('app_key'), nombre: user.user_metadata?.full_name || '' });
+    const email = user.email.toLowerCase(), nombre = String(user.user_metadata?.full_name || '').trim();
+    const { data: S } = await db.from('secretos').select('valor').eq('clave', 'google_emails').maybeSingle();
+    const permitidos = String(S?.valor || '').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
+    const { data: ya } = await db.from('cuentas').select('id').eq('email', email).maybeSingle();
+    // Invitados (secretos.google_emails) o cuentas que ya existen. Primera vez = cuenta nueva y vacía (con sus categorías).
+    if (!ya && !permitidos.includes(email)) return json({ error: 'no_invitado', email: user.email }, 403);
+    const { data: clave, error: e2 } = await db.rpc('crear_cuenta', { p_email: email, p_nombre: nombre.split(' ')[0] || null });
+    if (e2 || !clave) throw e2 || new Error('sin clave');
+    return json({ clave, nombre, nuevo: !ya });
   } catch (e) {
     console.error(e);
     return json({ error: 'error' }, 500);
