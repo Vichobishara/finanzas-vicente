@@ -38,7 +38,24 @@ Cómo responder:
 - Empieza con el veredicto en una línea (✅ Sí / ⚠️ Sí, pero... / 🔴 No) cuando te pregunten si puede comprar algo. Luego 2 a 4 líneas con los números que lo justifican.
 - Corto: se lee en el celular. Usa **negritas** solo para los números clave. Sin tablas ni títulos.
 - Usa solo los números de DATOS; si falta algo, dilo en vez de inventar.
-- Si pregunta de inversiones, impuestos o APV, responde con sentido común y cierra con "(no soy asesor financiero)".`;
+- Si pregunta de inversiones, impuestos o APV, responde con sentido común y cierra con "(no soy asesor financiero)".
+
+Acciones (la app le pide confirmar a la persona antes de hacerlas):
+- Si te pide ANOTAR un gasto ("anota 5 lucas en almuerzo", "gasté 4.500 en uber", "almuerzo 6990"): accion.tipo = "anotar_gasto", monto en pesos (1 luca = $1.000), descripcion corta ("Almuerzo", "Uber"). En respuesta confirma en una línea lo que vas a anotar y cómo queda su día si los DATOS lo permiten.
+- Si te pide AGREGAR algo a su lista de deseos ("quiero un iPad de 600 lucas, anótalo en mi lista"): accion.tipo = "agregar_deseo", monto y descripcion.
+- En cualquier otro caso accion.tipo = "ninguna", monto 0, descripcion "". No inventes montos: si falta el monto, pregúntalo y usa "ninguna".`;
+
+const SALIDA = {
+  type: 'object',
+  properties: {
+    respuesta: { type: 'string' },
+    accion: { type: 'object', properties: {
+      tipo: { type: 'string', enum: ['ninguna', 'anotar_gasto', 'agregar_deseo'] }, monto: { type: 'integer' }, descripcion: { type: 'string' },
+    }, required: ['tipo', 'monto', 'descripcion'], additionalProperties: false },
+  },
+  required: ['respuesta', 'accion'],
+  additionalProperties: false,
+};
 
 // Para las demás cuentas: mismas reglas de CFO, sin los datos personales de Vicho (sueldo, cartas, PULLDEX).
 const sistemaPara = (nombre: string) => SISTEMA
@@ -67,7 +84,7 @@ Deno.serve(async (req) => {
     const r: any = await client.beta.messages.create({
       model: 'claude-opus-5-5',
       max_tokens: 2000,
-      output_config: { effort: 'low' },
+      output_config: { effort: 'low', format: { type: 'json_schema', schema: SALIDA } },
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
       system: [
@@ -78,8 +95,11 @@ Deno.serve(async (req) => {
     // deno-lint-ignore no-explicit-any
     } as any);
     if (r.stop_reason === 'refusal') return json({ respuesta: 'No puedo responder eso. Prueba preguntándolo de otra forma.' });
-    const texto = (r.content || []).filter((b: { type: string }) => b.type === 'text').map((b: { text: string }) => b.text).join('\n').trim();
-    return json({ respuesta: texto || 'No tengo respuesta, intenta de nuevo.' });
+    const texto = (r.content || []).filter((b: { type: string }) => b.type === 'text').map((b: { text: string }) => b.text).join('').trim();
+    let out: { respuesta?: string; accion?: { tipo: string; monto: number; descripcion: string } } = {};
+    try { out = JSON.parse(texto); } catch { out = { respuesta: texto }; }
+    const a = out.accion && out.accion.tipo !== 'ninguna' && out.accion.monto > 0 ? out.accion : null;
+    return json({ respuesta: out.respuesta || 'No tengo respuesta, intenta de nuevo.', accion: a });
   } catch (e) {
     console.error(e);
     if (e instanceof Anthropic.AuthenticationError) return json({ error: 'api_mala' }, 502);

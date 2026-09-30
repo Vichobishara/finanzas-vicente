@@ -147,7 +147,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  {const c=w.CALLS.find(c=>c.u.includes('ajustes')&&c.b&&c.b.includes('perfil'));checks['bienvenida: guarda perfil y presupuesto']=!!c&&c.b.includes('Pedro')&&c.b.includes('1500000')&&w.CALLS.some(c=>c.u.includes('presupuestos')&&c.b.includes('1200000'));}
  w.eval('closeSheet()');
  // El chat recuerda la conversación en este aparato
- checks['chat: se guarda y se puede empezar de nuevo']=JSON.parse(w.localStorage.getItem('chat-h')||'[]').length===2&&(w.eval('nuevoChat()'),w.eval('S.iaH.length')===0&&d.querySelectorAll('#ia-sug .chip').length===4);
+ checks['chat: se guarda y se puede empezar de nuevo']=JSON.parse(w.localStorage.getItem('chat-h')||'[]').length===2&&(w.eval('nuevoChat()'),w.eval('S.iaH.length')===0&&d.querySelectorAll('#ia-sug .chip').length===5);
  // Teclado abierto en iPhone: el chat se ajusta a la parte visible
  w.eval("Object.defineProperty(window,'visualViewport',{value:{height:400,offsetTop:250,addEventListener(){}},configurable:true});Object.defineProperty(window,'innerHeight',{value:844,configurable:true});openChat();chatVV()");
  {const c=d.getElementById('chat');checks['chat: con teclado queda arriba del teclado']=c.classList.contains('kb')&&c.style.top==='256px'&&c.style.height==='388px';}
@@ -165,6 +165,10 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['cuadrar: muestra lo que falta y salta cuotas']=t('sheet').includes('Tienda Rara XYZ')&&!t('sheet').includes('Falabella TV')&&t('sheet').includes('Agregar 1');
  w.CALLS=[];await w.eval('guardarCuadrar()');await new Promise(r=>setTimeout(r,50));
  checks['cuadrar: guarda lo marcado']=w.CALLS.some(c=>c.m==='POST'&&c.u.includes('gastos')&&c.b.includes('Tienda Rara XYZ')&&c.b.includes('scotiabank'));
+ // El chat propone anotar un gasto y lo hace solo si confirmas
+ w.eval("$('ia-log').insertAdjacentHTML('beforeend',accionHTML({tipo:'anotar_gasto',monto:5000,descripcion:'Almuerzo'}))");
+ w.CALLS=[];await w.eval("hacerAccion(document.querySelector('.ia-acc').id)");await new Promise(r=>setTimeout(r,60));
+ checks['chat: anota el gasto al confirmar']=w.CALLS.some(c=>c.m==='POST'&&c.u.includes('gastos')&&c.b.includes('Almuerzo')&&c.b.includes('5000'))&&t('ia-log').includes('Anotado');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();
