@@ -734,36 +734,74 @@ async function entrarGoogle(){const t=G_TOK;G_TOK=null;lock();ocupado('g-btn','E
     toast(`✅ Hola${r.nombre?' '+r.nombre.split(' ')[0]:''}, entraste con Google`);await loadAll();ofrecerFaceId()}
   catch(e){console.error(e);lock('Se demoró mucho con Google. Toca el botón de nuevo.','mal')}}
 // Después de entrar con Google en un aparato sin Face ID: ofrecer activarlo (acceso con accion 'nuevo' + x-app-key).
-// ---------- Bienvenida (cuenta nueva, sin perfil): nombre, edad, sueldo y presupuesto. Después Face ID e inicio ----------
-const BV={};
-function bvPaso(n,h){openSheet(`<div class="w-paso" style="font-size:12.5px;color:var(--sec);font-weight:600;margin-bottom:4px">Paso ${n} de 3</div>${h}`)}
+// ---------- Bienvenida (cuenta nueva, sin perfil): arma la foto de hoy en 6 pasos cortos, todos con "no tengo / no sé".
+// 1 nombre y edad · 2 sueldo y día de pago · 3 gastos fijos · 4 cuotas · 5 tu plata hoy (ahorro, cuenta, tarjetas, lo ya gastado)
+// 6 resumen y presupuesto. Guarda perfil (con ppto para los meses siguientes), presupuesto del mes (menos lo ya gastado),
+// fijos como cuotas recurrentes, ahorro en patrimonio y lo que debe en tarjetas en "Por pagar". ----------
+const BV={fijos:{}};
+const BV_FIJOS=[['arriendo','🏠','Arriendo o dividendo'],['basicas','💡','Luz, agua, gas, gastos comunes'],['cel','📱','Celular e internet'],
+  ['gym','🏋️','Gimnasio o deporte'],['apps','🎬','Streaming y apps (Netflix, Spotify…)'],['educ','🎓','Estudios o crédito'],['otro','📌','Otro fijo']];
+const bvN=6,bvIn=(id,v,ph)=>`<input id="${id}" inputmode="numeric" oninput="fmtIn(this)" placeholder="${ph||'$0'}" value="${v?'$'+v.toLocaleString('es-CL'):''}">`;
+function bvPaso(n,h){openSheet(`<div class="w-paso" style="font-size:12.5px;color:var(--sec);font-weight:600;margin-bottom:4px">Paso ${n} de ${bvN}</div>${h}`)}
 function bienvenida(){BV.nombre=BV.nombre||NOMBRE();
-  bvPaso(1,`<h3>¡Hola${BV.nombre?' '+BV.nombre:''}! 👋</h3><p>Armemos tu app en un minuto. Solo tú ves tus datos.</p>
+  bvPaso(1,`<h3>¡Hola${BV.nombre?' '+BV.nombre:''}! 👋</h3><p>Armemos tu app en 2 minutos. Te voy a preguntar cómo estás <b>hoy</b> para que tus números partan bien. Solo tú ves esto.</p>
   <label>¿Cómo te llamo?</label><input id="bv-nom" value="${(BV.nombre||'').replace(/"/g,'&quot;')}" placeholder="Tu nombre" autocomplete="given-name">
   <label>¿Cuántos años tienes?</label><input id="bv-edad" inputmode="numeric" placeholder="ej: 30" value="${BV.edad||''}">
   <button class="btn p" onclick="bv1()">Seguir</button>`)}
 function bv1(){const n=$('bv-nom').value.trim(),e=+$('bv-edad').value.replace(/\D/g,'');if(!n)return toast('Pon tu nombre');if(e<14||e>99)return toast('Pon tu edad');
-  BV.nombre=n.split(' ')[0];BV.edad=e;LS('nombre',BV.nombre);
-  bvPaso(2,`<h3>¿Cuánto te llega al mes?</h3><p>Tu sueldo líquido, más o menos. Con esto calculo cuánto puedes gastar.</p>
+  BV.nombre=n.split(' ')[0];BV.edad=e;LS('nombre',BV.nombre);bvSueldo()}
+function bvSueldo(){bvPaso(2,`<h3>¿Cuánto te llega al mes?</h3><p>Tu sueldo <b>líquido</b> (lo que te depositan), más o menos.</p>
   <input id="bv-sue" class="amt-in" inputmode="numeric" oninput="fmtIn(this)" placeholder="$0" value="${BV.sueldo?'$'+BV.sueldo.toLocaleString('es-CL'):''}">
-  <div class="chips">${[600000,900000,1300000,2000000].map(v=>`<button class="chip" onclick="$('bv-sue').value='${fmt(v)}';bv2()">${fmt(v)}</button>`).join('')}</div>
+  <div class="chips">${[600000,900000,1300000,2000000].map(v=>`<button class="chip" onclick="$('bv-sue').value='${fmt(v)}'">${fmt(v)}</button>`).join('')}</div>
+  <label>¿Cuándo te pagan?</label><div class="chips" id="bv-dia">${[['fin','A fin de mes'],['ini','Los primeros días'],['15','El 15'],['otro','Otro día']].map(([k,t])=>`<button class="chip ${BV.dia===k?'on':''}" data-v="${k}" onclick="this.parentNode.querySelectorAll('.chip').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${t}</button>`).join('')}</div>
   <button class="btn p" style="margin-top:12px" onclick="bv2()">Seguir</button>`)}
-function bv2(){const v=val('bv-sue');if(v<100000)return toast('Pon cuánto te llega al mes');BV.sueldo=v;
-  const sug=Math.round(v*.8/10000)*10000;BV.ppto=BV.ppto||sug;
-  bvPaso(3,`<h3>Tu plata del mes</h3><p>Todo lo que vas a gastar hasta el 22, <b>incluidas cuotas y cuentas fijas</b>. Te sugiero el 80% de tu sueldo: el resto es ahorro.</p>
-  <input id="bv-ppto" class="amt-in" inputmode="numeric" oninput="fmtIn(this)" value="$${BV.ppto.toLocaleString('es-CL')}">
-  <p class="fine" style="margin:8px 0 14px">Ahorrarías <b>${fmt(v-BV.ppto)}</b> al mes. Lo puedes cambiar cuando quieras en Gastos → Presupuesto.</p>
-  <button class="btn p" onclick="bv3()">Listo, armar mi app</button>`)}
-async function bv3(){const p=val('bv-ppto');if(p<100000)return toast('Pon un presupuesto de al menos $100.000');BV.ppto=p;
-  const y=new Date().getFullYear()-BV.edad;
+function bv2(){const v=val('bv-sue');if(v<100000)return toast('Pon cuánto te llega al mes');BV.sueldo=v;const d=$('bv-dia').querySelector('.chip.on');BV.dia=d?d.dataset.v:'fin';bvFijos()}
+function bvFijos(){bvPaso(3,`<h3>¿Qué pagas fijo todos los meses?</h3><p>Pon el monto solo en lo que pagas. Lo demás déjalo vacío.</p>
+  <div class="card">${BV_FIJOS.map(([k,i,t])=>`<div class="crow" style="cursor:default"><div class="ic">${i}</div><div class="cm" style="white-space:normal"><b style="font-size:14px;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.25">${t}</b></div><div style="width:108px;flex:none">${bvIn('bvf-'+k,BV.fijos[k])}</div></div>`).join('')}</div>
+  <button class="btn p" onclick="bv3()">Seguir</button><button class="lg-link" style="display:block;margin:6px auto 0" onclick="BV.fijos={};bvCuotas()">No pago nada fijo</button>`)}
+function bv3(){BV.fijos={};BV_FIJOS.forEach(([k])=>{const x=val('bvf-'+k);if(x)BV.fijos[k]=x});bvCuotas()}
+function bvCuotas(){bvPaso(4,`<h3>¿Tienes compras en cuotas?</h3><p>Lo que ya compraste y sigues pagando cada mes con tarjeta.</p>
+  <label>¿Cuánto pagas al mes en cuotas, más o menos?</label>${bvIn('bv-cuo',BV.cuo,'$0 si no tienes')}
+  <div class="chips" style="margin-top:4px" id="bv-cdet">${[['cartola','📄 Después subo la cartola'],['mano','✍️ Después las anoto'],['no','No tengo']].map(([k,t])=>`<button class="chip ${BV.cdet===k?'on':''}" data-v="${k}" onclick="this.parentNode.querySelectorAll('.chip').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${t}</button>`).join('')}</div>
+  <p class="fine" style="margin-top:8px">Con la cartola la app saca sola cada compra, cuántas cuotas te quedan y cuándo terminas.</p>
+  <button class="btn p" style="margin-top:10px" onclick="bv4()">Seguir</button>`)}
+function bv4(){BV.cuo=val('bv-cuo');const c=$('bv-cdet').querySelector('.chip.on');BV.cdet=c?c.dataset.v:(BV.cuo?'mano':'no');bvHoy()}
+function bvHoy(){bvPaso(5,`<h3>¿Cómo estás hoy?</h3><p>Para que tu número de hoy parta real. Si no sabes, pon un aproximado o déjalo vacío.</p>
+  <label>¿Cuánto tienes ahorrado? <small style="color:var(--sec);font-weight:400">(Fintual, cuenta de ahorro, depósitos)</small></label>${bvIn('bv-aho',BV.aho)}
+  <label>¿Cuánto tienes hoy en tu cuenta corriente o vista?</label>${bvIn('bv-caja',BV.caja)}
+  <label>¿Cuánto debes hoy en tus tarjetas? <small style="color:var(--sec);font-weight:400">(lo que tienes que pagar, sin contar cuotas futuras)</small></label>${bvIn('bv-deu',BV.deu,'$0 si ya pagaste')}
+  <label>¿Cuánto llevas gastado este mes? <small style="color:var(--sec);font-weight:400">(desde el 23)</small></label>${bvIn('bv-ya',BV.ya,'$0 si recién empiezas')}
+  <button class="btn p" onclick="bv5()">Seguir</button>`)}
+function bv5(){BV.aho=val('bv-aho');BV.caja=val('bv-caja');BV.deu=val('bv-deu');BV.ya=val('bv-ya');bvResumen()}
+function bvResumen(){const fij=Object.values(BV.fijos).reduce((s,x)=>s+x,0),cuo=BV.cuo||0,min=fij+cuo+100000;
+  const sug=Math.max(min,Math.round(BV.sueldo*.8/10000)*10000);BV.ppto=BV.ppto||sug;
+  const dia=Math.max(0,BV.ppto-fij-cuo),aho=BV.sueldo-BV.ppto,pcFijo=Math.round((fij+cuo)/BV.sueldo*100);
+  const avisos=[pcFijo>=50?`⚠️ Fijos y cuotas se llevan el <b>${pcFijo}%</b> de tu sueldo: poco margen. Cero cuotas nuevas por ahora.`:'',
+    BV.deu&&BV.caja<BV.deu?`⚠️ Debes ${fmt(BV.deu)} en tarjetas y tienes ${fmt(BV.caja)} en la cuenta: <b>pagar la tarjeta va primero</b>.`:'',
+    aho<=0?'⚠️ Con este presupuesto no te queda nada para ahorrar. Intenta bajarlo un poco.':''].filter(Boolean);
+  bvPaso(6,`<h3>Tu mes, ${BV.nombre}</h3><p>Así queda tu plata. El presupuesto es <b>todo</b> lo que gastas hasta el 22, incluidos fijos y cuotas.</p>
+  <div class="card"><div class="row"><span>Te llega</span><b>${fmt(BV.sueldo)}</b></div><div class="row"><span>− Fijos</span><b>${fmt(fij)}</b></div><div class="row"><span>− Cuotas</span><b>${fmt(cuo)}</b></div>
+    <div class="row"><span>− Día a día (comida, salidas, transporte…)</span><b>${fmt(dia)}</b></div><div class="row" style="border-top:1px solid var(--border)"><span><b>= Ahorras</b></span><b style="color:var(--green-d)">${fmt(aho)}</b></div></div>
+  <label style="margin-top:12px">Tu presupuesto del mes</label><input id="bv-ppto" class="amt-in" inputmode="numeric" oninput="fmtIn(this)" value="$${BV.ppto.toLocaleString('es-CL')}" onchange="BV.ppto=val('bv-ppto');bvResumen()">
+  ${avisos.map(a=>`<div class="lead" style="padding:6px 0">${a}</div>`).join('')}
+  ${BV.ya?`<p class="fine">Este mes ya llevas ${fmt(BV.ya)} gastados: los descuento para que tu número de hoy sea real.</p>`:''}
+  <button class="btn p" style="margin-top:8px" onclick="bvGuardar()">Listo, armar mi app</button>`)}
+async function bvGuardar(){const p=val('bv-ppto');if(p<100000)return toast('Pon un presupuesto de al menos $100.000');BV.ppto=p;
+  const y=new Date().getFullYear()-BV.edad,N=BV_FIJOS.reduce((o,[k,,t])=>(o[k]=t,o),{});
   try{closeSheet();
-    await api('presupuestos',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{periodo:S.actual,monto:p}});
-    // Topes de cada categoría a escala de su presupuesto (vienen pensados para $1.000.000)
-    await Promise.all(Object.entries(S.techos).filter(([,t])=>t>0).map(([c,t])=>api('categorias?clave=eq.'+c,{m:'PATCH',b:{techo:Math.round(t*p/1e6/5000)*5000}})));
-    await saveAj('perfil',{nombre:BV.nombre,sueldo:BV.sueldo,nacimiento:y+'-06-30',meta:100000000},true);
+    await api('presupuestos',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{periodo:S.actual,monto:Math.max(100000,p-(BV.ya||0))}});
+    // Topes de cada categoría a escala del día a día (vienen pensados para $1.000.000)
+    const esc=Math.max(.1,(p-Object.values(BV.fijos).reduce((s,x)=>s+x,0)-(BV.cuo||0))/700000);
+    await Promise.all(Object.entries(S.techos).filter(([c,t])=>t>0&&c!=='fijo').map(([c,t])=>api('categorias?clave=eq.'+c,{m:'PATCH',b:{techo:Math.round(t*esc/5000)*5000}})));
+    const F=Object.entries(BV.fijos).map(([k,m])=>({nombre:N[k],monto_cuota:m,total_cuotas:1,tarjeta:'otro',activa:true,recurrente:true,primer_periodo:S.actual}));
+    if(BV.cuo&&BV.cdet!=='cartola')F.push({nombre:'Cuotas (total aprox.)',monto_cuota:BV.cuo,total_cuotas:1,tarjeta:'otro',activa:true,recurrente:true,primer_periodo:S.actual});
+    if(F.length)await api('cuotas',{m:'POST',b:F});
+    if(BV.aho)await saveAj('patrimonio',{fintual:BV.aho,colchon:0,cartas:0,eth:0,fecha:hoyISO()},true);
+    if(BV.deu)await saveAj('deudas',[{id:Date.now(),que:'Tarjetas (lo que debías al empezar)',monto:BV.deu,desde:hoyISO(),nota:'Págalo antes de cualquier gusto'}],true);
+    await saveAj('perfil',{nombre:BV.nombre,sueldo:BV.sueldo,nacimiento:y+'-06-30',meta:100000000,ppto:p,dia_pago:BV.dia,caja:BV.caja||0},true);
     toast(`🎉 Listo, ${BV.nombre}. Tu app está armada`);await loadAll();
-    setTimeout(armaApp,900);
-  }catch(e){console.error(e);toast('❌ No se guardó. Revisa tu internet e intenta de nuevo');bienvenida()}}
+    setTimeout(()=>BV.cdet==='cartola'&&BV.cuo?openCuotas():armaApp(),900);
+  }catch(e){console.error(e);toast('❌ No se guardó. Revisa tu internet e intenta de nuevo');bvResumen()}}
 
 function ofrecerFaceId(){if(LS('fid-ok')==='1'||!window.PublicKeyCredential||!S.aj.perfil)return;
   openSheet(`<div style="text-align:center"><div style="font-size:56px;margin:4px 0 6px">🙂</div><h3>¿Entrar con tu cara la próxima vez?</h3><p>Activa Face ID en este aparato y no vuelves a pasar por Google.</p></div>
@@ -844,7 +882,7 @@ async function loadPeriodo(){
   const [todos,rev]=await Promise.all([api(`gastos?periodo=in.(${S.periodo},${pv})&order=fecha.desc,id.desc`),api('gastos?estado=eq.revisar&order=fecha.desc,id.desc')]);
   const all=todos.filter(g=>!g.estado||g.estado==='ok');S.revisar=rev||[];
   S.gastos=all.filter(g=>g.periodo===S.periodo);S.prev=all.filter(g=>g.periodo===pv&&!g.pulldex);
-  S.ppto=S.pptos[S.periodo]||1000000;render();
+  S.ppto=S.pptos[S.periodo]||PERF().ppto||(Object.keys(S.pptos).filter(k=>k<S.periodo).sort().map(k=>S.pptos[k]).pop())||1000000;render();
 }
 
 const SVG=d=>`<svg class="i" viewBox="0 0 24 24">${d}</svg>`;
@@ -1895,7 +1933,7 @@ async function delTx(id){if(!confirm('¿Borrar este gasto?'))return;const g=S.ga
   // Si vino de un correo, se marca "no cuenta" en vez de borrar; si no, el importador lo volvería a traer.
   try{await api('gastos?id=eq.'+id,g&&g.ref_externa?{m:'PATCH',b:{estado:'ignorado'}}:{m:'DELETE'});closeSheet();toast('🗑 Borrado');loadAll()}catch(e){toast('❌ Error')}}
 function editPpto(){openSheet(`<h3>⚙️ Presupuesto de ${S.V.mes}</h3><p>Todo lo que puedes gastar en el mes, incluidas cuotas y fijos. Lo que no gastes va a Fintual.</p><input id="e-ppto" class="amt-in" inputmode="numeric" oninput="fmtIn(this)" value="${'$'+S.ppto.toLocaleString('es-CL')}"><button class="btn p" onclick="savePpto()">Guardar</button>`)}
-async function savePpto(){const monto=val('e-ppto');if(monto<100000){toast('Pon un presupuesto de al menos $100.000');return}try{await api('presupuestos',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{periodo:S.periodo,monto}});closeSheet();toast('✅ Presupuesto actualizado');loadAll()}catch(e){toast('❌ Error')}}
+async function savePpto(){const monto=val('e-ppto');if(monto<100000){toast('Pon un presupuesto de al menos $100.000');return}try{await api('presupuestos',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{periodo:S.periodo,monto}});if(S.periodo===S.actual)await saveAj('perfil',{...PERF(),ppto:monto},true);closeSheet();toast('✅ Presupuesto actualizado');loadAll()}catch(e){toast('❌ Error')}}
 async function loadIngresos(){try{const all=await api('ingresos?order=fecha.asc');const b={};all.forEach(i=>{const k=i.fecha.slice(0,7);b[k]=(b[k]||0)+i.monto});S.ing=b;
   const y=String(new Date().getFullYear()),rows=all.filter(i=>i.fecha.startsWith(y)&&i.base_tributable);
   if(rows.length){const meses=new Set(rows.map(r=>r.fecha.slice(0,7))).size,last=rows[rows.length-1].base_tributable,rest=Math.max(0,12-meses);
