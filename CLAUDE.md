@@ -16,6 +16,9 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - `scripts/importar_correos.gs`: Google Apps Script que cada 15 min lee correos (compras tarjeta BCI, transferencias
   hechas desde BCI y Scotia, sueldos Toku) y los inserta en Supabase.
 - `supabase/migrations/`: SQL aplicado a mano en Supabase (registro de cambios de esquema).
+- `supabase/functions/consejo`: edge function "Pregúntale a Claude" (en ¿Me alcanza?). Exige x-app-key; usa el secreto
+  `ANTHROPIC_API_KEY` de finanzas-vicho (workspace Anthropic aparte de TCG). La app le manda los números ya calculados
+  (`ctxIA()`); las reglas de CFO van en el prompt de la función. Guía: `docs/preguntale_a_claude.md`.
 - `docs/atajo_apple_pay.md`: cómo armar el atajo de iOS que anota solo las compras Apple Pay con Scotia.
 - `tests/smoke.test.js`: prueba con jsdom y datos falsos. Correr antes de cada push: `npm i jsdom && node tests/smoke.test.js`
 
