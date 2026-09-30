@@ -1,0 +1,95 @@
+// "Subir cartola": lee el estado de cuenta de una tarjeta de crédito (PDF o foto) y devuelve las compras en cuotas
+// que siguen vivas. La app muestra la lista para que la persona revise antes de guardar en `cuotas`; esto no guarda nada.
+// Misma seguridad que `consejo`: exige x-app-key. La API key de Anthropic es el secreto ANTHROPIC_API_KEY de finanzas-vicho.
+import { createClient } from 'npm:@supabase/supabase-js@2';
+import Anthropic from 'npm:@anthropic-ai/sdk';
+
+const ORIGIN = 'https://finanzas-vicente.vercel.app';
+const cors = { 'Access-Control-Allow-Origin': ORIGIN, 'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-app-key, x-client-info', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
+const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
+const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, 'Content-Type': 'application/json' } });
+
+const TIPOS = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const MAX_B64 = 14_000_000; // ~10 MB de archivo
+
+const INSTRUCCIONES = `Te paso el estado de cuenta (cartola) de una tarjeta de crédito chilena.
+Extrae SOLO las compras en cuotas que todavía tienen cuotas por pagar (la cuota que se cobra en este estado de cuenta cuenta como vigente).
+Para cada una:
+- nombre: el comercio o producto, corto y legible (ej: "Falabella iPhone", "Paris", "Mercado Libre"). Sin códigos ni números de operación.
+- monto_cuota: lo que se cobra por cuota en este estado de cuenta, en pesos chilenos, entero sin puntos (incluye intereses si la cartola los suma a la cuota).
+- cuota_actual: el número de la cuota que se cobra en este estado de cuenta (ej: en "03/12" es 3).
+- total_cuotas: el total de cuotas (ej: en "03/12" es 12).
+- banco: el banco o emisor de la tarjeta si aparece (ej: "Scotiabank", "BCI", "Santander", "Falabella"), si no, "".
+No incluyas compras al contado, pagos, abonos, comisiones, seguros ni avances en una cuota.
+Si una cuota ya es la última (cuota_actual = total_cuotas) inclúyela igual.
+En "fecha_cartola" pon la fecha de facturación o de cierre del estado de cuenta en formato YYYY-MM-DD si aparece, si no "".
+Si el archivo no es una cartola de tarjeta o no se lee, devuelve cuotas vacío y explica en "nota" en una línea, en español chileno simple.`;
+
+const ESQUEMA = {
+  type: 'object',
+  properties: {
+    fecha_cartola: { type: 'string' },
+    cuotas: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          nombre: { type: 'string' },
+          monto_cuota: { type: 'integer' },
+          cuota_actual: { type: 'integer' },
+          total_cuotas: { type: 'integer' },
+          banco: { type: 'string' },
+        },
+        required: ['nombre', 'monto_cuota', 'cuota_actual', 'total_cuotas', 'banco'],
+        additionalProperties: false,
+      },
+    },
+    nota: { type: 'string' },
+  },
+  required: ['fecha_cartola', 'cuotas', 'nota'],
+  additionalProperties: false,
+};
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+  try {
+    const { data: sec } = await db.from('secretos').select('valor').eq('clave', 'app_key').single();
+    if (!sec || req.headers.get('x-app-key') !== sec.valor) return json({ error: 'clave' }, 401);
+    const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    if (!apiKey) return json({ error: 'sin_api' }, 503);
+
+    const { tipo, datos } = await req.json();
+    if (!TIPOS.includes(tipo) || typeof datos !== 'string' || !datos) return json({ error: 'archivo' }, 400);
+    if (datos.length > MAX_B64) return json({ error: 'grande' }, 413);
+
+    const archivo = tipo === 'application/pdf'
+      ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: datos } }
+      : { type: 'image', source: { type: 'base64', media_type: tipo, data: datos } };
+
+    const client = new Anthropic({ apiKey });
+    // deno-lint-ignore no-explicit-any
+    const r: any = await client.beta.messages.create({
+      model: 'claude-opus-5-5',
+      max_tokens: 8000,
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',
+      output_config: { effort: 'low', format: { type: 'json_schema', schema: ESQUEMA } },
+      messages: [{ role: 'user', content: [archivo, { type: 'text', text: INSTRUCCIONES }] }],
+    // deno-lint-ignore no-explicit-any
+    } as any);
+    if (r.stop_reason === 'refusal') return json({ cuotas: [], nota: 'No pude leer ese archivo. Prueba con otra foto o el PDF.' });
+    if (r.stop_reason === 'max_tokens') return json({ error: 'larga' }, 422);
+    const texto = (r.content || []).filter((b: { type: string }) => b.type === 'text').map((b: { text: string }) => b.text).join('');
+    const out = JSON.parse(texto);
+    // Solo lo que tiene sentido: la app igual deja revisar cada una antes de guardar.
+    out.cuotas = (out.cuotas || []).filter((c: { monto_cuota: number; cuota_actual: number; total_cuotas: number }) =>
+      c.monto_cuota > 0 && c.total_cuotas > 1 && c.cuota_actual >= 1 && c.cuota_actual <= c.total_cuotas);
+    return json(out);
+  } catch (e) {
+    console.error(e);
+    if (e instanceof Anthropic.AuthenticationError) return json({ error: 'api_mala' }, 502);
+    if (e instanceof Anthropic.RateLimitError) return json({ error: 'limite' }, 429);
+    if (e instanceof SyntaxError) return json({ error: 'lectura' }, 502);
+    return json({ error: String((e as Error)?.message || e) }, 500);
+  }
+});
