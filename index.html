@@ -58,6 +58,8 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .act.s{background:var(--card);box-shadow:var(--sh)}
 .act.s i{background:var(--ac-t);color:var(--ac)}
 .act:active{transform:scale(.97)}
+/* Pantallas chicas (iPhone SE/mini): "¿Me alcanza?" cabe sin cortarse */
+@media (max-width:380px){.actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.act{font-size:14px;gap:7px;padding:6px 10px 6px 6px;min-width:0}.act i{width:34px;height:34px}}
 .win{margin:-4px 0 14px;padding:10px 14px;border-radius:99px;text-align:center;font-size:13px;color:var(--green-d);font-weight:600;background:#ECFDF3}
 .nudge{margin-bottom:10px;padding:12px 12px 12px 16px;border-radius:22px;background:var(--card);box-shadow:var(--sh);font-size:13.5px;display:flex;justify-content:space-between;align-items:center;gap:10px}
 .nudge button{border:none;background:var(--navy);color:#fff;font-weight:600;font-size:13px;padding:9px 14px;border-radius:99px;white-space:nowrap}
