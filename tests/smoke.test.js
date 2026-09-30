@@ -189,6 +189,12 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['arma tu app: Face ID primero, luego inicio y Apple Pay']=/Entrar con tu cara[\s\S]*pantalla de inicio/.test(t('sheet'))&&t('sheet').includes('de 3 listos')||t('sheet').includes('de 2 listos');
  w.eval('closeSheet()');
  w.eval("guiaAP(8)");checks['guía Apple Pay: último paso revisa sin gastar extra']=t('sheet').includes('Ya pagué: revisar')&&t('sheet').includes('No tienes que gastar extra');w.eval('closeSheet()');
+ // Experiencia: Hoy nunca muestra más de 3 avisos, decimales con coma y logros cortos
+ w.eval("closeSheet();localStorage.removeItem('fid-ok');localStorage.removeItem('arma-ok');S.revisar=[{id:5},{id:6}];render()");
+ checks['hoy: máximo 3 avisos y sin "Úsala como app" repetido']=d.querySelectorAll('#nudges .nudge').length<=3&&!(t('nudges').includes('Arma tu app')&&t('nudges').includes('Úsala como app'));
+ w.eval('openCheck()');d.getElementById('a-monto').value='$'+Math.round(w.eval('S.V.cupoHoy')*2.5);d.getElementById('a-desc').value='zapatillas';w.eval('S.nc=1;evalCheck()');
+ checks['¿Me alcanza?: días con coma decimal']=!/\d\.\d días/.test(t('verdict'));w.eval('closeSheet()');
+ w.eval('S.logrosAll=0;renderLogros()');checks['logros: los que tienes y los 2 próximos']=d.querySelectorAll('#logros-c .logro').length<7&&t('logros-c').includes('que faltan');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();

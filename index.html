@@ -54,6 +54,7 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .logro{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}.logro:last-child{border:none}
 .logro i{font-style:normal;font-size:22px;width:40px;height:40px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logro.no{opacity:.45}.logro.no i{filter:grayscale(1)}.logro b{display:block;font-size:14.5px}.logro small{color:var(--sec);font-size:12.5px}
+.logro-mas{display:block;width:100%;border:none;background:none;padding:12px 0 4px;font-size:13.5px;font-weight:600;color:var(--sec);text-align:center}
 .h-msg svg.i{width:18px;height:18px;margin-top:1px}
 .h-msg{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.16);border:none;border-radius:18px;padding:11px 13px;font-size:13px;line-height:1.45;position:relative;z-index:1;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:16px 0}
@@ -894,9 +895,10 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
 
   const ev=getEv();$('win').innerHTML=esActual&&ev?`<div class="win">💪 Este mes te aguantaste ${fmt(ev)} en compras</div>`:'';
 
-  let nz='';const rev=items.otros||[],tr=S.revisar||[];
+  // Máximo 3 avisos (en orden de importancia) para que nada quede escondido bajo la barra; el resto aparece cuando resuelves estos.
+  let nz='',arma=false;const rev=items.otros||[],tr=S.revisar||[];
   if(tr.length)nz+=`<div class="nudge"><div>🔁 <b>${tr.length} transferencia${tr.length>1?'s':''} por revisar</b> · no cuentan hasta que me digas</div><button onclick="openRev()">Revisar</button></div>`;
-  if(esActual&&S.aj.perfil&&LS('arma-ok')!=='1'&&LS('arma-cerrado')!==hoyISO()){const P=armaPasos(),n=P.filter(p=>p.ok).length;if(n<P.length)nz+=`<div class="nudge"><div>🧩 <b>Arma tu app</b> · ${n} de ${P.length} listos</div><button onclick="armaApp()">Seguir</button></div>`;else LS('arma-ok','1')}
+  if(esActual&&S.aj.perfil&&LS('arma-ok')!=='1'&&LS('arma-cerrado')!==hoyISO()){const P=armaPasos(),n=P.filter(p=>p.ok).length;if(n<P.length)arma=true,nz+=`<div class="nudge"><div>🧩 <b>Arma tu app</b> · ${n} de ${P.length} listos</div><button onclick="armaApp()">Seguir</button></div>`;else LS('arma-ok','1')}
   if(esActual&&[0,1].includes(hoy.getDay())&&!LS('revision-'+semanaDe()))nz+=`<div class="nudge"><div>🗓 <b>Revisión de la semana</b> · 2 minutos y cierras la semana ordenado</div><button onclick="openRevision()">Hacer</button></div>`;
   if(esActual){const dd=hoy.getDate(),u=S.ahorros[0],dsA=u?Math.round((hoy-new Date(u.fecha+'T00:00:00'))/864e5):99;
     if((dd>=27||dd<=10)&&dsA>15&&!pausaFin())nz+=`<div class="nudge"><div>💰 <b>¿Ya mandaste a Fintual?</b> Anota cuánto y queda tu ahorro real</div><button onclick="openAhorro()">Anotar</button></div>`;}
@@ -904,8 +906,8 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
   if(esActual){const man=S.gastos.filter(g=>g.tarjeta==='scotiabank'||g.tarjeta==='efectivo').map(g=>g.fecha).sort().pop();const ds=man?Math.round((hoy-new Date(man+'T00:00:00'))/864e5):null;
     if(ds===null||ds>=2)nz+=`<div class="nudge"><div>✍️ ${ds===null?'No has anotado gastos de Scotia':`Llevas <b>${ds} días</b> sin anotar lo de Scotia`}</div><button onclick="openAdd()">Anotar</button></div>`;}
   if(esActual&&pushOk()&&Notification.permission==='default'&&(standalone||!esIOS)&&!localStorage.getItem('no-push'))nz+=`<div class="nudge"><div>🔔 <b>Activa los avisos:</b> te aviso cuando te pases, el lunes y cuando llegue el sueldo</div><button onclick="activarPush()">Activar</button></div>`;
-  if(esActual&&!standalone&&!localStorage.getItem('no-inicio'))nz+=`<div class="nudge"><div>📲 <b>Úsala como app:</b> ponla en tu pantalla de inicio, en 3 toques</div><button onclick="guiaInicio()">Cómo</button></div>`;
-  $('nudges').innerHTML=nz;
+  if(esActual&&!standalone&&!arma&&!localStorage.getItem('no-inicio'))nz+=`<div class="nudge"><div>📲 <b>Úsala como app:</b> ponla en tu pantalla de inicio, en 3 toques</div><button onclick="guiaInicio()">Cómo</button></div>`;
+  $('nudges').innerHTML=nz.split('<div class="nudge">').slice(1,4).map(x=>'<div class="nudge">'+x).join('');
 
   const tops=Object.entries(tot).filter(([k])=>k!=='otros').sort((a,b)=>b[1]-a[1]).slice(0,3);
   const ks=['comida','fijo','tech','transporte','salud','ocio','coleccionables','viajes','otros'].filter(k=>tot[k]||(S.techos[k]&&k!=='otros'));
@@ -950,7 +952,7 @@ function habitos(){
   const over=Object.entries(V.tot).filter(([c,g])=>c!=='otros'&&g>0&&(S.techos[c]?g>S.techos[c]:c==='coleccionables')).map(([c])=>(CAT[c]||CAT.otros).n);
   H.push({ok:!over.length,t:'Ninguna categoría sobre el tope',s:over.length?`Te pasaste en ${over.join(', ')}`:'Todas dentro de su tope',b:over.length?['Ver',"tab('gastos')"]:null});
   const nuevas=S.cuotas.filter(c=>!c.recurrente&&c.primer_periodo&&c.primer_periodo>=S.actual);
-  H.push({ok:!nuevas.length,t:'Cero cuotas nuevas',s:nuevas.length?`Nueva: ${nuevas.map(c=>c.nombre).join(', ')}`:`Tus cuotas y fijos son el ${Math.round(V.cuo/S.ppto*100)}% del presupuesto`});
+  H.push({ok:!nuevas.length,t:'Cero cuotas nuevas',s:nuevas.length?`Nueva: ${nuevas.map(c=>c.nombre).join(', ')}`:`Tus cuotas y fijos son el ${Math.round(V.cuo/S.ppto*100)}% del presupuesto`,b:nuevas.length?['Ver','openCuotas()']:null});
   const pv=addM(S.actual,-1),hecho=S.ahorros.filter(a=>a.periodo===pv).reduce((s,a)=>s+a.monto,0),espera=!hecho&&dd>=23&&dd<27;
   if(pausaFin())H.push({ok:null,t:'Pagar todas las tarjetas',s:'Este mes Fintual está en pausa: primero las tarjetas'});else H.push({ok:hecho?true:espera?null:false,t:'Mandaste plata a Fintual',s:hecho?`Del sueldo de ${MESL[+pv.slice(5)-1]}: ${fmt(hecho)} 💪`:espera?'Toca cuando llegue el sueldo, a fin de mes':`Del sueldo de ${MESL[+pv.slice(5)-1]} todavía no anotas nada`,b:hecho||espera?null:['Anotar','openAhorro()']});
   H.push({ok:apvOk(),t:'APV abierto',s:apvOk()?`Este año llevas ${fmt(ahorradoAnio('apv'))}`:`El Estado te regala hasta ${fmt(APV_BONO)} al año`,b:apvOk()?null:['Ver cómo',"tab('plata')"]});
@@ -995,8 +997,8 @@ function renderLogros(){const el=$('logros-c');if(!el)return;let rmax=0,sem=fals
     ['💪','Te aguantaste $100.000',ev>=100000,`Llevas ${fmt(ev)} en compras que no hiciste`],['💰','Anotaste tu primer ahorro',S.ahorros.length>0,'Lo que de verdad mandaste a Fintual'],
     ['🗓','Cerraste una semana',sem,'La revisión de los domingos'],['🏠','Empezaste a juntar para irte',!!(K&&K.ahorrado>0),'Plata apartada para independizarte'],
     ['🧮','Cuadraste tu tarjeta',LS('cuadre-ok')==='1','Subiste la cartola y no se te escapó nada']];
-  const n=L.filter(x=>x[2]).length;
-  el.innerHTML=`<div class="card-h"><h2>🏅 Logros</h2><span class="pill ${n===L.length?'ok':''}">${n} de ${L.length}</span></div>${L.map(([i,t,ok,sub])=>`<div class="logro ${ok?'':'no'}"><i>${i}</i><div><b>${t}</b><small>${sub}</small></div></div>`).join('')}<div style="height:6px"></div>`}
+  const n=L.filter(x=>x[2]).length,V=S.logrosAll?L:[...L.filter(x=>x[2]),...L.filter(x=>!x[2]).slice(0,2)];
+  el.innerHTML=`<div class="card-h"><h2>🏅 Logros</h2><span class="pill ${n===L.length?'ok':''}">${n} de ${L.length}</span></div>${V.map(([i,t,ok,sub])=>`<div class="logro ${ok?'':'no'}"><i>${i}</i><div><b>${t}</b><small>${sub}</small></div></div>`).join('')}${V.length<L.length?`<button class="logro-mas" onclick="S.logrosAll=1;renderLogros()">Ver los ${L.length-V.length} que faltan</button>`:''}<div style="height:6px"></div>`}
 
 function renderCoach(){renderLogros();
   renderDeseos();
@@ -1004,9 +1006,9 @@ function renderCoach(){renderLogros();
   const ap=$('ap-est');if(ap&&apConectado())ap.textContent='✅ Conectado: tus compras con Apple Pay entran solas';
   const el=$('coach-hab');
   if(!S.V.esActual)el.innerHTML=`<div class="nudge"><div>👀 Estás viendo <b>${perL(S.periodo)}</b>. Tus hábitos son del mes de hoy.</div><button onclick="setPer(S.actual)">Volver a hoy</button></div>`;
-  else{const H=habitos(),cu=H.filter(h=>h.ok!==null),n=cu.filter(h=>h.ok).length,t=cu.length,f=t-n,pc=Math.round(n/t*100);
+  else{const H=habitos(),cu=H.filter(h=>h.ok!==null),n=cu.filter(h=>h.ok).length,t=cu.length,f=t-n,pc=Math.round(n/t*100),ya=H.filter(h=>h.ok===false&&h.b&&!['openCuotas()',"tab('plata')"].includes(h.b[1])).length;
     const c=f===0?'var(--green)':f<=2?'var(--amber)':'var(--red)';
-    el.innerHTML=`<div class="card"><div class="score"><div class="ring" style="background:conic-gradient(${c} ${pc}%,var(--bg3) 0)"><span>${n}/${t}</span></div><div><b>${f===0?'Mes de millonario 🏆':f<=2?'Vas bien, te falta poco':'Hay que ordenarse'}</b><small>${f===0?'Cumpliste todo. Así se llega.':`Te ${f>1?`faltan ${f} cosas`:'falta 1 cosa'}. Hazla${f>1?'s':''} ahora, toma un minuto.`}</small></div></div>
+    el.innerHTML=`<div class="card"><div class="score"><div class="ring" style="background:conic-gradient(${c} ${pc}%,var(--bg3) 0)"><span>${n}/${t}</span></div><div><b>${f===0?'Mes de millonario 🏆':f<=2?'Vas bien, te falta poco':'Hay que ordenarse'}</b><small>${f===0?'Cumpliste todo. Así se llega.':`Te ${f>1?`faltan ${f} cosas`:'falta 1 cosa'}.${ya?` ${ya===f?(f>1?'Todas se arreglan':'Se arregla'):ya>1?`${ya} se arreglan`:'1 se arregla'} ahora con un toque.`:' Se arregla con el mes: tú sigue a raya.'}`}</small></div></div>
       ${[...H.filter(h=>h.ok===false),...H.filter(h=>h.ok!==false)].map(h=>`<div class="hab"><div class="ck ${h.ok?'ok':h.ok===null?'wait':''}">${h.ok?'✓':h.ok===null?'⏳':''}</div><div class="cm"><b>${h.t}</b><small>${h.s}</small></div>${h.b&&!h.ok?`<button onclick="${h.b[1]}">${h.b[0]}</button>`:''}</div>`).join('')}</div>`;}
   const TL=tipsList();$('m-tips').style.display=TL.length?'':'none';
   $('coach').innerHTML=TL.map(([i,t,a])=>`<div class="tip"><i>${i}</i><div class="cm2">${t}${a?`<br><button class="go" onclick="${a[1]}">${a[0]}</button>`:''}</div></div>`).join('');
@@ -1771,15 +1773,15 @@ function evalCheck(){
   $('chk-btns').style.display='block';
   const t=S.techos[cat]||0,s=V.tot[cat]||0,catN=cat!=='otros'&&CAT[cat]?CAT[cat].n:null;
   const X=x,nc=S.nc||1,mc=Math.round(X/nc);x=nc>1?mc:X;const cuoP=Math.round(V.cuo/S.ppto*100),cuoP2=Math.round((V.cuo+mc)/S.ppto*100);
-  const q2=V.queda-x,d2=V.dias>1?q2/(V.dias-1):q2,dd=Math.max(1,V.cupoHoy),eq=Math.round(x/dd*10)/10,fin2=Math.round(Math.max(0,SUELDO-Math.max(V.total+x,S.ppto))/2);
+  const q2=V.queda-x,d2=V.dias>1?q2/(V.dias-1):q2,dd=Math.max(1,V.cupoHoy),eq=String(Math.round(x/dd*10)/10).replace('.',','),fin2=Math.round(Math.max(0,SUELDO-Math.max(V.total+x,S.ppto))/2);
   let c,h,b;
   if(neg){c='neg';h='🧩 Es para el negocio';b=`No toca tu presupuesto personal, pero son ${fmt(x)} que tienen que volver con ventas.`}
   else if(cat==='coleccionables'&&!t){c='bad';h='🚫 No. Cartas bloqueadas este mes';b=`Este mes los coleccionables personales tienen tope $0. Si es para PULLDEX, escribe "pulldex" en la descripción.`}
   else if(nc>1&&cuoP>=30){c='bad';h='🔴 No: cero cuotas nuevas';b=`Ya tienes ${fmt(V.cuo)} al mes amarrados en cuotas y fijos (${cuoP}% de tu presupuesto). Con esta quedarías en ${cuoP2}%. Si no te alcanza al contado, no te alcanza.`}
   else if(q2<0){c='bad';h='🔴 No te alcanza';b=`Te pasarías del mes por ${fmt(-q2)} y eso sale de tu ahorro: a Fintual irían ${fmt(fin2)} en vez de ${fmt(V.proy.fin)}.`}
   else if(x<=Math.max(0,V.diario)){c='ok';h='✅ Sí, te alcanza';b=`Después de esto, hoy te quedarían ${fmt(V.diario-x)}. Fintual sigue intacto.`}
-  else if(catN&&t&&s+x>t){c='warn';h=`⚠️ Te alcanza, pero te pasas en ${catN}`;b=`Quedarías ${fmt(s+x-t)} sobre el tope de ${catN}. Son ${eq} días de tu plata diaria: desde mañana tendrías ${fmt(d2)} al día (hoy es ${fmt(V.cupoHoy)}).`}
-  else{c='warn';h='⚠️ Te alcanza, pero te aprieta';b=`Son <b>${eq} días</b> de tu plata diaria${x<=V.semana?', pero cabe en lo que te queda esta semana':''}. Desde mañana tendrías ${fmt(d2)} al día (hoy es ${fmt(V.cupoHoy)}).`}
+  else if(catN&&t&&s+x>t){c='warn';h=`⚠️ Te alcanza, pero te pasas en ${catN}`;b=`Quedarías ${fmt(s+x-t)} sobre el tope de ${catN}. Son ${eq} días de tu plata diaria: desde mañana tendrías ${fmt(d2)} al día (hoy partiste con ${fmt(V.cupoHoy)}).`}
+  else{c='warn';h='⚠️ Te alcanza, pero te aprieta';b=`Son <b>${eq} días</b> de tu plata diaria${x<=V.semana?', pero cabe en lo que te queda esta semana':''}. Desde mañana tendrías ${fmt(d2)} al día (hoy partiste con ${fmt(V.cupoHoy)}).`}
   if(nc>1&&!(c==='bad'&&cuoP>=30))b+=`<br>💳 ${nc} cuotas de ${fmt(mc)}: te amarras hasta ${perL(addM(S.actual,nc))} y tus cuotas pasan al ${cuoP2}% del presupuesto.`;
   {const K=S.aj.casa;if(!neg&&K&&K.mensual>0&&X>=20000){const sem=Math.round(X/K.mensual*4.3);if(sem>=1)b+=`<br>🏠 Te atrasa la mudanza ~${sem} semana${sem>1?'s':''}.`}}
   if(!neg)b+=`<br><span style="color:var(--sec);font-size:13px">💡 Invertidos, esos ${fmt(X)} serían ${fmt(X*Math.pow(1.06,10))} en 10 años.</span>`;
