@@ -518,6 +518,7 @@ body:not(.ready) .mes-b .chev{display:none}
   <h3 class="sec-t" id="m-tips">Consejos con tus números</h3>
   <div id="coach"></div>
   <div class="card menu" style="margin-top:6px">
+    <button class="crow" onclick="openRevision()"><div class="ic" style="font-size:18px">🗓</div><div class="cm"><b>Revisión de la semana</b><small>2 minutos los domingos: cierras la semana ordenado</small></div><span class="chev">›</span></button>
     <button class="crow" id="m-inv" onclick="openInvitar()" style="display:none"><div class="ic" style="font-size:18px">👥</div><div class="cm"><b>Invitar a alguien</b><small>Tu papá, tus amigos: cada uno con su app y sus datos privados</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="guiaAP(0)"><div class="ic" style="font-size:18px">💳</div><div class="cm"><b>Conecta Apple Pay</b><small id="ap-est">Tus compras se anotan solas. Te guío en 2 minutos</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openAvisos()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div class="cm"><b>Avisos en tu calendario</b><small>Que el celular te recuerde qué hacer y cuándo</small></div><span class="chev">›</span></button>
@@ -803,6 +804,7 @@ async function _loadAll(){
       const l=+localStorage.getItem('evitado-'+S.actual)||0;if(l&&!getEv())saveAj('evitado',{...(S.aj.evitado||{}),[S.actual]:l},true);}catch(e){}
     await loadPeriodo();loadIngresos();
     if(!S.aj.perfil)return bienvenida();
+    if(/[?&]revision/.test(location.search)){history.replaceState(null,'',location.pathname);return openRevision()}
     if(S.periodo===S.actual&&!sheetOn())avisar();
   }catch(e){console.error(e);$('hero-w').innerHTML=`<div class="hero bad"><div class="h-lbl">${navigator.onLine===false?'Sin internet':'No pude cargar tus datos'}</div><div class="h-l1" style="margin:8px 0 14px">${navigator.onLine===false?'Revisa tu conexión y reintenta.':'Puede ser la señal. Reintenta en un rato.'}</div><button class="btn p" style="margin-top:0;background:#fff;color:#121217" onclick="refresh()">Reintentar</button></div>`;}
 }
@@ -885,6 +887,7 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
 
   let nz='';const rev=items.otros||[],tr=S.revisar||[];
   if(tr.length)nz+=`<div class="nudge"><div>🔁 <b>${tr.length} transferencia${tr.length>1?'s':''} por revisar</b> · no cuentan hasta que me digas</div><button onclick="openRev()">Revisar</button></div>`;
+  if(esActual&&[0,1].includes(hoy.getDay())&&!LS('revision-'+semanaDe()))nz+=`<div class="nudge"><div>🗓 <b>Revisión de la semana</b> · 2 minutos y cierras la semana ordenado</div><button onclick="openRevision()">Hacer</button></div>`;
   if(esActual){const dd=hoy.getDate(),u=S.ahorros[0],dsA=u?Math.round((hoy-new Date(u.fecha+'T00:00:00'))/864e5):99;
     if((dd>=27||dd<=10)&&dsA>15&&!pausaFin())nz+=`<div class="nudge"><div>💰 <b>¿Ya mandaste a Fintual?</b> Anota cuánto y queda tu ahorro real</div><button onclick="openAhorro()">Anotar</button></div>`;}
   if(rev.length)nz+=`<div class="nudge"><div>❓ <b>${rev.length} gasto${rev.length>1?'s':''} sin categoría</b></div><button onclick="openCat('otros')">Ordenar</button></div>`;
@@ -943,6 +946,30 @@ function habitos(){
   H.push({ok:apvOk(),t:'APV abierto',s:apvOk()?`Este año llevas ${fmt(ahorradoAnio('apv'))}`:`El Estado te regala hasta ${fmt(APV_BONO)} al año`,b:apvOk()?null:['Ver cómo',"tab('plata')"]});
   return H;
 }
+// ---------- Revisión de la semana (el aviso del domingo 20:00 abre /?revision): cómo te fue, lo pendiente y la meta ----------
+// La semana es de lunes a domingo; si hoy es lunes se revisa la que terminó ayer. Hecha = localStorage 'revision-<lunes>'.
+const ISOd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function semanaDe(){const d=new Date();if(d.getDay()===1&&d.getHours()<14)d.setDate(d.getDate()-1);d.setDate(d.getDate()-((d.getDay()+6)%7));return ISOd(d)}
+const diaMes=f=>new Date(f+'T12:00:00').toLocaleDateString('es-CL',{day:'numeric',month:'long'});
+function openRevision(){const V=S.V,l=semanaDe(),dom=ISOd(new Date(new Date(l+'T12:00:00').getTime()+6*864e5));
+  const G=S.gastos.filter(g=>g.fecha>=l&&g.fecha<=dom&&!g.pulldex&&(g.estado||'ok')==='ok'&&g.monto>0),tot=G.reduce((s,g)=>s+g.monto,0);
+  const porCat={};G.forEach(g=>porCat[g.categoria_clave]=(porCat[g.categoria_clave]||0)+g.monto);
+  const top=Object.entries(porCat).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const nr=(S.revisar||[]).length,no=(V.items.otros||[]).length,ds=DES().filter(d=>d.estado==='espera'&&listo(d)).length,ev=getEv();
+  const paso=(ok,t,s,b)=>`<div class="hab"><div class="ck ${ok?'ok':''}">${ok?'✓':''}</div><div class="cm"><b>${t}</b><small>${s}</small></div>${ok?'':b}</div>`;
+  openSheet(`<h3>🗓 Tu semana en 2 minutos</h3><p>Semana del ${diaMes(l)} al ${diaMes(dom)}.</p>
+  <div class="card sum"><div class="k">Gastaste esta semana</div><div class="v">${fmt(tot)}</div>
+    ${top.length?`<div class="lead" style="padding:4px 0 12px">${top.map(([c,m])=>`${(CAT[c]||CAT.otros).ic} ${(CAT[c]||CAT.otros).n} ${fmt(m)}`).join(' · ')}</div>`:''}</div>
+  <div class="card">
+    ${paso(!nr,'Transferencias',nr?`${nr} esperando que me digas si son gasto`:'Nada pendiente',`<button onclick="openRev()">Revisar</button>`)}
+    ${paso(!no,'Gastos con categoría',no?`${no} sin categoría`:'Todo ordenado',`<button onclick="openCat('otros')">Ordenar</button>`)}
+    ${paso(!ds,'Lista de deseos al día',ds?`${ds} esperando tu decisión (ya pasaron 72 horas)`:'Nada que decidir',`<button onclick="closeSheet();tab('coach')">Decidir</button>`)}
+  </div>
+  <div class="card sum"><div class="k">Para la próxima semana</div><div class="v">${V.esActual?(V.queda>=0?`${fmt(V.manana)} <span>por día</span>`:`Freno total`):'—'}</div>
+    <div class="lead" style="padding:4px 0 12px">${V.esActual?(V.queda>=0?`Te quedan ${fmt(V.queda)} hasta el 22.`:`Vas ${fmt(-V.queda)} pasado del mes: solo súper y transporte.`):''}${ev?` 💪 Este mes te aguantaste ${fmt(ev)}.`:''}</div></div>
+  <button class="btn p" onclick="cerrarSemana()">${nr||no||ds?'Cerrar igual':'Listo, semana cerrada ✅'}</button>`)}
+function cerrarSemana(){LS('revision-'+semanaDe(),'1');closeSheet();toast('✅ Semana cerrada. El lunes parte limpio');render()}
+
 function renderCoach(){
   renderDeseos();
   const mi=$('m-inv');if(mi)mi.style.display=S.admin?'':'none';
