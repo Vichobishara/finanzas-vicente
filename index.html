@@ -69,6 +69,8 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .card-h button{border:none;background:var(--ac-t);color:var(--ac);font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:99px}
 .crow{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);width:100%;background:none;border-left:none;border-right:none;border-top:none;text-align:left}
 .crow:last-child{border-bottom:none}
+.crow .mini{width:54px;height:6px;border-radius:9px;background:var(--bg3);overflow:hidden;flex-shrink:0}.crow .mini i{display:block;height:100%;background:var(--green);border-radius:9px}
+.crow .m-der{font-size:14.5px;font-weight:700;white-space:nowrap}
 .crow:active{opacity:.6}
 .ic{width:44px;height:44px;border-radius:50%;background:var(--bg3);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
 .cm{flex:1;min-width:0}
@@ -419,10 +421,8 @@ body:not(.ready) .mes-b .chev{display:none}
   <button class="meta" id="meta" onclick="openMeta()"></button>
   <div id="next"></div>
   <div class="card" id="fin"></div>
-  <div class="card" id="fondo-c"></div>
-  <div class="card" id="deudas-c"></div>
-  <div class="card" id="apv-c"></div>
-  <div class="card" id="tax-c"></div>
+  <div class="card menu" id="metas"></div>
+  <div hidden><div class="card" id="fondo-c"></div><div class="card" id="deudas-c"></div><div class="card" id="apv-c"></div><div class="card" id="tax-c"></div></div>
   <div class="card menu">
     <button class="crow" onclick="openPlata()"><div class="ic">📍</div><div class="cm"><b>Dónde poner cada peso</b><small>Tu orden: APV, colchón, largo plazo</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openBono()"><div class="ic">🎁</div><div class="cm"><b>¿Te llegó un bono?</b><small>Te digo dónde va cada peso</small></div><span class="chev">›</span></button>
@@ -844,7 +844,7 @@ function nextMove(){
   if(T&&T.dev>50000)return['🧾',`Abril ${+T.y+1}: pide la reliquidación`,`Te podrían devolver ≈ ${fmt(Math.round(T.dev/10000)*10000)} de impuestos`,'tax-c'];
   return['🛡','No te pases del presupuesto','Así el ahorro de fin de mes queda intacto','fin'];
 }
-function renderNext(){if(!S.V.esActual){$('next').innerHTML='';return}const[i,b,s,to]=nextMove();$('next').innerHTML=`<button class="next" onclick="$('${to}').scrollIntoView({behavior:'smooth',block:'center'})"><i>${i}</i><div class="cm"><b>${b}</b><small>${s}</small></div><span class="chev">›</span></button>`}
+function renderNext(){if(!S.V.esActual){$('next').innerHTML='';return}const[i,b,s,to]=nextMove();$('next').innerHTML=`<button class="next" onclick="${to==='fin'?`$('fin').scrollIntoView({behavior:'smooth',block:'center'})`:`verCard('${to}')`}"><i>${i}</i><div class="cm"><b>${b}</b><small>${s}</small></div><span class="chev">›</span></button>`}
 
 // ---------- Plata: la meta, el plan de ahorro, el APV y los impuestos, todo a la vista ----------
 const ahorroDe=per=>S.ahorros.filter(a=>a.periodo===per).reduce((s,a)=>s+a.monto,0);
@@ -891,8 +891,25 @@ function renderPlata(){
    :`<div class="card-h"><h2>🧾 Impuestos</h2><span class="pill ok">Al día</span></div><div class="lead">Este año vas pagando más o menos lo justo: no hay devolución grande que pedir. Si te llega un bono, vuelve a mirar aquí.</div>`;
   const pf=PAT().fecha,dp=pf?Math.round((new Date()-new Date(pf+'T12:00:00'))/864e5):null;
   $('m-pat').textContent=dp===null?'Fintual, cartas y ETH':dp<1?'Lo actualizaste hoy':`Lo actualizaste hace ${dp} día${dp>1?'s':''}${dp>35?' ⚠️':''}`;
-  renderNext();renderMeta();renderFondo();renderDeudas();
+  renderNext();renderMeta();renderFondo();renderDeudas();renderMetas();
 }
+
+// ---------- Plata compacta: fondo, deudas, APV e impuestos son filas cortas; el detalle se abre en una hoja ----------
+// Las tarjetas completas se siguen pintando (ocultas) y la hoja muestra una copia que se refresca en cada render().
+const VISTA={'fondo-c':'🎧 Fondo gadgets','deudas-c':'🧾 Por pagar','apv-c':'🎯 APV','tax-c':'🧾 Impuestos'};
+function cardSin(id){const c=$(id).cloneNode(true);c.querySelectorAll('.card-h h2').forEach(n=>n.remove());return c.innerHTML}
+function verCard(id){openSheet(`<h3>${VISTA[id]}</h3><div data-vista="${id}">${cardSin(id)}</div>`)}
+function renderMetas(){const el=$('metas');if(!el)return;const F=S.aj.fondo,D=DEU(),tot=D.reduce((s,x)=>s+x.monto,0),T=S.tax;
+  const a=ahorradoAnio('apv'),dev=T?Math.round(T.dev/10000)*10000:0;
+  const fila=(id,ic,t,sub,der)=>`<button class="crow" onclick="verCard('${id}')"><div class="ic">${ic}</div><div class="cm"><b>${t}</b><small>${sub}</small></div>${der||''}<span class="chev">›</span></button>`;
+  el.innerHTML=
+    fila('fondo-c','🎧',F?F.que:'Fondo gadgets',F?`${fmt(F.ahorrado)} de ${fmt(F.meta)}`:'Junta para tu próximo gadget sin tocar el mes',
+      F?`<span class="mini"><i style="width:${Math.min(100,F.ahorrado/F.meta*100)}%"></i></span>`:'')
+   +fila('deudas-c','🧾','Por pagar',D.length?D.map(x=>x.que).join(', '):'No le debes a nadie 🙌',tot?`<b class="m-der">${fmt(tot)}</b>`:'')
+   +fila('apv-c','🎯',apvOk()?`APV ${new Date().getFullYear()}`:'APV: plata gratis del Estado',apvOk()?`${fmt(a)} de ${fmt(APV_ANUAL)}`:'Pendiente: abrirlo en Fintual')
+   +fila('tax-c','🧾','Impuestos',!T?'Anota tus liquidaciones':dev>50000?`El SII te debe ≈ ${fmt(dev)}`:'Al día');
+  // Si la hoja de detalle está abierta, que muestre lo nuevo (ej: después de "La pagué")
+  const v=document.querySelector('#sheet [data-vista]');if(v&&sheetOn())v.innerHTML=cardSin(v.dataset.vista)}
 
 function openPlata(){
   const apv=apvOk(),P0=PAT(),pat=P0.fintual+P0.cartas+P0.eth,alt=Math.round((P0.cartas+P0.eth)/pat*100);
