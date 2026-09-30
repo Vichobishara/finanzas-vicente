@@ -72,6 +72,10 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   (presupuesto − cuotas − gastos de días anteriores) / días hasta el 22. Es fijo durante el día: si te pasas, el hero
   dice "Hoy te pasaste por $X" y cuánto queda por día desde mañana. Debajo va "Esta semana te quedan" (lun–dom, sin
   pasar del 22) para las compras que no caben en un día.
+- Alertas (pop-up "Ojo, Vicho" al abrir la app o al anotar): te pasaste hoy / de la semana / del mes, categoría > 80% o
+  sobre el tope, cartas bloqueadas y "vas gastando muy rápido" (% gastado > % del mes + 15). Cada una se muestra una vez
+  (por día, semana o mes) con `localStorage['alertas-vistas']`. La notificación del atajo Apple Pay trae la misma alerta:
+  `anotar_atajo` le agrega `resumen_hoy(categoria)` (función interna, sin grant a anon).
 - Sueldo base esperado: $2.000.000. Lo que no se gasta del presupuesto se reparte 50% Fintual / 50% colchón.
 - APV régimen A: 40 UTM/año ($239k/mes) → bono 15%, tope 6 UTM. UTM hardcodeada en 71.649: **actualizar cada año**.
 - Reliquidación anual del impuesto único (art. 47, un empleador): se estima con base_tributable e impuesto de `ingresos`.

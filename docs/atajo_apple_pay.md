@@ -2,7 +2,8 @@
 
 Scotia no manda correo por compra, pero iOS sí avisa a Atajos cada vez que pagas con Apple Pay.
 El atajo llama a la función `anotar_atajo` de Supabase, que limpia el monto, categoriza con las
-reglas de siempre y te devuelve un mensaje tipo "✅ $12.990 · Comida".
+reglas de siempre y te devuelve un mensaje tipo "✅ $12.990 · Comida", con una segunda línea que te dice
+cuánto te queda hoy o te avisa si te pasaste (del día, del mes o del tope de la categoría).
 
 **Solo funciona con Apple Pay** (pagar con el iPhone o el reloj, o comprar en apps con Apple Pay).
 Si pasas la tarjeta física o escribes el número en una web, eso lo anotas tú.
