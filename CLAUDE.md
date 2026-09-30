@@ -60,6 +60,10 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   válida devuelve la clave, que la app guarda en localStorage. Tablas `passkeys`, `passkey_retos` y `secretos` (app_key)
   tienen RLS sin políticas: solo las lee la edge function con service role. El primer registro queda abierto hasta el
   13-10-2026; después, registrar otra passkey exige la clave (`accion:'nuevo'` + x-app-key).
+- **Continuar con Google** (fase 1 del proyecto amigos): Supabase Auth con Google (cliente OAuth en el proyecto Google Cloud
+  `finanzas-vicho`). La app va a `/auth/v1/authorize?provider=google`, vuelve con `#access_token` y la edge function
+  `acceso_google` revisa que el correo esté en `secretos.google_emails` (separados por coma) y devuelve la clave.
+  Quien no está en la lista ve "Pídele acceso a Vicho". En la fase 2 esto pasa a RLS por usuario.
 - Respaldo: "Usar una clave" en el candado, o el link `#k=CLAVE`. **La clave nunca va en el repo.**
 - Los scripts sin clave (el Apps Script BCI ya instalado) pueden insertar en `gastos` si fuente es bci_auto | transferencia | atajo.
   `importar_correos.gs` funciona sin clave para compras y transferencias; `APP_KEY` solo hace falta para los sueldos Toku (`ingresos`).
