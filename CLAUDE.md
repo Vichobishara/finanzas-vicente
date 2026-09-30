@@ -102,6 +102,7 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 6. No es asesoría financiera: mantener los avisos "no soy asesor" en las secciones de impuestos e inversión.
 
 ## Pendientes / ideas
+- [ ] **Proyecto amigos** (login Google, datos privados por persona, onboarding, automatizaciones instalables): ver `docs/proyecto_amigos.md`.
 - [x] Seguridad: RLS con clave `x-app-key` (ver arriba). Si algún día hay más usuarios: Supabase Auth + RLS por usuario.
 - [x] Atajo de iOS con disparador "Transacción" (Apple Pay Scotia) → `rpc/anotar_atajo` (ver docs/atajo_apple_pay.md).
 - [ ] Cuadratura mensual Scotia: comparar el total del estado de cuenta con lo anotado y crear el ajuste "sin anotar".

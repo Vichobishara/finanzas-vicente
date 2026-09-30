@@ -164,6 +164,28 @@ body.lock{overflow:hidden}
 .ia-in button{margin:0;width:auto;padding:0 18px;font-size:15px}
 .ia-in button:disabled{opacity:.5}
 .ia-log{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.ia-open{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:10px;padding:13px 8px 13px 16px;border-radius:99px;border:none;background:var(--bg3);color:var(--hint);font-size:15px;text-align:left}
+.ia-open i{font-style:normal;width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700}
+/* Chat en su hoja: alto tope, los mensajes hacen scroll por dentro y el campo queda siempre abajo */
+.sheet.chat{display:flex;flex-direction:column;position:relative;overflow:hidden;max-height:85vh}
+.sheet.chat>.x,.sheet.chat>.bk{position:absolute;top:10px;margin:0;float:none}
+.sheet.chat>.x{right:16px}.sheet.chat>.bk{left:16px}
+.sheet.chat h3{padding-right:40px}.sheet.chat>.bk~h3{padding-left:40px}
+.sheet.chat .ia-log{flex:1 1 auto;min-height:40px;overflow-y:auto;position:relative;margin:4px -4px 8px;padding:0 4px;overscroll-behavior:contain}
+.sheet.chat .ia-log:empty{display:none}
+.sheet.chat .chips{flex:none;margin:0 0 4px}
+.sheet.chat .ia-in{flex:none;margin-top:6px}
+/* Tu semana (Hoy) */
+.sem{padding:6px 18px 10px}
+.sem-b{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;height:96px;position:relative;margin:10px 0 6px}
+.sem-b .ref{position:absolute;left:0;right:0;border-top:1.5px dashed var(--border);pointer-events:none}
+.sem-d{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.sem-d div{width:100%;max-width:26px;border-radius:8px;min-height:4px;background:var(--bg3);transition:height .5s cubic-bezier(.2,.9,.3,1)}
+.sem-d.ok div{background:var(--green)}.sem-d.warn div{background:var(--amber)}.sem-d.bad div{background:var(--red)}
+.sem-d.fut div{background:var(--bg3)}
+.sem-l{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;text-align:center;font-size:11.5px;color:var(--hint);font-weight:600}
+.sem-l .hoy{color:var(--text);font-weight:800}
+.sem small{font-size:12.5px;color:var(--sec)}
 .ia-q,.ia-a{padding:11px 15px;border-radius:20px;font-size:14px;line-height:1.5;max-width:92%}
 .ia-q{align-self:flex-end;background:var(--navy);color:#fff}
 .ia-a{align-self:flex-start;background:var(--bg3)}
@@ -316,6 +338,7 @@ body:not(.ready) .mes-b .chev{display:none}
   </div>
   <div id="win"></div>
   <div id="nudges"></div>
+  <div id="sem"></div>
   </section>
 
   <section class="tab" data-tab="gastos" hidden>
@@ -359,9 +382,8 @@ body:not(.ready) .mes-b .chev{display:none}
   <h2 class="tab-t">Coach</h2>
   <div id="coach-hab"></div>
   <div class="card ia"><h4>🤖 Pregúntale a Claude</h4><p>Con tus números de este mes. Pregunta como le hablarías a un amigo.</p>
-    <div class="ia-log" id="ia-log"></div>
     <div class="chips" id="ia-sug"></div>
-    <div class="ia-in"><input id="ia-in" placeholder="Escribe tu pregunta…" autocomplete="off" enterkeyhint="send" onkeydown="if(event.key==='Enter')askIA()"><button class="btn p" id="ia-btn" onclick="askIA()">Preguntar</button></div>
+    <button class="ia-open" onclick="openIA()"><span id="ia-open-t">Escribe tu pregunta…</span><i>↑</i></button>
   </div>
   <h3 class="sec-t" id="m-tips">Consejos con tus números</h3>
   <div id="coach"></div>
@@ -440,7 +462,7 @@ function openSheet(h){const sh=$('sheet'),ev=window.event,tit=shTit(h);
   if(sheetOn()&&ev&&ev.type==='click'&&sh.contains(ev.target)){const c=sh.cloneNode(true);c.querySelectorAll(':scope>.handle,:scope>.x,:scope>.bk').forEach(n=>n.remove());
     if(shTit(c.innerHTML)!==tit)SH.push({h:c.innerHTML,y:sh.scrollTop})}else if(!sheetOn())SH=[];
   const i=SH.findIndex(e=>shTit(e.h)===tit);if(i>=0)SH=SH.slice(0,i);pintaSheet(h,0)}
-function pintaSheet(h,y){clearTimeout(cierreT);$('sheet-bg').classList.remove('closing');const sh=$('sheet');sh.classList.remove('busy');sh.style.transform='';
+function pintaSheet(h,y){clearTimeout(cierreT);$('sheet-bg').classList.remove('closing');const sh=$('sheet');sh.classList.remove('busy','chat');sh.style.transform='';
   sh.innerHTML='<div class="handle"></div>'+(SH.length?'<button class="bk" onclick="backSheet()" aria-label="Volver">‹</button>':'')+'<button class="x" onclick="closeSheet()" aria-label="Cerrar">×</button>'+h;sh.scrollTop=y;$('sheet-bg').classList.add('on');document.body.classList.add('lock')}
 function backSheet(){const e=SH.pop();if(!e)return closeSheet();pintaSheet(e.h,e.y)}
 function closeSheet(){if(document.activeElement)document.activeElement.blur();const bg=$('sheet-bg');
@@ -456,7 +478,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetOn())closeShee
 // Deslizar hacia abajo para cerrar (desde la manija o con la hoja arriba del todo)
 (()=>{let y0=null,dy=0;const sh=()=>$('sheet');
   document.addEventListener('touchstart',e=>{const s=sh();if(!sheetOn()||!s.contains(e.target)||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
-    if(e.target.classList.contains('handle')||s.scrollTop<=0){y0=e.touches[0].clientY;dy=0}},{passive:true});
+    const sc=e.target.closest&&e.target.closest('.ia-log');if(e.target.classList.contains('handle')||(s.scrollTop<=0&&(!sc||sc.scrollTop<=0))){y0=e.touches[0].clientY;dy=0}},{passive:true});
   document.addEventListener('touchmove',e=>{if(y0===null)return;dy=e.touches[0].clientY-y0;if(dy>0)sh().style.transform=`translateY(${dy}px)`;else{y0=null;sh().style.transform=''}},{passive:true});
   document.addEventListener('touchend',()=>{if(y0===null)return;y0=null;const s=sh();s.style.transition='transform .2s';s.style.transform=dy>90?'translateY(100%)':'';
     setTimeout(()=>{s.style.transition='';if(dy>90){closeSheet();s.style.transform=''}},200)});})();
@@ -605,7 +627,11 @@ function render(){
   const gastSem=pers.filter(g=>g.fecha>=ISO(w0)).reduce((s,g)=>s+g.monto,0),D0=Math.max(1,Math.round((cierre-w0)/864e5)+1),Wd=Math.round((w1-w0)/864e5)+1;
   const semana=(queda+gastSem)*Wd/D0-gastSem,diasSem=Math.round((w1-hoy)/864e5)+1;
   const base=esActual?Math.max(total,S.ppto):total,libre=Math.max(0,SUELDO-base),fin=Math.round(libre/2);
-  S.V={tot,items,ptot,nt,neg,mes,pvL,CQ,cuo,gast,total,queda,dias,esActual,diario,cupoHoy,gastHoy,manana,semana,semIni:ISO(w0),proy:{base,libre,fin,col:libre-fin,over:total>S.ppto}};
+  // Tu semana: lo gastado cada día (lunes a domingo) contra el cupo promedio con que partió la semana.
+  const semRef=(queda+gastSem)/D0,semDias=[...Array(7)].map((_,i)=>{const d=new Date(lun);d.setDate(lun.getDate()+i);const f=ISO(d);
+    return{f,dentro:d>=ini&&d<=cierre,fut:d>hoy,hoy:+d===+hoy,m:pers.filter(g=>g.fecha===f).reduce((s,g)=>s+g.monto,0)}});
+  const hoyItems=pers.filter(g=>g.fecha===H);
+  S.V={tot,items,ptot,nt,neg,mes,pvL,CQ,cuo,gast,total,queda,dias,esActual,diario,cupoHoy,gastHoy,manana,semana,semIni:ISO(w0),semRef,semDias,hoyItems,proy:{base,libre,fin,col:libre-fin,over:total>S.ppto}};
 
   $('mes-t').textContent=mes;$('greet').textContent=esActual?hoyL():rangoL(S.periodo);
   $('viendo').innerHTML=esActual?'':`<div class="nudge"><div>👀 Estás viendo <b>${perL(S.periodo)}</b></div><button onclick="setPer(S.actual)">Volver a hoy</button></div>`;
@@ -636,6 +662,7 @@ function render(){
   if(esActual&&pushOk()&&Notification.permission==='default'&&(standalone||!esIOS)&&!localStorage.getItem('no-push'))nz+=`<div class="nudge"><div>🔔 <b>Activa los avisos:</b> te aviso cuando te pases, el lunes y cuando llegue el sueldo</div><button onclick="activarPush()">Activar</button></div>`;
   if(esActual&&esIOS&&!standalone&&!localStorage.getItem('no-inicio'))nz+=`<div class="nudge"><div>📲 <b>Úsala como app:</b> toca Compartir ⬆️ y luego "Agregar a inicio"</div><button onclick="localStorage.setItem('no-inicio',1);this.parentNode.remove()">Listo</button></div>`;
   $('nudges').innerHTML=nz;
+  pintaSemana();
 
   const tops=Object.entries(tot).filter(([k])=>k!=='otros').sort((a,b)=>b[1]-a[1]).slice(0,3);
   const ks=['comida','fijo','tech','transporte','salud','ocio','coleccionables','viajes','otros'].filter(k=>tot[k]||(S.techos[k]&&k!=='otros'));
@@ -645,7 +672,7 @@ function render(){
 
   $('m-movs').textContent=S.gastos.length?`Ver todos (${S.gastos.length})`:'Ver todos';
   $('m-cuo').textContent=`${fmt(cuo)} al mes · se suman solas`;
-  if(!(S.iaH||[]).length&&!$('ia-log').children.length)$('ia-sug').innerHTML=IA_SUG.map(q=>`<button class="chip" onclick="askIA(this.textContent)">${q}</button>`).join('');
+  pintaIA();
   $('m-ppto').textContent=`${fmt(S.ppto)} (incluye cuotas)`;
   renderGastos();renderCoach();renderPlata();entrar();
 }
@@ -1114,17 +1141,37 @@ async function askCheck(){const q=chkQ(),el=$('chk-ia'),btn=$('chk-ia-btn');if(!
   el.innerHTML=`<div class="ia-a" style="margin-top:12px;max-width:100%">${mdIA(a.texto)}</div>${a.ok?`<button class="chip" style="margin-top:8px" onclick="seguirIA()">Seguir conversando en Coach →</button>`:''}`;
   if(a.ok)S.chkPar=[q,a.texto];}
 // Lleva la pregunta y la respuesta al chat del Coach para seguir ahí.
-function seguirIA(){const[q,a]=S.chkPar||[];closeSheet();tab('coach');if(!q)return;S.iaH=S.iaH||[];S.iaH.push({role:'user',content:q},{role:'assistant',content:a});$('ia-sug').innerHTML='';
-  $('ia-log').insertAdjacentHTML('beforeend',`<div class="ia-q">${mdIA(q)}</div><div class="ia-a">${mdIA(a)}</div>`);$('ia-in').focus()}
+function seguirIA(){const[q,a]=S.chkPar||[];tab('coach');if(q){S.iaH=S.iaH||[];S.iaLog=S.iaLog||[];S.iaH.push({role:'user',content:q},{role:'assistant',content:a});S.iaLog.push({q,a})}openIA()}
 async function callIA(q,datos,hist){try{const r=await fetch(SB+'/functions/v1/consejo',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json','x-app-key':getKey()},body:JSON.stringify({pregunta:q,datos,historial:hist})});
     const j=await r.json();return j.respuesta?{ok:true,texto:j.respuesta}:{ok:false,texto:({sin_api:'Falta conectar tu API de Anthropic (paso 3 de la guía).',api_mala:'La API key de Anthropic no funciona. Revísala en Supabase.',limite:'Muchas preguntas seguidas. Espera un minuto.',clave:'Tu sesión venció. Vuelve a entrar.'}[j.error]||'No pude responder. Intenta de nuevo.')}}
   catch(e){console.error(e);return{ok:false,texto:'Sin conexión. Intenta de nuevo.'}}}
-async function askIA(pre){const inp=$('ia-in'),btn=$('ia-btn');let q=(pre||inp.value).trim();if(!q)return inp.focus();if(btn.disabled)return;
-  S.iaH=S.iaH||[];$('ia-sug').innerHTML='';
-  const log=$('ia-log');log.insertAdjacentHTML('beforeend',`<div class="ia-q">${mdIA(q)}</div><div class="ia-a" id="ia-w" aria-label="Pensando"><span class="dots"><i></i><i></i><i></i></span></div>`);inp.value='';btn.disabled=true;
-  const r=await callIA(q,ctxIA(),S.iaH),a=r.texto;if(r.ok)S.iaH.push({role:'user',content:q},{role:'assistant',content:a});
-  const w=$('ia-w');if(w){w.innerHTML=mdIA(a);w.removeAttribute('id')}btn.disabled=false;w&&w.scrollIntoView&&w.scrollIntoView({block:'nearest',behavior:'smooth'});
+async function askIA(pre){const inp=$('ia-in');let q=(pre||(inp&&inp.value)||'').trim();if(!q)return inp&&inp.focus();if(S.iaBusy)return;
+  S.iaH=S.iaH||[];S.iaLog=S.iaLog||[];const e={q,a:null};S.iaLog.push(e);S.iaBusy=true;if(inp)inp.value='';pintaIA();
+  const r=await callIA(q,ctxIA(),S.iaH);e.a=r.texto;if(r.ok)S.iaH.push({role:'user',content:q},{role:'assistant',content:r.texto});S.iaBusy=false;pintaIA();
 }
+const SEM_L=['L','M','M','J','V','S','D'];
+function pintaSemana(){const el=$('sem'),V=S.V;if(!el)return;if(!V.esActual||V.queda<0){el.innerHTML='';return}
+  const ref=Math.max(1,V.semRef),top=Math.max(ref*1.25,...V.semDias.map(d=>d.m)),h=m=>Math.round(m/top*100);
+  const col=d=>!d.dentro||d.fut?'fut':d.m<=ref?'ok':d.m<=ref*1.5?'warn':'bad';
+  const pas=V.semDias.filter(d=>d.dentro&&!d.fut&&d.m>ref).length;
+  el.innerHTML=`<div class="card sem"><div class="card-h"><h2>Tu semana</h2><small>${pas?`${pas} ${pas>1?'días':'día'} sobre ${fmt(ref)}`:`Todos los días bajo ${fmt(ref)} 💪`}</small></div>
+    <div class="sem-b"><div class="ref" style="bottom:${h(ref)}%"></div>${V.semDias.map(d=>`<div class="sem-d ${col(d)}" title="${d.f}: ${fmt(d.m)}"><div style="height:${d.fut||!d.dentro?4:Math.max(4,h(d.m))}%"></div></div>`).join('')}</div>
+    <div class="sem-l">${V.semDias.map((d,i)=>`<span class="${d.hoy?'hoy':''}">${SEM_L[i]}</span>`).join('')}</div>
+    <div class="card-h" style="padding-top:14px"><h2 style="font-size:14px">Hoy llevas ${fmt(V.gastHoy)}</h2></div>
+    ${V.hoyItems.length?V.hoyItems.map(txHtml).join(''):'<div class="empty" style="padding:8px 0 6px">Nada anotado hoy.</div>'}</div>`}
+
+// ---------- Chat con Claude en su hoja ----------
+// S.iaLog = lo que se ve (incluye errores); S.iaH = historial que se manda a Claude (solo respuestas buenas).
+function openIA(pre){openSheet(`<h3>🤖 Pregúntale a Claude</h3><p>Con tus números de ${S.V?S.V.mes:'este mes'}. Pregunta como le hablarías a un amigo.</p>
+  <div class="ia-log" id="ia-log"></div><div class="chips" id="ia-sug2"></div>
+  <div class="ia-in"><input id="ia-in" placeholder="Escribe tu pregunta…" autocomplete="off" enterkeyhint="send" onkeydown="if(event.key==='Enter')askIA()"><button class="btn p" id="ia-btn" onclick="askIA()">Preguntar</button></div>`);
+  $('sheet').classList.add('chat');pintaIA();if(pre)askIA(pre);else $('ia-in').focus()}
+function pintaIA(){const L=S.iaLog||[],sug=q=>`<button class="chip" onclick="${$('ia-log')?'askIA':'openIA'}(this.textContent)">${q}</button>`;
+  const cs=$('ia-sug');if(cs)cs.innerHTML=L.length?'':IA_SUG.map(q=>`<button class="chip" onclick="openIA(this.textContent)">${q}</button>`).join('');
+  const ot=$('ia-open-t');if(ot)ot.textContent=L.length?`Seguir la conversación (${L.length})`:'Escribe tu pregunta…';
+  const log=$('ia-log');if(!log)return;const s2=$('ia-sug2');if(s2)s2.innerHTML=L.length?'':IA_SUG.map(sug).join('');
+  log.innerHTML=L.map(e=>`<div class="ia-q">${mdIA(e.q)}</div>${e.a==null?'<div class="ia-a" aria-label="Pensando"><span class="dots"><i></i><i></i><i></i></span></div>':`<div class="ia-a">${mdIA(e.a)}</div>`}`).join('');
+  const b=$('ia-btn');if(b)b.disabled=!!S.iaBusy;const qs=log.querySelectorAll('.ia-q');if(qs.length)log.scrollTop=qs[qs.length-1].offsetTop-4}
 function skipBuy(){const x=val('a-monto');if(x)addEv(x);closeSheet();toast(`💪 Bien ahí, te ahorraste ${fmt(x)}`);render()}
 function boughtIt(){if((S.nc||1)>1)return openCuotaNueva();openAdd({m:val('a-monto'),d:$('a-desc').value});}
 function openCuotaNueva(){const x=val('a-monto'),d=($('a-desc').value||'').trim()||'Compra en cuotas',nc=S.nc,mc=Math.round(x/nc);S.cq={d,nc,mc};
