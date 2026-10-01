@@ -55,6 +55,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['link guarda la clave y limpia la URL']=w.localStorage.getItem('app-key')==='test123'&&!w.location.hash;
  checks['manda x-app-key']=heads.every(h=>h&&h['x-app-key']==='test123');
  checks['hero muestra monto']=/\$/.test(t('hero-w'));
+ checks['Hoy muestra lo anotado hoy']=t('hoy-g').includes('Hoy anotaste')&&t('hoy-g').includes('Jumbo')&&!t('hoy-g').includes('Sobres');
  checks['top categorías']=t('top3').includes('Comida');
  checks['tarjeta Fintual']=t('fin').includes('Fintual');
  checks['camino a millonario']=t('meta').includes('Camino');
