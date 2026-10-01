@@ -475,6 +475,7 @@ body:not(.ready) .mes-b .chev{display:none}
   </div>
   <div id="win"></div>
   <div id="nudges"></div>
+  <div id="hoy-g"></div>
   </section>
 
   <section class="tab" data-tab="gastos" hidden>
@@ -947,6 +948,11 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
   if(esActual&&pushOk()&&Notification.permission==='default'&&(standalone||!esIOS)&&!localStorage.getItem('no-push'))nz+=`<div class="nudge"><div>🔔 <b>Activa los avisos:</b> te aviso cuando te pases, el lunes y cuando llegue el sueldo</div><button onclick="activarPush()">Activar</button></div>`;
   if(esActual&&!standalone&&!arma&&!localStorage.getItem('no-inicio'))nz+=`<div class="nudge"><div>📲 <b>Úsala como app:</b> ponla en tu pantalla de inicio, en 3 toques</div><button onclick="guiaInicio()">Cómo</button></div>`;
   $('nudges').innerHTML=nz.split('<div class="nudge">').slice(1,4).map(x=>'<div class="nudge">'+x).join('');
+
+  // Lo anotado hoy: llena el espacio bajo los botones y deja ver al tiro si falta algo (Scotia, efectivo).
+  {const gh=pers.filter(g=>g.fecha===H).sort((a,b)=>b.id-a.id);
+   $('hoy-g').innerHTML=!esActual?'':gh.length?`<div class="card"><div class="card-h"><h2>Hoy anotaste ${fmt(gastHoy)}</h2>${gh.length>3?`<button onclick="openMovs()">Ver los ${gh.length}</button>`:''}</div>${gh.slice(0,3).map(txHtml).join('')}</div>`
+    :`<div class="nudge"><div>📝 <b>Nada anotado hoy.</b> ¿Pagaste algo con Scotia o en efectivo?</div><button onclick="openAdd()">Anotar</button></div>`;}
 
   const tops=Object.entries(tot).filter(([k])=>k!=='otros').sort((a,b)=>b[1]-a[1]).slice(0,3);
   const ks=['comida','fijo','tech','transporte','salud','ocio','coleccionables','viajes','otros'].filter(k=>tot[k]||(S.techos[k]&&k!=='otros'));
