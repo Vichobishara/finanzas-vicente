@@ -101,7 +101,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  // Cupo del día fijo: lo que gastas hoy lo baja; si te pasas, se reparte en los días que quedan
  {const V=w.eval('S.V');checks['cupo de hoy descuenta lo de hoy']=Math.round(V.cupoHoy-V.diario)===50000&&Math.round(V.cupoHoy*V.dias)===Math.round(V.queda+50000);
   w.eval("S.gastos.push({id:9,fecha:hoyISO(),descripcion:'Zapatillas',monto:Math.round(S.V.cupoHoy*10),categoria_clave:'otros',tarjeta:'scotiabank',periodo:S.actual,pulldex:false});render()");
-  checks['gasto grande: te pasaste hoy y desde mañana']=w.eval('S.V').dias>1?t('hero-w').includes('Hoy te pasaste')&&t('hero-w').includes('desde mañana'):true;
+  checks['gasto grande: te pasaste hoy y desde mañana']=w.eval('S.V').dias>1?t('hero-w').includes('Hoy te pasaste')&&t('hero-w').includes('Desde mañana puedes gastar')&&d.querySelector('#hero-w .h-amt').textContent.includes(w.eval('fmt(S.V.manana)')):true;
   checks['hero muestra la semana']=t('hero-w').includes('Esta semana');
   checks['hero corto: semana y hasta el 22, sin desglose']=t('hero-w').includes('Hasta el 22 te quedan')&&!t('hero-w').includes('Plata del mes');
   w.eval('S.gastos.pop();render()');}
