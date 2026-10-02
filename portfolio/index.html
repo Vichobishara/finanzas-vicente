@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vicente Bishara · Bishara Logs</title>
+<meta name="description" content="Vicente Bishara (Vicho): vlogger de tecnología, builder y fundador en Santiago de Chile. Bishara Logs, TCG Logs, apps propias y proyectos.">
+<meta property="og:title" content="Vicente Bishara · Bishara Logs">
+<meta property="og:description" content="Vlogger de tecnología y builder en Chile. Busco founders para armar cosas.">
+<meta property="og:type" content="website">
+<style>
+:root{
+  --bg:#0b0b0f; --card:#14141b; --line:#23232e; --txt:#f2f2f5; --mut:#9a9aab;
+  --acc:#7c5cff; --acc2:#22d3a6;
+}
+@media (prefers-color-scheme:light){
+  :root{--bg:#f6f6f9;--card:#fff;--line:#e4e4ec;--txt:#14141b;--mut:#62627a}
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px}
+nav{position:sticky;top:0;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);z-index:5}
+nav .wrap{display:flex;justify-content:space-between;align-items:center;height:56px}
+nav b{letter-spacing:-.02em}
+nav a.cta{background:var(--acc);color:#fff;text-decoration:none;padding:7px 14px;border-radius:99px;font-size:14px;font-weight:600}
+.hero{padding:72px 0 48px}
+.tag{display:inline-block;font-size:13px;color:var(--acc2);border:1px solid var(--line);padding:4px 12px;border-radius:99px;margin-bottom:20px}
+h1{font-size:clamp(36px,8vw,60px);line-height:1.05;letter-spacing:-.035em;margin-bottom:18px}
+h1 span{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:18px;color:var(--mut);max-width:620px}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
+.btn{padding:12px 20px;border-radius:12px;text-decoration:none;font-weight:600;font-size:15px;border:1px solid var(--line);background:var(--card)}
+.btn.p{background:var(--acc);border-color:var(--acc);color:#fff}
+section{padding:44px 0;border-top:1px solid var(--line)}
+h2{font-size:14px;text-transform:uppercase;letter-spacing:.12em;color:var(--mut);margin-bottom:22px;font-weight:600}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;text-decoration:none;display:block;transition:transform .15s,border-color .15s}
+a.card:hover{transform:translateY(-2px);border-color:var(--acc)}
+.card h3{font-size:18px;letter-spacing:-.02em;margin-bottom:6px}
+.card p{color:var(--mut);font-size:15px}
+.pill{display:inline-block;font-size:12px;color:var(--acc2);margin-bottom:10px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{font-size:14px;border:1px solid var(--line);background:var(--card);padding:6px 13px;border-radius:99px}
+.about p{margin-bottom:14px;max-width:660px}
+.about p.mut{color:var(--mut)}
+.stats{display:flex;gap:28px;flex-wrap:wrap;margin-top:24px}
+.stats div b{display:block;font-size:28px;letter-spacing:-.03em}
+.stats div span{font-size:13px;color:var(--mut)}
+.founders{background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 18%,var(--card)),var(--card));border:1px solid var(--line);border-radius:22px;padding:32px 24px}
+.founders h2{color:var(--acc2)}
+.founders h3{font-size:clamp(24px,5vw,34px);letter-spacing:-.03em;line-height:1.15;margin-bottom:12px}
+.founders p{color:var(--mut);max-width:560px}
+ul.sea{list-style:none;padding:0;margin:16px 0 22px}
+ul.sea li{padding-left:22px;position:relative;margin-bottom:6px}
+ul.sea li:before{content:"→";position:absolute;left:0;color:var(--acc2)}
+footer{padding:36px 0 56px;color:var(--mut);font-size:14px;border-top:1px solid var(--line)}
+footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <b>Vicho<span style="color:var(--acc)">.</span></b>
+  <a class="cta" href="#contacto">Hablemos</a>
+</div></nav>
+
+<main class="wrap">
+
+<header class="hero">
+  <span class="tag">📍 Santiago, Chile</span>
+  <h1>Construyo apps, pruebo tecnología y <span>lo cuento en video.</span></h1>
+  <p class="lead">Soy Vicente Bishara (Vicho), 26. Creo contenido como <b>Bishara Logs</b>, tengo un negocio de cartas (TCG Logs) y armo mis propias apps. Aquí está todo en un solo lugar.</p>
+  <div class="btns">
+    <a class="btn p" href="#contacto">Armemos algo juntos</a>
+    <a class="btn" href="#proyectos">Ver proyectos</a>
+  </div>
+</header>
+
+<section id="about" class="about">
+  <h2>Quién soy</h2>
+  <p>Me apasiona la tecnología y probar cosas nuevas: gadgets, herramientas, IA. Lo que aprendo lo convierto en proyectos reales y lo documento en video, con lo bueno y lo malo.</p>
+  <p class="mut">Mi meta: ser el mejor vlogger de tecnología y emprendimiento de Chile, y construir empresas con gente que quiera lo mismo.</p>
+  <div class="stats">
+    <!-- EDITAR: pon tus números reales -->
+    <div><b>4+</b><span>proyectos propios</span></div>
+    <div><b>3</b><span>plataformas de contenido</span></div>
+    <div><b>1</b><span>meta: ser el #1 de Chile</span></div>
+  </div>
+</section>
+
+<section id="proyectos">
+  <h2>Proyectos</h2>
+  <div class="grid">
+    <!-- EDITAR: cambia href="#" por el link real de cada proyecto -->
+    <a class="card" href="#">
+      <span class="pill">NEGOCIO</span>
+      <h3>TCG Logs / PULLDEX</h3>
+      <p>Mi negocio de cartas coleccionables: compra, venta y seguimiento de cada carta.</p>
+    </a>
+    <a class="card" href="https://finanzas-vicente.vercel.app">
+      <span class="pill">APP</span>
+      <h3>Finanzas Vicho</h3>
+      <p>App de finanzas personales hecha con IA: anota gastos en 3 segundos, avisos y metas de ahorro.</p>
+    </a>
+    <a class="card" href="#">
+      <span class="pill">APP</span>
+      <h3>PC Clocks</h3>
+      <p>Proyecto propio. <!-- EDITAR: describe en una línea qué hace PC Clocks --></p>
+    </a>
+    <a class="card" href="#">
+      <span class="pill">CONTENIDO</span>
+      <h3>Bishara Logs</h3>
+      <p>Vlogs de tecnología, compras y construir en público desde Chile.</p>
+    </a>
+  </div>
+</section>
+
+<section id="contenido">
+  <h2>Mi contenido</h2>
+  <div class="grid">
+    <!-- EDITAR: links reales a tus canales -->
+    <a class="card" href="#"><h3>▶ YouTube</h3><p>Vlogs y pruebas de tecnología.</p></a>
+    <a class="card" href="#"><h3>📸 Instagram</h3><p>Día a día y detrás de cámara.</p></a>
+    <a class="card" href="#"><h3>🎵 TikTok</h3><p>Clips cortos y novedades.</p></a>
+  </div>
+</section>
+
+<section id="stack">
+  <h2>Con qué trabajo</h2>
+  <div class="chips">
+    <span>Claude Code</span><span>IA aplicada</span><span>Supabase</span><span>Vercel</span>
+    <span>JavaScript</span><span>Apps para iPhone (PWA)</span><span>Automatizaciones</span><span>Video y edición</span>
+  </div>
+</section>
+
+<section id="contacto">
+  <div class="founders">
+    <h2>Para founders</h2>
+    <h3>¿Quieres armar una startup? Hablemos.</h3>
+    <p>Busco gente con ganas de construir. Pongo producto, audiencia y velocidad para probar ideas.</p>
+    <ul class="sea">
+      <li>Cofundadores técnicos o de negocio</li>
+      <li>Ideas donde el contenido sea el motor de crecimiento</li>
+      <li>Proyectos con tecnología e IA</li>
+    </ul>
+    <div class="btns" style="margin-top:0">
+      <a class="btn p" href="mailto:vicente.bishara@gmail.com?subject=Hablemos">Escríbeme por correo</a>
+      <!-- EDITAR: agrega tu WhatsApp o Instagram -->
+      <a class="btn" href="#">Instagram</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer><div class="wrap">
+  <span>© <script>document.write(new Date().getFullYear())</script> Vicente Bishara</span>
+  <span>Hecho en Santiago con Claude Code</span>
+</div></footer>
+
+</body>
+</html>
