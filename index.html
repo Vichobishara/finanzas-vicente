@@ -1155,7 +1155,9 @@ function renderMetas(){const el=$('metas');if(!el)return;const F=S.aj.fondo,D=DE
   const a=ahorradoAnio('apv'),dev=T?Math.round(T.dev/10000)*10000:0;
   const fila=(id,ic,t,sub,der)=>`<button class="crow" onclick="verCard('${id}')"><div class="ic">${ic}</div><div class="cm"><b>${t}</b><small>${sub}</small></div>${der||''}<span class="chev">›</span></button>`;
   const K=S.aj.casa,kn=K?casaNecesitas(K):0;
-  el.innerHTML=`<button class="crow" onclick="openCasa()"><div class="ic">🏠</div><div class="cm"><b>Independizarme</b><small>${K?`${fmt(K.ahorrado||0)} de ${fmt(kn)}${K.mensual?` · llegas en ${perL(addM(S.actual,Math.ceil(Math.max(0,kn-(K.ahorrado||0))/K.mensual)))}`:''}`:'Calcula cuánto necesitas para irte a vivir solo'}</small></div>${K?`<span class="mini"><i style="width:${Math.min(100,(K.ahorrado||0)/kn*100)}%"></i></span>`:''}<span class="chev">›</span></button>`
+  const C=caja();
+  el.innerHTML=`<button class="crow" onclick="openCaja()"><div class="ic">🏦</div><div class="cm"><b>Tu caja</b><small>${C.monto===null?'Cuánto tienes en la cuenta y cuánto viene en la tarjeta':`${fmt(C.monto)} en la cuenta · próxima factura ≈ ${fmt(C.factura)}`}</small></div><span class="chev">›</span></button>`
+   +`<button class="crow" onclick="openCasa()"><div class="ic">🏠</div><div class="cm"><b>Independizarme</b><small>${K?`${fmt(K.ahorrado||0)} de ${fmt(kn)}${K.mensual?` · llegas en ${perL(addM(S.actual,Math.ceil(Math.max(0,kn-(K.ahorrado||0))/K.mensual)))}`:''}`:'Calcula cuánto necesitas para irte a vivir solo'}</small></div>${K?`<span class="mini"><i style="width:${Math.min(100,(K.ahorrado||0)/kn*100)}%"></i></span>`:''}<span class="chev">›</span></button>`
    +fila('fondo-c','🎧',F?F.que:'Fondo gadgets',F?`${fmt(F.ahorrado)} de ${fmt(F.meta)}`:'Junta para tu próximo gadget sin tocar el mes',
       F?`<span class="mini"><i style="width:${Math.min(100,F.ahorrado/F.meta*100)}%"></i></span>`:'')
    +fila('deudas-c','🧾','Por pagar',D.length?D.map(x=>x.que).join(', '):'No le debes a nadie 🙌',tot?`<b class="m-der">${fmt(tot)}</b>`:'')
@@ -1611,6 +1613,29 @@ function renderDeseos(){const el=$('deseos-c');if(!el)return;const L=DES(),E=L.f
 // ---------- Por pagar: deudas que no son cuotas (ej: PSA grading). Se pagan antes que cualquier gusto ----------
 // ajustes.deudas = [{id, que, monto, desde, nota}]
 const DEU=()=>S.aj.deudas||[];
+// ---------- Tu caja: lo que hay en la cuenta (perfil.caja, se anota a mano) vs. lo que viene en la próxima factura. ----------
+// La caja NO suma al presupuesto: paga el efectivo y las transferencias hasta el sueldo. Sobre el mínimo (perfil.caja_min) → plan o fondo.
+const TARJ=['scotiabank','bci','santander'];
+function caja(){const P=PERF(),cq=cuotasDe(S.actual).filter(c=>!c.recurrente),q=cq.reduce((s,c)=>s+c.monto_cuota,0);
+  const g=(S.periodo===S.actual?S.gastos:[]).filter(x=>!x.pulldex&&TARJ.includes(x.tarjeta)).reduce((s,x)=>s+x.monto,0);
+  const desp=cuotasDe(S.actual).filter(c=>!c.recurrente).reduce((s,c)=>s+(c.restante||0),0);
+  const fin=cq.map(c=>c.fin).filter(Boolean).sort().pop()||null;
+  return{monto:typeof P.caja==='number'?P.caja:null,fecha:P.caja_fecha||null,min:P.caja_min||300000,compras:g,cuotas:q,factura:g+q,desp,fin,cq}}
+function openCaja(){const C=caja(),sobra=C.monto===null?0:C.monto-C.min,dd=C.fecha?Math.round((new Date()-new Date(C.fecha+'T12:00:00'))/864e5):null;
+  openSheet(`<h3>🏦 Tu caja</h3><p>Lo que tienes en la cuenta corriente hoy, después de pagar las tarjetas.</p>
+  <label>En tu cuenta ${dd===null?'':dd<1?'(hoy)':`(hace ${dd} día${dd>1?'s':''})`}</label><input id="cj-m" inputmode="numeric" oninput="fmtIn(this)" placeholder="$0" value="${C.monto===null?'':'$'+C.monto.toLocaleString('es-CL')}">
+  <div class="card" style="margin-top:12px">
+   <div class="mt" style="grid-template-columns:1fr auto"><span>💳 Compras con tarjeta desde el cierre</span><b>${fmt(C.compras)}</b></div>
+   <div class="mt" style="grid-template-columns:1fr auto"><span>🧾 Cuotas de este mes</span><b>${fmt(C.cuotas)}</b></div>
+   <div class="mt" style="grid-template-columns:1fr auto"><span><b>Próxima factura</b><br><small>sube con lo que gastes</small></span><b>${fmt(C.factura)}</b></div>
+  </div>
+  <div class="lead">Esa factura la pagas con el <b>sueldo del 30</b>: la caja no tiene que alcanzar para eso.${C.desp?` Después de este mes quedan <b>${fmt(C.desp)}</b> en cuotas${C.fin?` (la última en ${perL(C.fin).toLowerCase()})`:''}.`:''}</div>
+  <div class="lever"><i style="font-style:normal">🔒</i><div><b>No suma al presupuesto.</b> Esta plata paga tu efectivo y transferencias hasta que llegue el sueldo. Si la gastas, el mes siguiente partes en cero y un imprevisto termina en la línea de crédito.</div></div>
+  <div class="lever"><i style="font-style:normal">🛟</i><div>Deja siempre <b>${fmt(C.min)}</b> fijos en la cuenta. ${C.monto===null?'':sobra>0?`Hoy te sobran <b>${fmt(sobra)}</b>: el día antes del sueldo, lo que siga sobrando va al plan (colchón / Fintual)${S.aj.fondo?` o al fondo ${esc(S.aj.fondo.que)}`:''}.`:`Hoy estás <b>${fmt(-sobra)}</b> bajo el mínimo: cero gastos con débito hasta el sueldo.`}</div></div>
+  <label>Mínimo en la cuenta</label><input id="cj-min" inputmode="numeric" oninput="fmtIn(this)" value="$${C.min.toLocaleString('es-CL')}">
+  <button class="btn p" onclick="saveCaja()">Guardar</button>`)}
+async function saveCaja(){const m=($('cj-m').value||'').trim()?val('cj-m'):null;
+  await saveAj('perfil',{...PERF(),caja:m,caja_fecha:hoyISO(),caja_min:val('cj-min')||300000});toast('✅ Caja actualizada');openCaja()}
 function renderDeudas(){const el=$('deudas-c');if(!el)return;const D=DEU(),tot=D.reduce((s,x)=>s+x.monto,0);
   el.innerHTML=`<div class="card-h"><h2>🧾 Por pagar</h2>${tot?`<span class="pill">${fmt(tot)}</span>`:''}</div>
   ${D.length?`<div class="lead">Lo que debes fuera de tus cuotas. <b>Se paga antes que cualquier gusto.</b></div>${D.map(x=>`<div class="crow" style="cursor:default"><div class="ic">🧾</div><div class="cm"><b>${x.que}</b><small><span style="color:var(--text);font-weight:600">${fmt(x.monto)}</span>${x.nota?' · '+x.nota:''}</small></div><button class="chip" onclick="deudaPagada(${x.id})">La pagué</button></div>`).join('')}`:`<div class="lead">No le debes nada a nadie fuera de tus cuotas. 🙌</div>`}
@@ -1885,7 +1910,7 @@ function ctxIA(){const V=S.V,ks=Object.keys(CAT);
     categorias:ks.filter(k=>V.tot[k]||S.techos[k]).map(k=>({categoria:CAT[k].n,gastado:V.tot[k]||0,tope:S.techos[k]||null,mes_pasado:V.ptot[k]||0})),
     ultimos_gastos:S.gastos.filter(g=>!g.pulldex).slice(0,25).map(g=>({fecha:g.fecha,que:g.descripcion,monto:g.monto,categoria:(CAT[g.categoria_clave]||CAT.otros).n})),
     te_aguantaste_este_mes:getEv(),sueldo:SUELDO,a_fintual_si_te_mantienes:V.proy.fin,patrimonio:S.aj.patrimonio||null,
-    nombre:NOMBRE()||null,edad:Math.floor(edadAhora()),fondo_ahorro:S.aj.fondo||null,deudas_por_pagar:DEU().map(d=>({que:d.que,monto:d.monto,nota:d.nota||''})),
+    nombre:NOMBRE()||null,edad:Math.floor(edadAhora()),fondo_ahorro:S.aj.fondo||null,caja:(()=>{const C=caja();return C.monto===null?null:{en_la_cuenta:C.monto,actualizado:C.fecha,minimo_en_cuenta:C.min,proxima_factura_tarjetas:C.factura,cuotas_despues_de_este_mes:C.desp,nota:'La caja no suma al presupuesto; la factura se paga con el sueldo del 30'}})(),deudas_por_pagar:DEU().map(d=>({que:d.que,monto:d.monto,nota:d.nota||''})),
     lista_de_deseos:DES().filter(d=>d.estado==='espera').map(d=>({que:d.que,monto:d.monto,desde:d.desde}))}}
 const mdIA=t=>t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
 const IA_SUG=['Anota 5 lucas en almuerzo','¿Cómo voy este mes?','¿En qué se me está yendo la plata?','¿Cuánto puedo gastar este finde?','¿Cómo llego a mi fondo más rápido?'];

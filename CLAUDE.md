@@ -96,6 +96,11 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - ¿Me alcanza? → **¿Cuál me compro?** compara 2 opciones (costo real con reventa, atraso de metas, 10 años).
 - Coach → **Widget en tu inicio**: script de Scriptable (`widgetJS`) con el código personal → `rpc/widget(token)`.
 
+- Plata → **Tu caja** (`openCaja()`): `perfil.caja` (lo que hay en la cuenta, a mano), `caja_fecha`, `caja_min` (default $300.000).
+  Muestra la próxima factura estimada = compras con tarjeta del mes (scotiabank/bci/santander) + cuotas no recurrentes del mes,
+  y las cuotas que quedan después. **La caja no suma al presupuesto**: paga efectivo/transferencias hasta el sueldo; lo que pase
+  del mínimo el día antes del sueldo va al plan o al fondo. `ctxIA()` manda `caja` al chat.
+
 ## Fintual conectado (30-09-2026)
 - Plata → **Conectar Fintual**: la persona pone correo y contraseña de Fintual UNA vez. La edge function `fintual` llama
   `POST fintual.cl/api/access_tokens` y guarda **solo el token** en `fintual_conexion` (RLS sin políticas; la contraseña

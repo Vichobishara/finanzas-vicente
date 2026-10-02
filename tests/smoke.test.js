@@ -210,6 +210,12 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['fintual: conectado muestra metas, total y destinos (escapado)']=t('sheet').includes('$12.000.000')&&t('sheet').includes('Risky <b>')&&d.querySelectorAll('#sheet .chip.on').length===2;
  w.eval('openAhorro()');checks['fintual: aportes se detectan solos (sin inputs)']=t('sheet').includes('lo detecta y lo anota sola')&&!d.getElementById('h-fin');w.eval('closeSheet()');
  w.eval('delete S.aj.fintual');
+ // Tu caja: caja vs próxima factura y mínimo
+ w.eval("S.aj.perfil={...S.aj.perfil,caja:388372,caja_fecha:hoyISO()};renderMetas();openCaja()");
+ checks['caja: muestra cuenta, factura y que no suma al presupuesto']=t('metas').includes('Tu caja')&&t('sheet').includes('Próxima factura')&&t('sheet').includes('No suma al presupuesto')&&t('sheet').includes('$88.372');
+ d.getElementById('cj-m').value='$250.000';await w.eval('saveCaja()');
+ {const c=w.CALLS.filter(c=>c.m==='POST'&&c.u.includes('ajustes')).pop();checks['caja: guarda en perfil']=!!c&&/"caja":250000/.test(c.b)&&/"caja_min":300000/.test(c.b);}
+ w.eval('closeSheet()');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();
