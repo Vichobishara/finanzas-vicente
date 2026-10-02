@@ -135,8 +135,9 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 
 ## Lógica de negocio clave
 - "Hoy puedes gastar" = cupo del día − lo gastado hoy. Cupo del día = lo que quedaba al empezar el día
-  (presupuesto − cuotas − gastos de días anteriores) / días hasta el 22. Es fijo durante el día: si te pasas, el hero
-  dice "Hoy te pasaste por $X" y cuánto queda por día desde mañana. Debajo va "Esta semana te quedan" (lun–dom, sin
+  (presupuesto − cuotas − gastos de días anteriores) / días hasta el 22. Es fijo durante el día. **El número grande siempre es lo que puedes
+  gastar, nunca lo que te pasaste**: si te pasas hoy, dice "Desde mañana puedes gastar $X al día" y debajo, chico,
+  "Hoy te pasaste por $Y"; si te pasas del mes, "Hasta el 22 puedes gastar $0". Debajo va "Esta semana te quedan" (lun–dom, sin
   pasar del 22) para las compras que no caben en un día.
 - Alertas (pop-up "Ojo, Vicho" al abrir la app o al anotar): te pasaste hoy / de la semana / del mes, categoría > 80% o
   sobre el tope, cartas bloqueadas y "vas gastando muy rápido" (% gastado > % del mes + 15). Cada una se muestra una vez
