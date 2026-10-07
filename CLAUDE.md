@@ -104,7 +104,11 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - Gasto → **Devolví algo**: baja el monto (deja "· devolución $X" en la descripción); si devolvió todo queda `ignorado`.
 - Anotar gasto muestra en qué categoría cae mientras escribes (`aCat`) y se puede cambiar; si la cambias, se aprende la regla.
 - Gastos: barra de colores por categoría, gráfico **Día a día** (cada día vs. lo que podías gastar por día), listas agrupadas
-  por día con su total, y "Ver todos" con buscador y filtro por categoría.
+  por día con su total (tocar el gráfico o el encabezado de un día abre `openDia`: sus gastos vs. la plata del día), y "Ver todos" con buscador y filtro por categoría.
+- **Decidir compras** (¿Me alcanza?): 3 preguntas (¿lo necesitas o lo quieres?, ¿tienes algo parecido?, ¿cuántas veces al mes?)
+  → consejo: comprar / esperar 72 horas / no, con costo por uso a 2 años. Las respuestas se guardan en el deseo (`por`).
+  A las 72 horas aparece en Hoy "Pasaron 3 días" → `openDeseo`: lo que dijiste ese día, si hoy te alcanza (o lo cubre el
+  fondo) y "Ya no lo quiero" / "Sí, lo compro" / "Espérame 3 días más".
 - Coach → **Widget en tu inicio**: script de Scriptable (`widgetJS`) con el código personal → `rpc/widget(token)`.
 
 - Plata → **Tu caja** (`openCaja()`): `perfil.caja` (lo que hay en la cuenta, a mano), `caja_fecha`, `caja_min` (default $300.000).

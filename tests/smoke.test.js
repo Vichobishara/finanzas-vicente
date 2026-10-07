@@ -240,6 +240,16 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval('openMovs()');d.getElementById('mv-q').value='jumbo';w.eval("S.mv.q='jumbo';mvPinta()");
  checks['todos los gastos: buscar con total y días']=t('mv-l').includes('Jumbo')&&t('mv-t').includes('1 gasto')&&t('mv-l').includes('Hoy');w.eval('closeSheet()');
  checks['gastos: día a día y barra por categoría']=t('g-res').includes('Día a día')&&!!d.querySelector('#g-res .cats-seg');
+ // Decidir: 3 preguntas y consejo; a los 3 días aparece en Hoy
+ w.eval('openCheck()');d.getElementById('a-monto').value='$54.000';d.getElementById('a-desc').value='lentes';w.eval("evalCheck();dqSel('nec','q');dqSel('par','s');dqSel('uso',1)");
+ checks['decidir: 3 preguntas dan un consejo con costo por uso']=t('dq').includes('Mi consejo')&&t('dq').includes('cada uso te sale')&&d.getElementById('chk-gen').style.display==='none';
+ w.eval('desear()');await new Promise(r=>setTimeout(r,50));
+ w.eval("S.aj.deseos[0].desde=new Date(Date.now()-80*36e5).toISOString();closeSheet();render()");
+ checks['decidir: a los 3 días aparece en Hoy']=t('nudges').includes('Pasaron 3 días')&&t('nudges').includes('lentes');
+ w.eval('openDeseo(S.aj.deseos[0].id)');checks['decidir: recuerda lo que dijiste']=t('sheet').includes('Ese día dijiste que')&&t('sheet').includes('ya tienes algo parecido')&&t('sheet').includes('Espérame 3 días más');
+ w.eval("closeSheet();S.aj.deseos=[];render()");
+ // Día a día: tocar un día abre su detalle
+ w.eval('openDia(hoyISO())');checks['día a día: detalle del día con sus gastos']=t('sheet').includes('Hoy')&&t('sheet').includes('Jumbo')&&t('sheet').includes('tu plata del día');w.eval('closeSheet()');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();

@@ -352,14 +352,19 @@ body:not(.ready) .mes-b .chev{display:none}
 .mes6 div i{width:100%;border-radius:7px 7px 3px 3px;background:var(--ac);min-height:3px;transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.9,.3,1) both}
 .mes6 div.b i{background:var(--green)}
 .mes6 div em{font-style:normal;font-weight:700;color:var(--text);font-size:9.5px}
+.dq{background:var(--bg3);border-radius:20px;padding:4px 14px 14px;margin-top:14px}
+.dq-t{font-size:15px;font-weight:800;padding:10px 0 2px}.dq-p{font-size:13px;font-weight:600;margin:12px 0 7px}
+.dq .chip{padding:8px 13px;font-size:13px}.dq .verdict .btn{margin-bottom:0}
 .dia-h{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0 2px;font-size:12px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.04em}
+.dia-h{cursor:pointer}.dia-h:active{opacity:.6}
 .dia-h b{font-size:12.5px;color:var(--sec);font-weight:700;letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
 .dia-h+.crow{padding-top:8px}
 .cats-seg{display:flex;height:10px;border-radius:99px;overflow:hidden;gap:2px;margin:14px 0 8px}
 .cats-seg div{height:100%;min-width:3px}
 .cats-l{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--sec)}
 .cats-l span{white-space:nowrap}.cats-l span:before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:5px;vertical-align:0}
-.dd{display:flex;align-items:flex-end;gap:3px;height:96px;margin:12px 0 4px;position:relative}
+.dd{display:flex;align-items:flex-end;gap:3px;height:96px;margin:12px 0 4px;position:relative;cursor:pointer}
+.dd:active{opacity:.8}
 .dd i{flex:1;border-radius:5px 5px 2px 2px;background:#E2E2E9;min-height:3px;transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.9,.3,1) both}
 .dd i.hoy{background:var(--navy)}.dd i.over{background:var(--red)}.dd i.fut{background:none;border:1.5px dashed #E2E2E9;min-height:12px}
 .dd b{position:absolute;left:0;right:0;border-top:1.5px dashed var(--green);opacity:.8;pointer-events:none}
@@ -959,6 +964,7 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
 
   // Máximo 3 avisos (en orden de importancia) para que nada quede escondido bajo la barra; el resto aparece cuando resuelves estos.
   let nz='',arma=false;const rev=items.otros||[],tr=S.revisar||[];
+  if(esActual){const dl=DES().find(d=>d.estado==='espera'&&listo(d));if(dl)nz+=`<div class="nudge"><div>⏳ <b>Pasaron 3 días:</b> ¿todavía quieres ${esc(dl.que)} (${fmt(dl.monto)})?</div><button onclick="openDeseo(${dl.id})">Decidir</button></div>`}
   if(tr.length)nz+=`<div class="nudge"><div>🔁 <b>${tr.length} transferencia${tr.length>1?'s':''} por revisar</b> · no cuentan hasta que me digas</div><button onclick="openRev()">Revisar</button></div>`;
   if(esActual&&S.aj.perfil&&LS('arma-ok')!=='1'&&LS('arma-cerrado')!==hoyISO()){const P=armaPasos(),n=P.filter(p=>p.ok).length;if(n<P.length)arma=true,nz+=`<div class="nudge"><div>🧩 <b>Arma tu app</b> · ${n} de ${P.length} listos</div><button onclick="armaApp()">Seguir</button></div>`;else LS('arma-ok','1')}
   if(esActual&&[0,1].includes(hoy.getDay())&&!LS('revision-'+semanaDe()))nz+=`<div class="nudge"><div>🗓 <b>Revisión de la semana</b> · 2 minutos y cierras la semana ordenado</div><button onclick="openRevision()">Hacer</button></div>`;
@@ -1504,7 +1510,17 @@ function mvPinta(){const q=(S.mv.q||'').trim().toLowerCase(),k=S.mv.k;
 const diaL=f=>{const h=hoyISO(),d=new Date(f+'T12:00:00'),a=new Date(h+'T12:00:00');a.setDate(a.getDate()-1);
   return f===h?'Hoy':f===a.toISOString().slice(0,10)?'Ayer':`${DIAS[d.getDay()].slice(0,3)} ${d.getDate()} ${MES[d.getMonth()].toLowerCase()}`};
 function porDia(L){const G=[];L.forEach(g=>{const u=G[G.length-1];if(u&&u.f===g.fecha)u.l.push(g);else G.push({f:g.fecha,l:[g]})});
-  return G.map(x=>`<div class="dia-h"><span>${diaL(x.f)}</span><b>${fmt(x.l.filter(g=>!g.pulldex).reduce((s,g)=>s+g.monto,0))}</b></div>${x.l.map(g=>txHtml(g,1)).join('')}`).join('')}
+  return G.map(x=>`<div class="dia-h" onclick="openDia('${x.f}')"><span>${diaL(x.f)}</span><b>${fmt(x.l.filter(g=>!g.pulldex).reduce((s,g)=>s+g.monto,0))}</b></div>${x.l.map(g=>txHtml(g,1)).join('')}`).join('')}
+// Tocar el gráfico: el día más cercano al dedo (las barras son finas, así no hay que atinarle exacto).
+function ddTap(e,el){const I=[...el.querySelectorAll('i')],r=el.getBoundingClientRect(),i=Math.max(0,Math.min(I.length-1,Math.floor((e.clientX-r.left)/r.width*I.length)));
+  const f=I[i].dataset.f;if(f>hoyISO())return toast('Ese día todavía no llega');openDia(f)}
+function openDia(f){const L=S.gastos.filter(g=>g.fecha===f),P=L.filter(g=>!g.pulldex),t=P.reduce((s,g)=>s+g.monto,0),V=S.V,[y,m]=S.periodo.split('-').map(Number);
+  const largo=Math.round((new Date(y,m-1,22)-new Date(y,m-2,23))/864e5)+1,ideal=Math.max(1,(S.ppto-V.cuo)/largo),by={};P.forEach(g=>by[g.categoria_clave]=(by[g.categoria_clave]||0)+g.monto);
+  const top=Object.entries(by).sort((a,b)=>b[1]-a[1])[0];
+  openSheet(`<h3>${diaL(f)==='Hoy'||diaL(f)==='Ayer'?diaL(f)+' · '+fechaL(f):fechaL(f)}</h3>
+  <div class="sum" style="padding:2px 0 6px"><div class="v" style="color:${t>ideal?'var(--red-d)':'var(--green-d)'}">${fmt(t)}</div></div>
+  <div class="cmp" style="margin-top:0">${!t?'🎉 Día en cero: no gastaste nada.':t>ideal?`🔴 Gastaste <b>${fmt(t-ideal)}</b> más que tu plata del día (${fmt(ideal)}), o sea ${String(Math.round(t/ideal*10)/10).replace('.',',')} días de una.${top?` Lo que más pesó: ${(CAT[top[0]]||CAT.otros).ic} ${(CAT[top[0]]||CAT.otros).n}.`:''}`:`🟢 Quedaste <b>${fmt(ideal-t)}</b> bajo tu plata del día (${fmt(ideal)}).`}</div>
+  <div class="card" style="margin-top:12px">${L.map(g=>txHtml(g,1)).join('')||'<div class="empty">Nada anotado este día</div>'}</div>`)}
 // En qué se te fue la plata, en una sola barra de colores (cuotas incluidas).
 function segCats(){const V=S.V,E=Object.entries(V.tot).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);if(V.cuo)E.push(['_cuo',V.cuo]);
   const T=E.reduce((s,[,v])=>s+v,0);if(!T)return'';const inf=k=>k==='_cuo'?{n:'Cuotas',c:'#344054'}:(CAT[k]||CAT.otros);
@@ -1517,8 +1533,8 @@ function diaADia(ini,cierre,largo,hoy){const V=S.V,by={},ISO=d=>d.getFullYear()+
   if(!D.some(x=>x.v))return'';const mx=Math.max(ideal*2.2,...D.map(x=>Math.min(x.v,ideal*4))),H=hoyISO();
   const pasados=D.filter(x=>x.f<=H),dg=pasados.filter(x=>x.v<=ideal).length;
   return `<div class="card"><div class="card-h"><h2>Día a día</h2>${V.esActual?`<span class="pill ${dg>=pasados.length/2?'ok':'warn'}">${dg} de ${pasados.length} días en verde</span>`:''}</div>
-  <div class="dd">${D.map(x=>`<i class="${x.f>H?'fut':x.f===H?'hoy':x.v>ideal?'over':''}" style="height:${x.f>H?0:Math.max(3,Math.min(100,x.v/mx*100))}%" title="${x.f}: ${fmt(x.v)}"></i>`).join('')}<b style="bottom:${ideal/mx*100}%"></b></div>
-  <div class="dd-l"><span>${ini.getDate()} ${MES[ini.getMonth()].toLowerCase()}</span><span>Línea verde: ${fmt(ideal)} por día</span><span>${cierre.getDate()} ${MES[cierre.getMonth()].toLowerCase()}</span></div></div>`}
+  <div class="dd" onclick="ddTap(event,this)" role="button" aria-label="Toca un día para ver el detalle">${D.map(x=>`<i data-f="${x.f}" class="${x.f>H?'fut':x.f===H?'hoy':x.v>ideal?'over':''}" style="height:${x.f>H?0:Math.max(3,Math.min(100,x.v/mx*100))}%" title="${x.f}: ${fmt(x.v)}"></i>`).join('')}<b style="bottom:${ideal/mx*100}%"></b></div>
+  <div class="dd-l"><span>${ini.getDate()} ${MES[ini.getMonth()].toLowerCase()}</span><span>Toca un día · línea verde: ${fmt(ideal)}</span><span>${cierre.getDate()} ${MES[cierre.getMonth()].toLowerCase()}</span></div></div>`}
 // Cuotas: cuántas te quedan de cada una, cuánto falta pagar y cuándo se libera la plata.
 // $387k, $1,2M: montos cortos para las barras
 const kCLP=v=>!v?'$0':v>=1e6?'$'+(Math.round(v/1e5)/10).toString().replace('.',',')+'M':'$'+Math.round(v/1000)+'k';
@@ -1647,18 +1663,29 @@ function desearCmp(k){const C=S.cmp,que=k==='a'?C.a:C.b,monto=k==='a'?C.pa:C.pb;
   saveAj('deseos',[{id:Date.now(),que,monto,desde:new Date().toISOString(),estado:'espera'},...DES()].slice(0,40));closeSheet();toast(`⏳ ${que} a tu lista. En 72 horas te pregunto`)}
 
 function desear(){const x=val('a-monto'),que=($('a-desc').value||'').trim()||'Algo que quiero';if(!x)return $('a-monto').focus();
-  const L=[{id:Date.now(),que,monto:x,desde:new Date().toISOString(),estado:'espera'},...DES()].slice(0,40);
+  const L=[{id:Date.now(),que,monto:x,desde:new Date().toISOString(),estado:'espera',...(S.dq&&Object.keys(S.dq).length?{por:S.dq}:{})},...DES()].slice(0,40);
   closeSheet();saveAj('deseos',L);const d=new Date(Date.now()+ESPERA);toast(`⏳ Anotado. El ${d.toLocaleDateString('es-CL',{weekday:'long'})} te pregunto si todavía lo quieres`)}
 async function deseoNo(id){const d=DES().find(x=>x.id===id);if(!d)return;
   await saveAj('deseos',DES().map(x=>x.id===id?{...x,estado:'aguantado'}:x),true);addEv(d.monto);toast(`💪 Te aguantaste ${fmt(d.monto)}: en 10 años serían ${fmt(d.monto*Math.pow(1+RENT,10))}`)}
 async function deseoSi(id){const d=DES().find(x=>x.id===id);if(!d)return;
   await saveAj('deseos',DES().map(x=>x.id===id?{...x,estado:'comprado'}:x));openAdd({m:d.monto,d:d.que})}
+// Pasaron los 3 días: te muestro lo que dijiste ese día y cómo estás hoy, y decides con un toque.
+function openDeseo(id){const d=DES().find(x=>x.id===id);if(!d)return;const V=S.V,F=S.aj.fondo,dias=Math.round((Date.now()-new Date(d.desde))/864e5);
+  const cabe=V.esActual&&V.queda-d.monto>=0,fondo=F&&F.ahorrado>=d.monto,ok=listo(d);
+  openSheet(`<h3>⏳ ¿Todavía quieres ${esc(d.que)}?</h3><p>${fmt(d.monto)} · lo anotaste hace ${dias<1?'menos de un día':dias+' día'+(dias>1?'s':'')}.</p>
+  ${d.por?`<div class="lever"><i style="font-style:normal">🗣</i><div>Ese día dijiste que <b>${dqTxt(d.por)}</b>.</div></div>`:''}
+  <div class="lever"><i style="font-style:normal">${fondo?'🎧':cabe?'✅':'🔴'}</i><div>${fondo?`<b>Tu fondo gadgets lo cubre</b> (${fmt(F.ahorrado)}): no sale de tu mes.`:cabe?`Hoy te alcanza: quedarías con ${fmt(V.queda-d.monto)} hasta el 22.`:`<b>Hoy no te alcanza:</b> te pasarías del mes${V.queda<0?' (ya estás pasado)':` por ${fmt(d.monto-V.queda)}`}.`}</div></div>
+  <div class="lever"><i style="font-style:normal">📈</i><div>Invertidos, esos ${fmt(d.monto)} serían <b>${fmt(d.monto*Math.pow(1+RENT,10))}</b> en 10 años.</div></div>
+  <button class="btn g" onclick="closeSheet();deseoNo(${d.id})">💪 Ya no lo quiero</button>
+  ${ok?`<button class="btn p" style="margin-top:8px" onclick="closeSheet();deseoSi(${d.id})">Sí, lo compro</button>`:''}
+  <button class="btn" style="margin-top:8px;background:var(--bg3);color:var(--text)" onclick="deseoMas(${d.id})">Espérame 3 días más</button>`)}
+async function deseoMas(id){await saveAj('deseos',DES().map(x=>x.id===id?{...x,desde:new Date().toISOString()}:x));closeSheet();toast('⏳ Listo, te pregunto en 3 días')}
 async function deseoBorrar(id){await saveAj('deseos',DES().filter(x=>x.id!==id))}
 function renderDeseos(){const el=$('deseos-c');if(!el)return;const L=DES(),E=L.filter(d=>d.estado==='espera'),ag=L.filter(d=>d.estado==='aguantado').reduce((s,d)=>s+d.monto,0),F=S.aj.fondo;
   const fila=d=>{const ok=listo(d),pc=Math.min(100,(Date.now()-new Date(d.desde))/ESPERA*100),h=Math.max(1,Math.ceil((ESPERA-(Date.now()-new Date(d.desde)))/36e5));
     return`<div class="dz"><div class="reloj" style="background:conic-gradient(${ok?'var(--green)':'var(--amber)'} ${pc}%,var(--bg3) 0)"><span>${ok?'✓':h>24?Math.round(h/24)+'d':h+'h'}</span></div>
     <div class="cm"><b>${d.que} · ${fmt(d.monto)}</b><small>${ok?'Pasaron las 72 horas. ¿Todavía lo quieres?':`Te pregunto en ${h>36?Math.round(h/24)+' días':h+' horas'}. Invertido serían ${fmt(d.monto*Math.pow(1+RENT,10))} en 10 años.`}${ok&&F&&F.ahorrado>=d.monto?' Tu fondo gadgets lo cubre.':''}</small>
-    ${ok?`<div class="ya"><button class="no" onclick="deseoNo(${d.id})">💪 Ya no lo quiero</button><button class="si" onclick="deseoSi(${d.id})">Sí, lo compro</button></div>`:''}</div>
+    ${ok?`<div class="ya"><button class="no" onclick="deseoNo(${d.id})">💪 Ya no lo quiero</button><button class="si" onclick="openDeseo(${d.id})">Decidir</button></div>`:''}</div>
     ${ok?'':`<button class="x" style="position:static;margin:0;float:none" onclick="deseoBorrar(${d.id})" aria-label="Quitar">×</button>`}</div>`};
   el.innerHTML=`<div class="card-h"><h2>⏳ Lista de deseos</h2>${ag?`<span class="pill ok">Te aguantaste ${fmt(ag)}</span>`:''}</div>
   ${E.length?E.map(fila).join(''):`<div class="lead">¿Viste algo que quieres? Anótalo aquí en vez de comprarlo. En 72 horas te pregunto si todavía lo quieres: la mayoría de las veces se te pasa.</div>`}
@@ -1955,7 +1982,7 @@ async function saveAdd(){
 
 // Deshacer lo recién anotado (lo creó la app, no viene de un correo: se puede borrar de verdad).
 async function undoAdd(id){try{await api('gastos?id=eq.'+id,{m:'DELETE'});if(sheetOn())closeSheet();toast('↩️ Listo, no se anotó');loadAll()}catch(e){toast('❌ No se pudo deshacer')}}
-function openCheck(){S.nc=1;
+function openCheck(){S.nc=1;S.dq={};
   openSheet(`<h3>🤔 ¿Me alcanza?</h3><p>Antes de comprar, pon cuánto sale. Te digo la verdad.</p>
   <input id="a-monto" class="amt-in" inputmode="numeric" placeholder="$0" autocomplete="off" oninput="fmtIn(this);evalCheck()">
   <label>¿Qué es?</label><input id="a-desc" placeholder="ej: cartas, zapatillas, sushi" autocomplete="off" oninput="evalCheck()">
@@ -1963,8 +1990,9 @@ function openCheck(){S.nc=1;
   <div class="verdict" id="verdict"></div>
   <div id="chk-ia"></div>
   <div id="chk-btns" style="display:none">
-    <button class="btn g" onclick="skipBuy()">💪 Mejor no lo compro</button>
-    <button class="btn p" style="margin-top:8px" onclick="desear()">⏳ Lo pienso 72 horas</button>
+    <div class="dq" id="dq"></div>
+    <div id="chk-gen"><button class="btn g" onclick="skipBuy()">💪 Mejor no lo compro</button>
+    <button class="btn p" style="margin-top:8px" onclick="desear()">⏳ Lo pienso 72 horas</button></div>
     <button class="chip" style="margin:10px 0 0" onclick="openComparar()">🤔 ¿Dudas entre dos? Compáralos</button>
     <button class="btn p" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="boughtIt()">Lo compré igual → anotar</button>
     <button class="btn p" id="chk-ia-btn" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="askCheck()">🤖 Segunda opinión de Claude</button>
@@ -1993,8 +2021,22 @@ function evalCheck(){
   if(PL)b+=PL.html;
   {const K=S.aj.casa;if(!neg&&K&&K.mensual>0&&X>=20000){const sem=Math.round(X/K.mensual*4.3);if(sem>=1)b+=`<br>🏠 Te atrasa la mudanza ~${sem} semana${sem>1?'s':''}.`}}
   if(!neg)b+=`<br><span style="color:var(--sec);font-size:13px">💡 Invertidos, esos ${fmt(X)} serían ${fmt(X*Math.pow(1.06,10))} en 10 años.</span>`;
-  el.className='verdict on '+c;el.innerHTML=`<b class="vt">${h}</b>${b}`;
+  el.className='verdict on '+c;el.innerHTML=`<b class="vt">${h}</b>${b}`;S.chkC=c;dqPinta();
 }
+// ---------- Decidir: 3 preguntas rápidas y un consejo claro (comprar, esperar 72 horas o no) ----------
+const DQ=[['nec','¿Lo necesitas o lo quieres?',[['n','Lo necesito'],['q','Lo quiero']]],['par','¿Ya tienes algo que hace lo mismo?',[['s','Sí'],['n','No']]],
+  ['uso','¿Cuántas veces lo usarías al mes?',[[1,'1 o menos'],[4,'Cada semana'],[12,'Varias por semana'],[30,'Todos los días']]]];
+const dqTxt=q=>q?[q.nec==='n'?'lo necesitas':q.nec==='q'?'lo quieres, no lo necesitas':'',q.par==='s'?'ya tienes algo parecido':q.par==='n'?'no tienes nada parecido':'',q.uso?`lo usarías ${q.uso===1?'1 vez al mes o menos':q.uso===30?'todos los días':q.uso+' veces al mes'}`:''].filter(Boolean).join(', '):'';
+function dqSel(k,v){S.dq[k]=v;dqPinta()}
+function dqPinta(){const el=$('dq');if(!el)return;const q=S.dq||{},X=val('a-monto'),n=Object.keys(q).length;
+  let h=`<div class="dq-t">Antes de decidir, 3 preguntas</div>`+DQ.map(([k,t,o])=>`<div class="dq-p">${t}</div><div class="chips">${o.map(([v,l])=>`<button class="chip ${q[k]===v?'on':''}" onclick="dqSel('${k}',${typeof v==='number'?v:`'${v}'`})">${l}</button>`).join('')}</div>`).join('');
+  if(n===3&&X){const pts=(q.nec==='q')+(q.par==='s')+(q.uso<=1)+(S.chkC==='warn'),uso=X/(q.uso*24);
+    const r=S.chkC==='bad'||pts>=3?['bad','🛑 Mi consejo: no lo compres','La plata no da y/o no lo vas a aprovechar. Anótalo como aguantado y suma a tu racha.','skipBuy()','💪 No lo compro']
+      :pts>=1?['warn','⏳ Mi consejo: espera 3 días',`Si en 72 horas lo sigues queriendo, cómpralo sin culpa. Te pregunto el ${new Date(Date.now()+ESPERA).toLocaleDateString('es-CL',{weekday:'long'})}.`,'desear()','⏳ Lo pienso 72 horas']
+      :['ok','✅ Mi consejo: cómpralo','Te alcanza, lo necesitas y lo vas a usar harto.','boughtIt()','Lo compré → anotar'];
+    h+=`<div class="verdict on ${r[0]}" style="margin-top:14px"><b class="vt">${r[1]}</b>${r[2]}<br><span style="color:var(--sec);font-size:13px">Usándolo ${q.uso===30?'todos los días':q.uso+' vez'+(q.uso>1?'es':'')+' al mes'} por 2 años, cada uso te sale <b>${fmt(uso)}</b>.</span>
+      <button class="btn ${r[0]==='ok'?'p':'g'}" style="margin-top:10px${r[0]==='warn'?';background:var(--navy)':''}" onclick="${r[3]}">${r[4]}</button></div>`}
+  el.innerHTML=h;const g=$('chk-gen');if(g)g.style.display=n===3&&X?'none':''}
 // Cómo queda tu carga de cuotas mes a mes con esta compra (las que ya tienes + la nueva), y cuántos meses pasa del 30%.
 function planCuotas(mc,nc){const hoy=hoyISO(),pp=addM(periodoDe(hoy,S.card),1),N=Math.min(8,Math.max(6,nc)),ppto=S.ppto||1;
   const M=Array.from({length:N},(_,i)=>{const per=addM(pp,i),ya=cuotasDe(per).reduce((s,c)=>s+c.monto_cuota,0),nueva=i<nc?mc:0;return{per,ya,nueva,t:ya+nueva,p:Math.round((ya+nueva)/ppto*100)}});
