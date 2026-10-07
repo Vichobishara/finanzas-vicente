@@ -549,7 +549,7 @@ body:not(.ready) .mes-b .chev{display:none}
   <div hidden><div class="card" id="fondo-c"></div><div class="card" id="deudas-c"></div><div class="card" id="cobrar-c"></div><div class="card" id="apv-c"></div><div class="card" id="tax-c"></div></div>
   <div class="card menu">
     <button class="crow" onclick="openPlata()"><div class="ic">📍</div><div class="cm"><b>Dónde poner cada peso</b><small>Tu orden: APV, colchón, largo plazo</small></div><span class="chev">›</span></button>
-    <button class="crow" onclick="openBono()"><div class="ic">🎁</div><div class="cm"><b>¿Te llegó un bono?</b><small>Te digo dónde va cada peso</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="openBono()"><div class="ic">🎁</div><div class="cm"><b>¿Te llegó un bono o comisión?</b><small>Cuotas, tarjeta, deudas y el resto a Fintual</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openFin()"><div class="ic">💼</div><div class="cm"><b>Sueldos y ahorro real</b><small>Lo que te entra y lo que de verdad ahorraste</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openFintual()"><div class="ic">🔗</div><div class="cm"><b id="m-fin-t">Conectar Fintual</b><small id="m-fin">Tu saldo y tus aportes se anotan solos</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="editPat()"><div class="ic">✏️</div><div class="cm"><b>Actualizar mi patrimonio</b><small id="m-pat">Fintual, cartas y ETH</small></div><span class="chev">›</span></button>
@@ -1228,17 +1228,23 @@ function openPlata(){
   </div>
   <p class="fine">No soy asesor financiero: son reglas generales aplicadas a tus números.</p>`);
 }
-function openBono(){openSheet(`<h3>🎁 ¿Te llegó un bono?</h3><p>Pon cuánto te llegó líquido ese mes y te digo dónde va cada peso.</p>
+function openBono(){openSheet(`<h3>🎁 ¿Te llegó un bono?</h3><p>Pon cuánto te llegó líquido y te digo en qué orden va cada peso: cuotas, tarjeta, deudas, tu próximo mes y el resto a Fintual.</p>
   <input id="b-in" class="amt-in" inputmode="numeric" placeholder="$0" oninput="fmtIn(this);calcBono()"><div id="b-out" style="padding:6px 0 10px"></div>
   <p class="fine">No soy asesor financiero ni tributario. La UTM usada es ${fmt(UTM)}.</p>`);$('b-in').focus()}
+// Mes con comisión grande: el orden de Vicho. 1) adelantar cuotas, 2) pagar la tarjeta, 3) deudas, 4) dejar el mes que viene,
+// 5) lo que sobra a Fintual, mitad Risky (largo plazo) y mitad conservador. El impuesto alto vuelve en abril (reliquidación).
 function calcBono(){
   const x=val('b-in'),o=$('b-out');if(!x){o.innerHTML='';return}
-  if(x<=SUELDO){o.innerHTML=`<div class="row"><span>Es un mes normal: sigue el plan de siempre.</span></div>`;return}
-  const extra=x-SUELDO,inv=Math.round(extra*.7),apv=Math.min(inv,APV_ANUAL),rv=inv-apv,libre=extra-inv;
-  o.innerHTML=`<div class="row"><span>Sueldo normal (para el mes)</span><b>${fmt(SUELDO)}</b></div><div class="row"><span>Extra del bono</span><b>${fmt(extra)}</b></div>
-  <div class="row"><span>→ APV régimen A</span><b style="color:var(--green-d)">${fmt(apv)}</b></div>${rv?`<div class="row"><span>→ Fintual largo plazo</span><b style="color:var(--green-d)">${fmt(rv)}</b></div>`:''}
-  <div class="row"><span>→ Para ti, sin culpa (30%)</span><b>${fmt(libre)}</b></div>
-  <small style="color:var(--sec);font-size:12px;display:block;padding-top:8px">El impuesto alto que te retengan ese mes lo recuperas en abril con la reliquidación.</small>`;
+  const C=caja(),adel=C.desp,tarj=C.factura,deu=DEU().reduce((s,d)=>s+d.monto,0),mes=S.ppto,sobra=x-adel-tarj-deu-mes,r=Math.round(Math.max(0,sobra)/2);
+  const fila=(n,t,v,sub)=>`<div class="lever"><i style="font-style:normal;font-weight:800">${n}</i><div style="flex:1"><b>${t}</b>${sub?`<br><small style="color:var(--sec)">${sub}</small>`:''}</div><b style="color:var(--text);white-space:nowrap">${fmt(v)}</b></div>`;
+  o.innerHTML=fila('1','Adelantar todas las cuotas',adel,adel?`Lo que falta después de este mes. En la app: Cuotas → cada una → "La adelanté".`:'No te quedan cuotas 🎉')
+   +fila('2','Pagar la tarjeta',tarj,'Lo de este mes: compras con tarjeta + cuotas de este mes')
+   +(deu?fila('3','Pagar lo que debes',deu,DEU().map(d=>esc(d.que)).join(', ')):'')
+   +fila(deu?'4':'3','Dejar tu próximo mes',mes,'Tu presupuesto del mes que viene, en la cuenta')
+   +(sobra>0?`<div class="cmp" style="margin-top:6px"><b>Te sobran ${fmt(sobra)} → Fintual</b><div class="row" style="padding:8px 0 4px"><span>📈 Risky (largo plazo)</span><b style="color:var(--green-d)">${fmt(r)}</b></div><div class="row" style="padding:4px 0 0;border:none"><span>🛟 Conservador (para irte / colchón)</span><b style="color:var(--green-d)">${fmt(Math.max(0,sobra)-r)}</b></div></div>
+     <button class="btn p" onclick="closeSheet();openAhorro()">Ya lo mandé → anotar</button>`
+     :`<div class="cmp" style="margin-top:6px">🔴 No alcanza para todo: faltan ${fmt(-sobra)}. Primero tarjeta y deudas; las cuotas adelántalas solo con lo que sobre.</div>`)
+   +`<small style="color:var(--sec);font-size:12px;display:block;padding-top:10px">APV: opcional. Régimen A te regala 15% de lo que pongas, pero queda para la jubilación. El impuesto alto que te retengan este mes vuelve en abril con la reliquidación (Plata → Impuestos).</small>`;
 }
 
 const PAT=()=>S.aj.patrimonio||{fintual:13047596,cartas:5000000,eth:1440000};

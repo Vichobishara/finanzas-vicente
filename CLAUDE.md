@@ -173,7 +173,10 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - Sueldo base esperado: $2.000.000. Lo que no se gasta del presupuesto se reparte 50% Fintual / 50% colchón.
 - APV régimen A: 40 UTM/año ($239k/mes) → bono 15%, tope 6 UTM. UTM hardcodeada en 71.649: **actualizar cada año**.
 - Reliquidación anual del impuesto único (art. 47, un empleador): se estima con base_tributable e impuesto de `ingresos`.
-- Mes con bono (> $2M): 70% del extra a invertir (APV hasta 40 UTM, luego Fintual), 30% libre.
+- Mes con bono/comisión (Plata → "¿Te llegó un bono o comisión?", `calcBono`): el orden de Vicho = 1) adelantar todas las
+  cuotas (`caja().desp`), 2) pagar la tarjeta (`caja().factura`), 3) deudas, 4) dejar el presupuesto del mes que viene,
+  5) lo que sobra a Fintual, mitad Risky y mitad conservador. APV es opcional (régimen A, 15%): Vicho prefiere plata líquida
+  para independizarse. El impuesto alto de esos meses vuelve en abril con la reliquidación (art. 47), no con el APV.
 - Proyección a millonario: 6% real anual sobre Fintual + ETH; las cartas no crecen en el modelo.
 
 ## Principios de UX (no negociables)

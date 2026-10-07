@@ -66,7 +66,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['coach: consejos con botón']=!!d.querySelector('#coach .tip .go');
  checks['gastos: resumen del mes']=t('g-res').includes('de $1.000.000')&&t('g-pend').includes('por revisar')&&t('g-ult').includes('Jumbo');
  checks['plata: plan, APV e impuestos a la vista']=t('fin').includes('Fintual')&&t('apv-c').includes('APV')&&t('tax-c').includes('SII')&&t('meta').includes('Colchón');
- w.eval('openBono()');d.getElementById('b-in').value='$4.000.000';w.eval('calcBono()');checks['bono en su hoja']=t('b-out').includes('APV');w.eval('closeSheet()');
+ w.eval('openBono()');d.getElementById('b-in').value='$4.000.000';w.eval('calcBono()');checks['bono: cuotas, tarjeta y el resto a Fintual']=t('b-out').includes('Adelantar todas las cuotas')&&t('b-out').includes('Pagar la tarjeta')&&t('b-out').includes('Risky');w.eval('closeSheet()');
  checks['transferencias por revisar']=t('nudges').includes('1 transferencia por revisar');
  checks['ignoradas y por revisar no descuentan']=w.eval('S.V.gast')===50000;
  w.eval('openRev()');checks['lista por revisar']=t('sheet').includes('Gustavo');
