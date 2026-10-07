@@ -114,6 +114,9 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   fondo) y "Ya no lo quiero" / "Sí, lo compro" / "Espérame 3 días más".
 - Coach → **Widget en tu inicio**: script de Scriptable (`widgetJS`) con el código personal → `rpc/widget(token)`.
 
+- Plata → **Lo que debes** (`debo()`, `openDebo()`; también desde la pestaña Cuotas): total para quedar en cero = tarjetas de
+  este mes por separado (compras del mes, cuotas de compras viejas y fijos de esa tarjeta, cuándo cierra) + cuotas que faltan
+  después de este mes + deudas. Explica que pagar de más la tarjeta no adelanta cuotas (hay que pedir "prepago").
 - Plata → **Tu caja** (`openCaja()`): `perfil.caja` (lo que hay en la cuenta, a mano), `caja_fecha`, `caja_min` (default $300.000).
   Muestra la próxima factura estimada = compras con tarjeta del mes (scotiabank/bci/santander) + cuotas no recurrentes del mes,
   y las cuotas que quedan después. **La caja no suma al presupuesto**: paga efectivo/transferencias hasta el sueldo; lo que pase

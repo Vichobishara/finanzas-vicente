@@ -1206,6 +1206,7 @@ function renderMetas(){const el=$('metas');if(!el)return;const F=S.aj.fondo,D=DE
   const K=S.aj.casa,kn=K?casaNecesitas(K):0;
   const C=caja();
   el.innerHTML=`<button class="crow" onclick="openCaja()"><div class="ic">🏦</div><div class="cm"><b>Tu caja</b><small>${C.monto===null?'Cuánto tienes en la cuenta y cuánto viene en la tarjeta':`${fmt(C.monto)} en la cuenta · próxima factura ≈ ${fmt(C.factura)}`}</small></div><span class="chev">›</span></button>`
+   +(()=>{const D=debo();return `<button class="crow" onclick="openDebo()"><div class="ic">🧾</div><div class="cm"><b>Lo que debes</b><small>${D.total?`Tarjetas ${kCLP(D.tt)}${D.tf?` · cuotas que faltan ${kCLP(D.tf)}`:''}${D.td?` · deudas ${kCLP(D.td)}`:''}`:'Nada: estás en cero 🙌'}</small></div>${D.total?`<b class="m-der">${fmt(D.total)}</b>`:''}<span class="chev">›</span></button>`})()
    +`<button class="crow" onclick="openCasa()"><div class="ic">🏠</div><div class="cm"><b>Independizarme</b><small>${K?`${fmt(K.ahorrado||0)} de ${fmt(kn)}${K.mensual?` · llegas en ${perL(addM(S.actual,Math.ceil(Math.max(0,kn-(K.ahorrado||0))/K.mensual)))}`:''}`:'Calcula cuánto necesitas para irte a vivir solo'}</small></div>${K?`<span class="mini"><i style="width:${Math.min(100,(K.ahorrado||0)/kn*100)}%"></i></span>`:''}<span class="chev">›</span></button>`
    +fila('fondo-c','🎧',F?F.que:'Fondo gadgets',F?`${fmt(F.ahorrado)} de ${fmt(F.meta)}`:'Junta para tu próximo gadget sin tocar el mes',
       F?`<span class="mini"><i style="width:${Math.min(100,F.ahorrado/F.meta*100)}%"></i></span>`:'')
@@ -1592,6 +1593,7 @@ function renderCuotasTab(){const el=$('cuo-v');if(!el||!S.V)return;const V=S.V,p
     <div class="pace"><div style="width:${Math.min(100,pc)}%;background:${ok?'var(--green)':'var(--red)'}"></div><i style="left:30%"></i></div>
     <div class="pace-l"><span>La raya: tu regla del 30%</span><b style="color:${ok?'var(--green-d)':'var(--red-d)'}">${pc}% de tu presupuesto</b></div>
     <div class="cmp">${ok?`🟢 Estás bajo el 30%: tienes espacio, pero cada cuota nueva te amarra meses.`:`🔴 Estás sobre el 30%: <b>cero cuotas nuevas</b>${baja?` hasta ${perL(baja.p).toLowerCase()}, cuando bajas al ${Math.round(baja.v/S.ppto*100)}%`:''}.`}</div></div>
+    <button class="crow" style="background:var(--card);border-radius:22px;padding:12px 16px;margin-bottom:12px;box-shadow:var(--sh)" onclick="openDebo()"><div class="ic">🧾</div><div class="cm"><b>Todo lo que debes: ${fmt(debo().total)}</b><small>Por tarjeta, qué es de este mes y qué es de compras viejas</small></div><span class="chev">›</span></button>
     <button class="btn p" style="margin:0 0 14px" onclick="openCheck();setTimeout(()=>{const b=document.querySelectorAll('#nc-ch .chip')[3];if(b)b.click()},50)">🤔 ¿Puedo comprar algo en cuotas?</button>
     ${cuotasHTML()}`}
 // Cartola → función `cartola` (Claude lee el PDF o la foto) → revisas → se guardan en `cuotas`.
@@ -1749,6 +1751,31 @@ function openCaja(){const C=caja(),sobra=C.monto===null?0:C.monto-C.min,dd=C.fec
   <div class="lever"><i style="font-style:normal">🛟</i><div>Deja siempre <b>${fmt(C.min)}</b> fijos en la cuenta. ${C.monto===null?'':sobra>0?`Hoy te sobran <b>${fmt(sobra)}</b>: el día antes del sueldo, lo que siga sobrando va al plan (colchón / Fintual)${S.aj.fondo?` o al fondo ${esc(S.aj.fondo.que)}`:''}.`:`Hoy estás <b>${fmt(-sobra)}</b> bajo el mínimo: cero gastos con débito hasta el sueldo.`}</div></div>
   <label>Mínimo en la cuenta</label><input id="cj-min" inputmode="numeric" oninput="fmtIn(this)" value="$${C.min.toLocaleString('es-CL')}">
   <button class="btn p" onclick="saveCaja()">Guardar</button>`)}
+// ---------- Lo que debes: todo junto y por tarjeta (compras del mes + cuotas del mes), las cuotas que faltan y las deudas ----------
+// Para no enredarse con los números de la tarjeta: qué parte es de este mes y qué parte es de compras viejas.
+function debo(){const per=S.actual,G=(S.periodo===per?S.gastos:[]),CQ=cuotasDe(per).filter(c=>!c.recurrente),FJ=cuotasDe(per).filter(c=>c.recurrente);
+  const T={};const t=k=>T[k]=T[k]||{compras:0,neg:0,cuotas:0,fijos:0,lista:[]};
+  G.filter(g=>TARJ.includes(g.tarjeta)).forEach(g=>{const x=t(g.tarjeta);x.compras+=g.monto;if(g.pulldex)x.neg+=g.monto});
+  CQ.forEach(c=>{const k=TARJ.includes(c.tarjeta)?c.tarjeta:'otro';const x=t(k);x.cuotas+=c.monto_cuota;x.lista.push(c)});
+  FJ.filter(c=>TARJ.includes(c.tarjeta)).forEach(c=>{t(c.tarjeta).fijos+=c.monto_cuota});
+  const tarj=Object.entries(T).map(([k,x])=>({k,...x,total:x.compras+x.cuotas+x.fijos})).filter(x=>x.total>0).sort((a,b)=>b.total-a.total);
+  const fut=CQ.filter(c=>c.restante>0).map(c=>({...c,quedan:c.total_cuotas-c.n})).sort((a,b)=>b.restante-a.restante);
+  const tt=tarj.reduce((s,x)=>s+x.total,0),tf=fut.reduce((s,c)=>s+c.restante,0),td=DEU().reduce((s,d)=>s+d.monto,0);
+  return{tarj,fut,tt,tf,td,total:tt+tf+td}}
+function openDebo(){const D=debo(),cie=k=>CORTE[k]?` · cierra el ${CORTE[k]}`:'';
+  openSheet(`<h3>🧾 Lo que debes</h3><p>Todo junto: tus tarjetas de este mes, las cuotas que faltan y tus deudas. Pagando esto quedas en cero.</p>
+  <div class="card sum"><div class="k">Total</div><div class="v">${fmt(D.total)}</div>
+   <div class="cats-seg">${[[D.tt,'#344054'],[D.tf,'#F79009'],[D.td,'#F04438']].filter(([v])=>v>0).map(([v,c])=>`<div style="flex:${v};background:${c}"></div>`).join('')}</div>
+   <div class="cats-l"><span style="--c:#344054">Tarjetas ${kCLP(D.tt)}</span>${D.tf?`<span style="--c:#F79009">Cuotas que faltan ${kCLP(D.tf)}</span>`:''}${D.td?`<span style="--c:#F04438">Deudas ${kCLP(D.td)}</span>`:''}</div></div>
+  <div class="sec-t" style="margin-left:2px">1. Tus tarjetas de este mes</div>
+  <div class="card">${D.tarj.map(x=>`<div class="cq" style="cursor:default"><div class="t"><b>${TJ[x.k]||'Otras'}</b><span>${fmt(x.total)}</span></div>
+    <small>${x.compras?`Compras de este mes ${fmt(x.compras)}${x.neg?` (incluye ${fmt(x.neg)} del negocio)`:''}`:'Sin compras este mes'}${x.cuotas?` · cuotas de compras viejas ${fmt(x.cuotas)}`:''}${x.fijos?` · fijos ${fmt(x.fijos)}`:''}${cie(x.k)}</small>
+    ${x.lista.length?`<small style="margin-top:4px">${x.lista.map(c=>`${esc(c.nombre)} ${c.n}/${c.total_cuotas}`).join(' · ')}</small>`:''}</div>`).join('')||'<div class="empty">Nada en tarjetas este mes</div>'}</div>
+  <div class="lead" style="padding:0 4px 4px">Esto lo pagas con el sueldo de fin de mes. Va a subir con lo que gastes con tarjeta hasta el cierre.</div>
+  ${D.fut.length?`<div class="sec-t" style="margin-left:2px">2. Cuotas que faltan después de este mes</div><div class="card">${D.fut.map(c=>`<button class="crow" onclick="openCuota(${c.id})"><div class="cm"><b>${esc(c.nombre)}</b><small>${c.quedan} cuota${c.quedan>1?'s':''} de ${fmt(c.monto_cuota)} · ${TJ[c.tarjeta]||''}</small></div><div class="ca">${fmt(c.restante)}</div></button>`).join('')}</div>
+    <div class="lead" style="padding:0 4px 4px">Para adelantarlas: en la app del banco busca "Prepago de cuotas" (pagar de más la tarjeta no las adelanta). Después toca la cuota aquí → "La adelanté".</div>`:''}
+  ${D.td?`<div class="sec-t" style="margin-left:2px">${D.fut.length?3:2}. Deudas fuera de la tarjeta</div><div class="card">${DEU().map(d=>`<div class="crow" style="cursor:default"><div class="cm"><b>${esc(d.que)}</b><small>${esc(d.nota||'')}</small></div><div class="ca">${fmt(d.monto)}</div></div>`).join('')}</div>`:''}
+  <div class="cmp">💡 Ojo con las líneas de crédito de tu cuenta corriente: si usaste alguna, esa va primero (cobra interés alto) y no aparece aquí.</div>`)}
 async function saveCaja(){const m=($('cj-m').value||'').trim()?val('cj-m'):null;
   await saveAj('perfil',{...PERF(),caja:m,caja_fecha:hoyISO(),caja_min:val('cj-min')||300000});toast('✅ Caja actualizada');openCaja()}
 function renderDeudas(){const el=$('deudas-c');if(!el)return;const D=DEU(),tot=D.reduce((s,x)=>s+x.monto,0);

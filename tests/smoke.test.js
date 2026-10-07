@@ -255,6 +255,10 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  // Adelantar cuotas: termina este mes y lo que faltaba queda como gasto de hoy
  w.confirm=()=>true;w.CALLS=[];await w.eval('adelantarCuota(7)');await new Promise(r=>setTimeout(r,60));
  checks['adelantar cuotas: termina este mes y anota lo que faltaba']=w.CALLS.some(c=>c.m==='PATCH'&&c.u.includes('cuotas?id=eq.7')&&/"total_cuotas":1/.test(c.b))&&w.CALLS.some(c=>c.m==='POST'&&c.u.includes('gastos')&&c.b.includes('Adelanto cuotas')&&/"monto":161600/.test(c.b));
+ // Lo que debes: tarjetas por separado, cuotas que faltan y deudas
+ w.eval("S.aj.deudas=[{id:1,que:'PSA',monto:490000}];openDebo()");
+ checks['lo que debes: total, tarjetas, cuotas que faltan y deudas']=t('sheet').includes('Lo que debes')&&t('sheet').includes('Tus tarjetas de este mes')&&t('sheet').includes('Scotia')&&t('sheet').includes('PSA')&&t('sheet').includes('Prepago de cuotas');
+ w.eval("closeSheet();renderMetas()");checks['lo que debes: fila en Plata']=t('metas').includes('Lo que debes');w.eval('S.aj.deudas=[]');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();
