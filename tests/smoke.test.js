@@ -252,6 +252,9 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval('openDia(hoyISO())');checks['día a día: detalle del día con sus gastos']=t('sheet').includes('Hoy')&&t('sheet').includes('Jumbo')&&t('sheet').includes('tu plata del día');w.eval('closeSheet()');
  // Pestaña Cuotas en la barra: regla del 30% y el detalle
  w.eval("tab('cuotas')");checks['pestaña Cuotas: regla del 30% y lista']=!d.querySelector('[data-tab="cuotas"]').hidden&&t('cuo-v').includes('tu regla del 30%')&&t('cuo-v').includes('¿Puedo comprar algo en cuotas?')&&d.querySelectorAll('#nav button[data-t]').length===5;w.eval("tab('hoy')");
+ // Adelantar cuotas: termina este mes y lo que faltaba queda como gasto de hoy
+ w.confirm=()=>true;w.CALLS=[];await w.eval('adelantarCuota(7)');await new Promise(r=>setTimeout(r,60));
+ checks['adelantar cuotas: termina este mes y anota lo que faltaba']=w.CALLS.some(c=>c.m==='PATCH'&&c.u.includes('cuotas?id=eq.7')&&/"total_cuotas":1/.test(c.b))&&w.CALLS.some(c=>c.m==='POST'&&c.u.includes('gastos')&&c.b.includes('Adelanto cuotas')&&/"monto":161600/.test(c.b));
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();

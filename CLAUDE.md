@@ -101,6 +101,9 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   (primera cuota = boleta siguiente según el cierre de la tarjeta) y avisa si comprando después del cierre se corre un mes.
   Regla del 30%: "No" salvo compra ≥ $500.000 cuyas cuotas bajan del 30% en ≤ 3 meses → "Se puede, con una condición"
   (ninguna otra cuota hasta ese mes; solo si son sin interés).
+- Cuota → **La adelanté**: la cuota de este mes se queda (`total_cuotas` = la cuota actual) y lo que faltaba se anota hoy
+  como gasto "Adelanto cuotas · X". Las compras en cuotas aparecen en el detalle de Scotia dos veces: el total (solo registro)
+  y "NOMBRE 01/12" (lo que se cobra cada mes). Si cuota × N = precio, son sin interés.
 - Gasto → **Devolví algo**: baja el monto (deja "· devolución $X" en la descripción); si devolvió todo queda `ignorado`.
 - Anotar gasto muestra en qué categoría cae mientras escribes (`aCat`) y se puede cambiar; si la cambias, se aprende la regla.
 - Gastos: barra de colores por categoría, gráfico **Día a día** (cada día vs. lo que podías gastar por día), listas agrupadas

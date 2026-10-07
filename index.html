@@ -1825,7 +1825,7 @@ function openCuota(id){
   <label>Tipo</label><div class="chips" id="q-tipo"><button class="chip ${c.recurrente?'':'on'}" data-v="0" onclick="selTipo(this)">En cuotas</button><button class="chip ${c.recurrente?'on':''}" data-v="1" onclick="selTipo(this)">Fijo todos los meses</button></div>
   <div id="q-cuo" style="display:${c.recurrente?'none':'block'}"><label>Total de cuotas</label><input id="q-tot" inputmode="numeric" value="${c.total_cuotas||12}">
   <label>En ${S.V.mes} vas en la cuota…</label><input id="q-n" inputmode="numeric" value="${Math.max(1,n)}"></div>
-  <button class="btn p" onclick="saveCuota(${id||0})">Guardar</button>${id?`<button class="btn d" onclick="endCuota(${id})">Ya no la pago</button>`:''}`);
+  <button class="btn p" onclick="saveCuota(${id||0})">Guardar</button>${id&&!c.recurrente&&(infoCuota(c,S.actual).quedan||0)>0?`<button class="btn" style="margin-top:8px;background:var(--bg3);color:var(--text)" onclick="adelantarCuota(${id})">💸 La adelanté (pagué lo que faltaba)</button>`:''}${id?`<button class="btn d" onclick="endCuota(${id})">Ya no la pago</button>`:''}`);
 }
 function selTipo(b){$('q-tipo').querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('q-cuo').style.display=b.dataset.v==='1'?'none':'block'}
 async function saveCuota(id){
@@ -1839,6 +1839,13 @@ async function saveCuota(id){
     closeSheet();toast(rec?'✅ Fijo guardado':`✅ Termina en ${perL(addM(b.primer_periodo,tot-1))}`);loadAll();
   }catch(e){toast('❌ Error');console.error(e)}
 }
+// Adelantar: la cuota de este mes se queda (ya viene en la boleta) y lo que faltaba se anota hoy como un gasto de una vez.
+async function adelantarCuota(id){const c=S.cuotas.find(x=>x.id===id);if(!c)return;const I=infoCuota(c,S.actual),rest=c.monto_cuota*(I.quedan||0);
+  if(!rest)return toast('Ya es la última cuota');
+  if(!confirm(`¿Pagaste ${fmt(rest)} para adelantar las ${I.quedan} cuotas que faltaban de ${c.nombre}? Lo anoto hoy como gasto y la cuota termina este mes.`))return;
+  try{await api('cuotas?id=eq.'+id,{m:'PATCH',b:{total_cuotas:Math.max(1,I.n)}});
+    await api('gastos',{m:'POST',b:{fecha:hoyISO(),monto:rest,descripcion:'Adelanto cuotas · '+c.nombre,tarjeta:c.tarjeta||'otro',fuente:'app',...(guess(c.nombre).cat!=='otros'?{categoria_clave:guess(c.nombre).cat}:{})}});
+    closeSheet();toast(`💸 Adelantada: desde el próximo mes son ${fmt(c.monto_cuota)} menos de cuotas`);loadAll()}catch(e){toast('❌ Error');console.error(e)}}
 async function endCuota(id){if(!confirm('¿Ya no la pagas? Deja de descontarse.'))return;try{await api('cuotas?id=eq.'+id,{m:'PATCH',b:{activa:false}});closeSheet();toast('🎉 Una menos');loadAll()}catch(e){toast('❌ Error')}}
 function openRev(){const R=S.revisar;if(!R.length){closeSheet();return}
   openSheet(`<h3>🔁 Transferencias por revisar</h3><p>Llegaron solas desde el correo. No cuentan en tu presupuesto hasta que me digas si fueron gasto.</p><div class="card">${R.map(g=>`<button class="crow" onclick="openRevTx(${g.id})"><div class="ic" style="background:#F2F4F7">🔁</div><div class="cm"><b>${g.destinatario||g.descripcion}</b><small>${g.fecha.slice(8,10)}/${g.fecha.slice(5,7)}</small></div><div class="ca">${fmt(g.monto)}</div></button>`).join('')}</div>`)}
