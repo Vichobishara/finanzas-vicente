@@ -279,6 +279,12 @@ body.ready .nav{display:grid}
 .nav button.add{background:#fff;color:var(--navy);flex:0 0 50px;width:50px;min-width:50px;padding:0;margin:0 5px;box-shadow:inset 0 -1px 1px rgba(18,18,23,.06),0 4px 14px -4px rgba(18,18,23,.3)}
 .nav button.add svg.i{width:24px;height:24px;stroke-width:2.6}
 @media (prefers-reduced-motion:reduce){.nav-pill{transition:none}}
+/* 5 pestañas: cada una con ícono y nombre abajo (siempre se lee dónde está todo); la píldora marca la activa */
+.nav button,.nav button.on{flex:1 1 0;flex-direction:column;gap:2px;padding:0;font-size:10.5px;font-weight:700;letter-spacing:-.1px}
+.nav button span,.nav button.on span{display:block;line-height:1}
+.nav button svg.i{width:21px;height:21px}
+.nav button.add{flex:0 0 50px}
+.nav i,.nav button.on i{top:3px;left:calc(50% + 5px);right:auto}
 .tab-t{font-size:28px;font-weight:800;letter-spacing:-.8px;margin:2px 0 16px}
 .tab-s{font-size:13.5px;color:var(--sec);margin:-8px 0 14px}
 body.ready .app{padding-bottom:calc(110px + var(--safe-b))}
@@ -512,13 +518,18 @@ body:not(.ready) .mes-b .chev{display:none}
     <div id="g-ult"></div>
   </div>
   <div class="card menu">
-    <button class="crow" onclick="openCuotas()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg></div><div class="cm"><b>Cuotas y fijos</b><small id="m-cuo">—</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="tab('cuotas')"><div class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg></div><div class="cm"><b>Cuotas y fijos</b><small id="m-cuo">—</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openSubs()"><div class="ic" style="font-size:18px">🔁</div><div class="cm"><b>Suscripciones</b><small>Todo lo que pagas cada mes, y cuánto es al año</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openCuadrar()"><div class="ic" style="font-size:18px">🧮</div><div class="cm"><b>Cuadrar con la cartola</b><small>Sube la cartola y agrego lo que se te pasó anotar</small></div><span class="chev">›</span></button>
     <button class="crow" id="m-neg-b" onclick="openNeg()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 22V12h6v10"/></svg></div><div class="cm"><b>Negocio (PULLDEX)</b><small>Gastos y ventas: ¿gana o pierde plata?</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openMeses()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg></div><div class="cm"><b>Meses anteriores</b><small>Compara cómo te fue</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="editPpto()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></div><div class="cm"><b>Presupuesto del mes</b><small id="m-ppto">—</small></div><span class="chev">›</span></button>
   </div>
+  </section>
+
+  <section class="tab" data-tab="cuotas" hidden>
+  <h2 class="tab-t">Cuotas</h2>
+  <div id="cuo-v"></div>
   </section>
 
   <section class="tab" data-tab="plata" hidden>
@@ -563,7 +574,8 @@ body:not(.ready) .mes-b .chev{display:none}
   <div class="nav-g"><button data-t="hoy" class="on" onclick="tab('hoy')"><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Hoy</span></button>
   <button data-t="gastos" onclick="tab('gastos')"><svg class="i" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>Gastos</span><i id="nav-b"></i></button></div>
   <button class="add" onclick="openAdd()" aria-label="Anotar gasto"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
-  <div class="nav-g"><button data-t="plata" onclick="tab('plata')"><svg class="i" viewBox="0 0 24 24"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg><span>Plata</span></button>
+  <div class="nav-g"><button data-t="cuotas" onclick="tab('cuotas')"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg><span>Cuotas</span></button>
+  <button data-t="plata" onclick="tab('plata')"><svg class="i" viewBox="0 0 24 24"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg><span>Plata</span></button>
   <button data-t="coach" onclick="tab('coach')"><svg class="i" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/></svg><span>Coach</span></button></div>
 </nav>
 
@@ -708,7 +720,7 @@ function contar(k,v){const el=document.querySelector('#hero-w .h-amt'),h=documen
   const f=t=>{const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=fmt(from+(v-from)*e);if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)}
 function entrar(){if(!S.sk)return;S.sk=false;document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('enter');void t.offsetWidth;t.classList.add('enter')});setTimeout(()=>document.querySelectorAll('.tab').forEach(t=>t.classList.remove('enter')),900)}
 
-const TABS=['hoy','gastos','plata','coach'];let tabAct='hoy';
+const TABS=['hoy','gastos','cuotas','plata','coach'];let tabAct='hoy';
 function tab(t){const dx=TABS.indexOf(t)>TABS.indexOf(tabAct)?'18px':'-18px',cambia=t!==tabAct;tabAct=t;
   document.querySelectorAll('.tab').forEach(x=>{x.hidden=x.dataset.tab!==t;x.classList.remove('tab-in');if(cambia&&!x.hidden){x.style.setProperty('--dx',dx);void x.offsetWidth;x.classList.add('tab-in');clearTimeout(x._t);x._t=setTimeout(()=>x.classList.remove('tab-in'),1100)}});document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));navPill();window.scrollTo(0,0)}
 // Barra "liquid glass": la píldora se desliza con rebote y se estira al moverse; se puede arrastrar con el dedo.
@@ -992,7 +1004,7 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
   {const vivas=S.cuotas.filter(c=>!c.recurrente&&c.primer_periodo&&(infoCuota(c,S.periodo).por||0)>0),fin=vivas.map(c=>addM(c.primer_periodo,c.total_cuotas-1)).sort().pop();
    $('m-cuo').textContent=`${fmt(cuo)} al mes`+(fin?` · libre de cuotas en ${perL(fin)}`:' · se suman solas');}
   $('m-ppto').textContent=`${fmt(S.ppto)} (incluye cuotas)`;
-  renderGastos();renderCoach();renderPlata();entrar();
+  renderGastos();renderCuotasTab();renderCoach();renderPlata();entrar();
 }
 
 // ---------- Gastos: cómo vas, qué falta ordenar y lo último que anotaste ----------
@@ -1541,7 +1553,7 @@ const kCLP=v=>!v?'$0':v>=1e6?'$'+(Math.round(v/1e5)/10).toString().replace('.','
 function infoCuota(c,per){if(c.recurrente)return{fijo:true};if(!c.primer_periodo)return{sin:true};
   const n=mdiff(c.primer_periodo,per)+1,fin=addM(c.primer_periodo,c.total_cuotas-1),por=Math.max(0,c.total_cuotas-Math.max(n,1)+1);
   return{n,fin,quedan:Math.max(0,c.total_cuotas-Math.max(n,1)),por,falta:c.monto_cuota*por,parte:n<1}}
-function openCuotas(){const per=S.periodo,Q=S.cuotas.map(c=>({...c,...infoCuota(c,per)}));
+function cuotasHTML(){const per=S.periodo,Q=S.cuotas.map(c=>({...c,...infoCuota(c,per)}));
   const cq=Q.filter(c=>!c.fijo&&!c.sin&&c.por>0).sort((a,b)=>a.fin<b.fin?-1:1),fijos=Q.filter(c=>c.fijo),sin=Q.filter(c=>c.sin);
   const falta=cq.reduce((s,c)=>s+c.falta,0),libre=cq.length?cq[cq.length-1].fin:null,mCuo=cq.filter(c=>!c.parte).reduce((s,c)=>s+c.monto_cuota,0);
   const M=[...Array(6)].map((_,i)=>{const p=addM(per,i);return{p,v:cuotasDe(p).reduce((s,c)=>s+c.monto_cuota,0)}}),mx=Math.max(1,...M.map(m=>m.v));
@@ -1549,8 +1561,7 @@ function openCuotas(){const per=S.periodo,Q=S.cuotas.map(c=>({...c,...infoCuota(
   const fila=c=>`<button class="cq" onclick="openCuota(${c.id})"><div class="t"><b>${c.nombre}</b><span>${fmt(c.monto_cuota)}</span></div>
     <small>${c.parte?`Parte en ${perL(c.primer_periodo)} · ${c.total_cuotas} cuotas`:c.quedan?`Cuota ${c.n} de ${c.total_cuotas} · te quedan <b>${c.quedan}</b> después de esta · termina en ${perL(c.fin)}`:`Cuota ${c.n} de ${c.total_cuotas} · <b>¡es la última! 🎉</b>`}</small>
     ${c.parte?'':pts(c)}<small style="margin-top:6px">Te faltan <b>${fmt(c.falta)}</b>${c.parte?'':' contando la de este mes'}</small></button>`;
-  openSheet(`<h3>💳 Tus cuotas</h3><p>Cuántas te quedan de cada una y cuándo se te libera la plata.</p>
-  ${cq.length?`<div class="card"><div class="sum" style="padding:4px 0 0"><div class="v">${fmt(falta)} <span>por pagar en cuotas</span></div></div>
+  return `${cq.length?`<div class="card"><div class="sum" style="padding:4px 0 0"><div class="v">${fmt(falta)} <span>por pagar</span></div></div>
     <div class="lead" style="padding-top:6px">${fmt(mCuo)} al mes en ${cq.length} compra${cq.length>1?'s':''}. ${libre?`Quedas <b>libre de cuotas en ${perL(libre)}</b> si no sumas nuevas.`:''}</div>
     <div class="mes6">${M.map((m,i)=>`<div class="${i&&m.v<M[i-1].v?'b':''}"><em>${kCLP(m.v)}</em><i style="height:${Math.max(3,m.v/mx*62)}px"></i>${MESL[+m.p.slice(5)-1].slice(0,3)}</div>`).join('')}</div>
     <p class="fine" style="margin:0 0 6px">Cuotas y fijos de los próximos 6 meses. En verde, los meses en que baja.</p></div>
@@ -1559,7 +1570,17 @@ function openCuotas(){const per=S.periodo,Q=S.cuotas.map(c=>({...c,...infoCuota(
   ${fijos.length?`<h3 class="sec-t" style="margin-left:2px">Fijos todos los meses</h3><div class="card">${fijos.map(c=>`<button class="crow" onclick="openCuota(${c.id})"><div class="cm"><b>${c.nombre}</b><small>Todos los meses</small></div><div class="ca">${fmt(c.monto_cuota)}</div></button>`).join('')}</div>`:''}
   <button class="btn p" onclick="pickCartola()">📄 Subir mi cartola (PDF o foto)</button>
   <button class="btn p" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);box-shadow:none" onclick="openCuota()">✍️ Agregar una a mano</button>
-  <p class="fine" style="margin-top:10px">Con la cartola leo tus compras en cuotas y te muestro la lista para que revises antes de guardar.</p>`)}
+  <p class="fine" style="margin-top:10px">Con la cartola leo tus compras en cuotas y te muestro la lista para que revises antes de guardar.</p>`}
+function openCuotas(){openSheet(`<h3>💳 Tus cuotas</h3><p>Cuántas te quedan de cada una y cuándo se te libera la plata.</p>${cuotasHTML()}`)}
+// Pestaña Cuotas: cuánto se te va al mes, tu regla del 30% y el simulador antes de sumar otra.
+function renderCuotasTab(){const el=$('cuo-v');if(!el||!S.V)return;const V=S.V,pc=Math.round(V.cuo/S.ppto*100),ok=pc<30;
+  const prox=[1,2,3].map(i=>addM(S.periodo,i)).map(p=>({p,v:cuotasDe(p).reduce((s,c)=>s+c.monto_cuota,0)})),baja=prox.find(m=>Math.round(m.v/S.ppto*100)<30);
+  el.innerHTML=`<div class="card sum"><div class="k">Cuotas y fijos este mes</div><div class="v">${fmt(V.cuo)} <span>al mes</span></div>
+    <div class="pace"><div style="width:${Math.min(100,pc)}%;background:${ok?'var(--green)':'var(--red)'}"></div><i style="left:30%"></i></div>
+    <div class="pace-l"><span>La raya: tu regla del 30%</span><b style="color:${ok?'var(--green-d)':'var(--red-d)'}">${pc}% de tu presupuesto</b></div>
+    <div class="cmp">${ok?`🟢 Estás bajo el 30%: tienes espacio, pero cada cuota nueva te amarra meses.`:`🔴 Estás sobre el 30%: <b>cero cuotas nuevas</b>${baja?` hasta ${perL(baja.p).toLowerCase()}, cuando bajas al ${Math.round(baja.v/S.ppto*100)}%`:''}.`}</div></div>
+    <button class="btn p" style="margin:0 0 14px" onclick="openCheck();setTimeout(()=>{const b=document.querySelectorAll('#nc-ch .chip')[3];if(b)b.click()},50)">🤔 ¿Puedo comprar algo en cuotas?</button>
+    ${cuotasHTML()}`}
 // Cartola → función `cartola` (Claude lee el PDF o la foto) → revisas → se guardan en `cuotas`.
 // ---------- Cuadrar la tarjeta con la cartola: lee TODAS las compras (cartola, modo 'compras'), las compara con lo
 // anotado (mismo monto ±$1, fecha ±3 días) y ofrece agregar las que faltan. Las compras en cuotas se saltan: van en Cuotas. ----------

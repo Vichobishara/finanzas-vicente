@@ -59,7 +59,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['top categorías']=t('top3').includes('Comida');
  checks['tarjeta Fintual']=t('fin').includes('Fintual');
  checks['camino a millonario']=t('meta').includes('Camino');
- checks['barra de navegación']=d.body.classList.contains('ready')&&d.querySelectorAll('#nav button[data-t]').length===4&&!!d.querySelector('#nav button.add');
+ checks['barra de navegación']=d.body.classList.contains('ready')&&d.querySelectorAll('#nav button[data-t]').length===5&&!!d.querySelector('#nav button.add');
  w.eval("tab('gastos')");checks['pestaña gastos']=!d.querySelector('[data-tab=gastos]').hidden&&d.querySelector('[data-tab=hoy]').hidden;
  w.eval("tab('coach')");checks['coach en pestaña']=t('coach').length>20;w.eval("tab('hoy')");
  checks['coach: hábitos con puntaje']=/\d\/\d/.test(t('coach-hab'))&&t('coach-hab').includes('Todo ordenado')&&t('coach-hab').includes('Mandaste plata a Fintual');
@@ -71,7 +71,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['ignoradas y por revisar no descuentan']=w.eval('S.V.gast')===50000;
  w.eval('openRev()');checks['lista por revisar']=t('sheet').includes('Gustavo');
  w.eval('openRevTx(5)');checks['botón no cuenta']=t('sheet').includes('No cuenta');
- w.eval('openCuotas()');checks['cuotas: cuántas quedan y cuánto falta']=t('sheet').includes('te quedan 2 después de esta')&&t('sheet').includes('por pagar en cuotas')&&t('sheet').includes('$242.400')&&t('sheet').includes('Fijos todos los meses')&&t('sheet').includes('a mano');
+ w.eval('openCuotas()');checks['cuotas: cuántas quedan y cuánto falta']=t('sheet').includes('te quedan 2 después de esta')&&t('sheet').includes('por pagar')&&t('sheet').includes('$242.400')&&t('sheet').includes('Fijos todos los meses')&&t('sheet').includes('a mano');
  w.eval("revisarCartola({fecha_cartola:'',cuotas:[{nombre:'Falabella iPhone',monto_cuota:95000,cuota_actual:4,total_cuotas:12,banco:'Scotiabank'},{nombre:'TOUS',monto_cuota:80800,cuota_actual:1,total_cuotas:3,banco:'Scotiabank'}]})");
  checks['cartola: revisar, la repetida viene desmarcada']=t('sheet').includes('Encontré 2')&&t('sheet').includes('ya la tienes')&&t('sheet').includes('Guardar 1 cuota');
  w.CALLS=[];await w.eval('guardarCartola()');{const c=w.CALLS.find(c=>c.m==='POST'&&c.u.includes('/cuotas'));const b=c&&JSON.parse(c.b);
@@ -250,6 +250,8 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval("closeSheet();S.aj.deseos=[];render()");
  // Día a día: tocar un día abre su detalle
  w.eval('openDia(hoyISO())');checks['día a día: detalle del día con sus gastos']=t('sheet').includes('Hoy')&&t('sheet').includes('Jumbo')&&t('sheet').includes('tu plata del día');w.eval('closeSheet()');
+ // Pestaña Cuotas en la barra: regla del 30% y el detalle
+ w.eval("tab('cuotas')");checks['pestaña Cuotas: regla del 30% y lista']=!d.querySelector('[data-tab="cuotas"]').hidden&&t('cuo-v').includes('tu regla del 30%')&&t('cuo-v').includes('¿Puedo comprar algo en cuotas?')&&d.querySelectorAll('#nav button[data-t]').length===5;w.eval("tab('hoy')");
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();

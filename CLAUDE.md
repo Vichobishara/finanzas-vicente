@@ -175,7 +175,8 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 
 ## Principios de UX (no negociables)
 1. La pestaña **Hoy** es una pantalla y dos botones: **Anotar gasto** y **¿Me alcanza?** (más los avisos y la tarjeta "Hoy anotaste" con los gastos del día, o "Nada anotado hoy"). Lo demás vive
-   en la barra de abajo: **Gastos** (cómo vas vs. donde deberías ir hoy, pendientes, categorías, últimos gastos, cuotas,
+   en la barra de abajo (5 pestañas con ícono y nombre, y el + al centro): **Cuotas** (cuánto se va al mes en cuotas y fijos,
+   la regla del 30% con la fecha en que bajas, "¿Puedo comprar algo en cuotas?" y cada cuota con cuántas quedan), **Gastos** (cómo vas vs. donde deberías ir hoy, pendientes, categorías, últimos gastos, cuotas,
    negocio, meses, presupuesto), **Plata** (camino a la meta, próximo movimiento, plan de ahorro del mes; fondo gadgets, por pagar, APV e
    impuestos como filas cortas que abren su detalle en una hoja; bono, sueldos y patrimonio en hojas) y **Coach** (hábitos del mes con puntaje y botón para
    resolver cada uno, Pregúntale a Claude, consejos con acción, avisos). Nada importante bajo el scroll de Hoy.
