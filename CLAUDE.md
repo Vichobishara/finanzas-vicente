@@ -40,8 +40,10 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   transferencia (match ILIKE más largo). Transferencias a cuentas propias no se importan (filtro en el script).
 - Función `anotar_atajo(monto_txt, comercio)`: la llama el atajo de iOS vía `/rest/v1/rpc/anotar_atajo`; limpia el
   monto ("$12.990", "CLP 12.990") e inserta el gasto Scotia con fuente `atajo`.
-- `categorias` (clave, nombre, techo, color): comida 250k, fijo 200k, tech 100k, transporte 30k,
-  salud 60k, ocio 70k, coleccionables 0 (bloqueado), viajes, otros.
+- `categorias` (clave, nombre, techo, color): comida 250k, fijo 200k, tech 100k, casa 100k, ropa 50k, transporte 30k,
+  salud 60k, ocio 70k, coleccionables 0 (bloqueado), viajes, otros. **Casa** = lo de independizarse (electrodomésticos,
+  muebles, IKEA/Sodimac): todo lo comprado en Casa (`S.casaComp`, todos los meses) se descuenta de "amoblar" en la meta
+  Independizarme. **Ropa** existe para que la ropa no caiga en tech. Orden en la app: `KS` en index.html.
 - `reglas_categoria` (palabra, categoria_clave, negocio): la app agrega reglas cuando el usuario corrige una categoría.
 - `cuotas` (nombre, monto_cuota, total_cuotas, tarjeta, activa, primer_periodo, recurrente)
   - La cuota N de un periodo se calcula con `primer_periodo`; `recurrente = true` = fijo mensual (Santander, Crossfit).
@@ -52,7 +54,8 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   `deseos` [{id, que, monto, desde, estado espera|aguantado|comprado}] (lista de deseos, regla de 72 horas: aguantarse suma a
   `evitado`), `fondo` {que, meta, ahorrado, mensual} (fondo gadgets: lo comprado con el fondo queda como gasto `ignorado`).
   `deudas` [{id, que, monto, desde, nota}] (tarjeta "Por pagar" en Plata: deudas que no son cuotas, ej. PSA; no cuentan en el
-  presupuesto, "La pagué" las quita). Ingresos inciertos (comisiones que quizás llegan) **no** se anotan: Vicho no quiere contar con ellos.
+  presupuesto, "La pagué" las quita). `cobrar` [{id, que, monto, desde, nota}] (tarjeta "Por cobrar" en Plata: plata que le
+  deben, ej. el IVA del iPhone; no cuenta hasta que llega; "Llegó" la quita y pregunta adónde va: casa, Fintual, fondo o tarjeta). Ingresos inciertos (comisiones que quizás llegan) **no** se anotan: Vicho no quiere contar con ellos.
 - `ingresos` también tiene `ref_externa` (único, id del correo) y `fuente` (manual | app | toku_auto). El script importa
   los abonos de TOKU SPA y no duplica si ya hay uno manual con el mismo monto (±5 días).
 - `ahorros` (fecha, monto, destino fintual|apv|colchon, periodo): lo que Vicho **de verdad** transfirió. `periodo` = mes del sueldo.
@@ -94,6 +97,14 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   Logros en Coach (`renderLogros`).
 - Gastos → **Suscripciones**: gastos `fijo` de 3 meses agrupados + fijos recurrentes; "La di de baja" → `ajustes.bajas`.
 - ¿Me alcanza? → **¿Cuál me compro?** compara 2 opciones (costo real con reventa, atraso de metas, 10 años).
+- ¿Me alcanza? en cuotas (3, 6, 12, 24): `planCuotas()` dibuja la carga de cuotas de los próximos meses con la compra
+  (primera cuota = boleta siguiente según el cierre de la tarjeta) y avisa si comprando después del cierre se corre un mes.
+  Regla del 30%: "No" salvo compra ≥ $500.000 cuyas cuotas bajan del 30% en ≤ 3 meses → "Se puede, con una condición"
+  (ninguna otra cuota hasta ese mes; solo si son sin interés).
+- Gasto → **Devolví algo**: baja el monto (deja "· devolución $X" en la descripción); si devolvió todo queda `ignorado`.
+- Anotar gasto muestra en qué categoría cae mientras escribes (`aCat`) y se puede cambiar; si la cambias, se aprende la regla.
+- Gastos: barra de colores por categoría, gráfico **Día a día** (cada día vs. lo que podías gastar por día), listas agrupadas
+  por día con su total, y "Ver todos" con buscador y filtro por categoría.
 - Coach → **Widget en tu inicio**: script de Scriptable (`widgetJS`) con el código personal → `rpc/widget(token)`.
 
 - Plata → **Tu caja** (`openCaja()`): `perfil.caja` (lo que hay en la cuenta, a mano), `caja_fecha`, `caja_min` (default $300.000).

@@ -216,6 +216,30 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  d.getElementById('cj-m').value='$250.000';await w.eval('saveCaja()');
  {const c=w.CALLS.filter(c=>c.m==='POST'&&c.u.includes('ajustes')).pop();checks['caja: guarda en perfil']=!!c&&/"caja":250000/.test(c.b)&&/"caja_min":300000/.test(c.b);}
  w.eval('closeSheet()');
+ // Casa y Ropa: categorías nuevas; lo comprado para la casa avanza Independizarme
+ w.eval('openTx(1)');checks['categorías: Casa y Ropa para elegir']=t('sheet').includes('🏠 Casa')&&t('sheet').includes('👕 Ropa');
+ checks['casa: lo comprado se descuenta de amoblar']=w.eval("S.casaComp=300000;const r=casaNecesitas({arriendo:400000,muebles:800000});S.casaComp=0;r")===1500000;
+ // Devolví algo: baja el monto y deja la nota
+ w.eval('openDevol(1)');d.getElementById('dv-m').value='$20.000';w.CALLS=[];await w.eval('saveDevol(1)');await new Promise(r=>setTimeout(r,50));
+ {const c=w.CALLS.find(c=>c.m==='PATCH'&&c.u.includes('gastos?id=eq.1'));checks['devolución: baja el gasto a lo que queda']=!!c&&/"monto":30000/.test(c.b)&&c.b.includes('devolución $20.000');}
+ w.eval('closeSheet()');
+ // Por cobrar: aparece en Plata y al llegar se le da destino
+ w.eval("S.aj.cobrar=[{id:7,que:'IVA iPhone',monto:399160}];S.aj.casa={arriendo:400000,muebles:800000,ahorrado:0,mensual:100000};renderMetas()");
+ checks['por cobrar: fila en Plata con el total']=t('metas').includes('Por cobrar')&&t('metas').includes('$399.160');
+ w.CALLS=[];await w.eval('cobroLlego(7)');checks['por cobrar: al llegar pregunta adónde va']=t('sheet').includes('Llegaron $399.160')&&t('sheet').includes('Lo aparto para irme');
+ await w.eval("cobroA('casa',399160)");await new Promise(r=>setTimeout(r,50));
+ checks['por cobrar: sale de la lista y suma a la casa']=w.CALLS.some(c=>c.u.includes('ajustes')&&/"clave":"cobrar","valor":\[\]/.test(c.b))&&w.CALLS.some(c=>c.u.includes('ajustes')&&/"ahorrado":399160/.test(c.b));
+ w.eval('closeSheet();delete S.aj.casa');
+ // ¿Me alcanza? en cuotas: carga mes a mes
+ w.eval('openCheck()');d.getElementById('a-monto').value='$2.400.000';d.getElementById('a-desc').value='iPhone';w.eval('S.nc=24;evalCheck()');
+ checks['¿Me alcanza? en 24 cuotas: muestra la carga mes a mes']=t('verdict').includes('Tus cuotas al mes con esta compra')&&t('verdict').includes('30%');w.eval('closeSheet()');
+ // Anotar: la categoría se ve mientras escribes
+ w.eval('openAdd()');d.getElementById('a-desc').value='jumbo';w.eval('aCat()');checks['anotar: muestra la categoría que adivina']=t('a-cat').includes('Comida');
+ w.eval('aCat(1)');checks['anotar: se puede cambiar la categoría']=d.querySelectorAll('#a-cat .chip').length>=8;w.eval('closeSheet()');
+ // Todos los gastos: buscar y agrupar por día
+ w.eval('openMovs()');d.getElementById('mv-q').value='jumbo';w.eval("S.mv.q='jumbo';mvPinta()");
+ checks['todos los gastos: buscar con total y días']=t('mv-l').includes('Jumbo')&&t('mv-t').includes('1 gasto')&&t('mv-l').includes('Hoy');w.eval('closeSheet()');
+ checks['gastos: día a día y barra por categoría']=t('g-res').includes('Día a día')&&!!d.querySelector('#g-res .cats-seg');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();
