@@ -285,6 +285,13 @@ body.ready .nav{display:grid}
 .nav button svg.i{width:21px;height:21px}
 .nav button.add{flex:0 0 50px}
 .nav i,.nav button.on i{top:3px;left:calc(50% + 5px);right:auto}
+/* La activa se marca suave (fondo gris claro + ícono y nombre en negro), no con una píldora negra: con 5 pestañas respira mejor */
+.nav{width:min(calc(100% - 16px),440px);padding:5px;grid-template-columns:2fr auto 3fr;background:rgba(255,255,255,.9)}
+.nav-pill{height:52px;top:5px;background:rgba(18,18,23,.07);box-shadow:none}
+.nav button{height:52px;color:var(--hint);font-weight:600}
+.nav button.on{color:var(--navy);font-weight:800}
+.nav button.on svg.i{stroke-width:2.4}
+.nav button.add{width:46px;min-width:46px;flex:0 0 46px;height:46px;margin:0 4px;background:var(--navy);color:#fff;box-shadow:0 6px 16px -6px rgba(18,18,23,.5)}
 .tab-t{font-size:28px;font-weight:800;letter-spacing:-.8px;margin:2px 0 16px}
 .tab-s{font-size:13.5px;color:var(--sec);margin:-8px 0 14px}
 body.ready .app{padding-bottom:calc(110px + var(--safe-b))}
