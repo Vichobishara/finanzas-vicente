@@ -1228,19 +1228,19 @@ function openPlata(){
   </div>
   <p class="fine">No soy asesor financiero: son reglas generales aplicadas a tus números.</p>`);
 }
-function openBono(){openSheet(`<h3>🎁 ¿Te llegó un bono?</h3><p>Pon cuánto te llegó líquido y te digo en qué orden va cada peso: cuotas, tarjeta, deudas, tu próximo mes y el resto a Fintual.</p>
+function openBono(){openSheet(`<h3>🎁 ¿Te llegó un bono?</h3><p>Pon cuánto te llegó líquido y te digo en qué orden va cada peso: cuotas, tarjeta, deudas, lo que dejas en la cuenta y el resto a Fintual.</p>
   <input id="b-in" class="amt-in" inputmode="numeric" placeholder="$0" oninput="fmtIn(this);calcBono()"><div id="b-out" style="padding:6px 0 10px"></div>
   <p class="fine">No soy asesor financiero ni tributario. La UTM usada es ${fmt(UTM)}.</p>`);$('b-in').focus()}
 // Mes con comisión grande: el orden de Vicho. 1) adelantar cuotas, 2) pagar la tarjeta, 3) deudas, 4) dejar el mes que viene,
 // 5) lo que sobra a Fintual, mitad Risky (largo plazo) y mitad conservador. El impuesto alto vuelve en abril (reliquidación).
 function calcBono(){
   const x=val('b-in'),o=$('b-out');if(!x){o.innerHTML='';return}
-  const C=caja(),adel=C.desp,tarj=C.factura,deu=DEU().reduce((s,d)=>s+d.monto,0),mes=S.ppto,sobra=x-adel-tarj-deu-mes,r=Math.round(Math.max(0,sobra)/2);
+  const C=caja(),adel=C.desp,tarj=C.factura,deu=DEU().reduce((s,d)=>s+d.monto,0),mes=C.min,sobra=x-adel-tarj-deu-mes,r=Math.round(Math.max(0,sobra)/2);
   const fila=(n,t,v,sub)=>`<div class="lever"><i style="font-style:normal;font-weight:800">${n}</i><div style="flex:1"><b>${t}</b>${sub?`<br><small style="color:var(--sec)">${sub}</small>`:''}</div><b style="color:var(--text);white-space:nowrap">${fmt(v)}</b></div>`;
   o.innerHTML=fila('1','Adelantar todas las cuotas',adel,adel?`Lo que falta después de este mes. En la app: Cuotas → cada una → "La adelanté".`:'No te quedan cuotas 🎉')
    +fila('2','Pagar la tarjeta',tarj,'Lo de este mes: compras con tarjeta + cuotas de este mes')
    +(deu?fila('3','Pagar lo que debes',deu,DEU().map(d=>esc(d.que)).join(', ')):'')
-   +fila(deu?'4':'3','Dejar tu próximo mes',mes,'Tu presupuesto del mes que viene, en la cuenta')
+   +fila(deu?'4':'3','Dejar en la cuenta',mes,'Para débito, efectivo y transferencias hasta el próximo sueldo. Lo que gastes con tarjeta lo paga el sueldo que viene.')
    +(sobra>0?`<div class="cmp" style="margin-top:6px"><b>Te sobran ${fmt(sobra)} → Fintual</b><div class="row" style="padding:8px 0 4px"><span>📈 Risky (largo plazo)</span><b style="color:var(--green-d)">${fmt(r)}</b></div><div class="row" style="padding:4px 0 0;border:none"><span>🛟 Conservador (para irte / colchón)</span><b style="color:var(--green-d)">${fmt(Math.max(0,sobra)-r)}</b></div></div>
      <button class="btn p" onclick="closeSheet();openAhorro()">Ya lo mandé → anotar</button>`
      :`<div class="cmp" style="margin-top:6px">🔴 No alcanza para todo: faltan ${fmt(-sobra)}. Primero tarjeta y deudas; las cuotas adelántalas solo con lo que sobre.</div>`)
