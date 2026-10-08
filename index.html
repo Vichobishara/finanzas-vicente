@@ -6,7 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Finanzas">
-<meta name="theme-color" content="#EEEEF3">
+<meta name="theme-color" content="#EEEEF3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B0B0F" media="(prefers-color-scheme: dark)">
 <title>Finanzas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -501,6 +502,38 @@ body:not(.ready) .mes-b .chev{display:none}
 .gu .bub.el{background:linear-gradient(#FFE2C6,#F8B98A);color:#5A2A08;border:1px solid #E59A63;border-bottom-left-radius:6px}
 .gu .chat{text-align:left;margin:4px 8px 18px;animation:gu .4s}
 .gu .chat .bub.el{animation:gu .4s .5s both}
+
+/* ---------- Modo oscuro: sigue al iPhone. Mismos componentes, colores propios (no un "invertir") ---------- */
+@media (prefers-color-scheme: dark){
+:root{color-scheme:dark;--bg:#0B0B0F;--bg2:#16161B;--bg3:#24242C;--card:#16161B;--border:#2A2A33;--text:#F4F4F7;--sec:#A3A3AE;--hint:#6E6E7A;
+  --ac:#F4F4F7;--ac-d:#F4F4F7;--ac-t:#2A2A33;--navy:#26262E;--green-d:#47CD89;--red-d:#F97066;--amber-d:#FDB022;--sh:0 1px 2px rgba(0,0,0,.4),0 10px 30px -12px rgba(0,0,0,.6)}
+.avatar{border-color:var(--bg)}
+.act.p,.btn.p,.cal,.tab-h button,.nudge button,.hab button,.tip .go{background:#F4F4F7;color:#121217}
+.act.p i{background:#121217;color:#F4F4F7}
+.btn.p[style*="bg3"]{background:var(--bg3)!important;color:var(--text)!important}
+.chip,.sugs button{background:var(--card);border-color:var(--border);color:var(--text)}
+.chip.on{background:#F4F4F7;border-color:#F4F4F7;color:#121217}
+.sheet input:focus,.ia-in input:focus{background:var(--bg3);box-shadow:0 0 0 4px rgba(255,255,255,.08)}
+.handle{background:#3A3A44}
+.bar,.dd i,.chart span,.cq .pts i,.mes6 div i{background:#33333D}
+.mes6 div i{background:#F4F4F7}.mes6 div.b i{background:var(--green)}
+.dd i.hoy{background:#F4F4F7}.dd i.over{background:var(--red)}.dd i.fut{background:none;border-color:#33333D}
+.cq .pts i.p{background:var(--green)}.cq .pts i.h{background:var(--amber)}
+.sheet .tile{background:#2C2C36}
+.win,.pill.ok,.tile.ok,.verdict.ok{background:rgba(18,183,106,.14);border-color:rgba(18,183,106,.3)}
+.pill.warn,.verdict.warn{background:rgba(247,144,9,.14);border-color:rgba(247,144,9,.3)}
+.pill.bad,.tile.bad,.verdict.bad,.btn.d,.lg-msg.mal{background:rgba(240,68,56,.14);border-color:rgba(240,68,56,.3)}
+.verdict.neg{background:rgba(122,90,248,.16);border-color:rgba(122,90,248,.35)}.verdict.neg .vt{color:#BDB4FE}
+.nav{background:rgba(22,22,27,.94);border-color:rgba(255,255,255,.08);box-shadow:0 14px 34px -10px rgba(0,0,0,.6)}
+.nav-pill{background:rgba(255,255,255,.1)}.nav button.on{color:var(--text)}.nav i{border-color:var(--card)}
+.sk{background:linear-gradient(90deg,#1E1E25 30%,#2A2A33 50%,#1E1E25 70%);background-size:300% 100%}
+.ia-a{background:var(--bg3)}.ia-q{background:#F4F4F7;color:#121217}
+.toast{background:#F4F4F7;color:#121217}.toast button{background:rgba(18,18,23,.12);color:#121217}
+.lg-b.p{background:#F4F4F7;color:#121217}
+.cats-seg div,.seg div{box-shadow:none}
+.isla{background:#1C1C22;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.amt-in::placeholder{color:#3A3A44}
+}
 </style>
 </head>
 <body>
@@ -1088,7 +1121,7 @@ function habitos(){
   H.push({ok:!nuevas.length,t:'Cero cuotas nuevas',s:nuevas.length?`Nueva: ${nuevas.map(c=>c.nombre).join(', ')}`:`Tus cuotas y fijos son el ${Math.round(V.cuo/S.ppto*100)}% del presupuesto`,b:nuevas.length?['Ver','openCuotas()']:null});
   const pv=addM(S.actual,-1),hecho=S.ahorros.filter(a=>a.periodo===pv).reduce((s,a)=>s+a.monto,0),espera=!hecho&&dd>=23&&dd<27;
   if(pausaFin())H.push({ok:null,t:'Pagar todas las tarjetas',s:'Este mes Fintual está en pausa: primero las tarjetas'});else H.push({ok:hecho?true:espera?null:false,t:'Mandaste plata a Fintual',s:hecho?`Del sueldo de ${MESL[+pv.slice(5)-1]}: ${fmt(hecho)} 💪`:espera?'Toca cuando llegue el sueldo, a fin de mes':`Del sueldo de ${MESL[+pv.slice(5)-1]} todavía no anotas nada`,b:hecho||espera?null:['Anotar','openAhorro()']});
-  H.push({ok:apvOk(),t:'APV abierto',s:apvOk()?`Este año llevas ${fmt(ahorradoAnio('apv'))}`:`El Estado te regala hasta ${fmt(APV_BONO)} al año`,b:apvOk()?null:['Ver cómo',"tab('plata')"]});
+  if(apvOk())H.push({ok:apvOk(),t:'APV abierto',s:apvOk()?`Este año llevas ${fmt(ahorradoAnio('apv'))}`:`El Estado te regala hasta ${fmt(APV_BONO)} al año`,b:apvOk()?null:['Ver cómo',"tab('plata')"]});
   return H;
 }
 // ---------- Revisión de la semana (el aviso del domingo 20:00 abre /?revision): cómo te fue, lo pendiente y la meta ----------
@@ -1130,7 +1163,7 @@ function renderLogros(){const el=$('logros-c');if(!el)return;let rmax=0,sem=fals
     ['💪','Te aguantaste $100.000',ev>=100000,`Llevas ${fmt(ev)} en compras que no hiciste`],['💰','Anotaste tu primer ahorro',S.ahorros.length>0,'Lo que de verdad mandaste a Fintual'],
     ['🗓','Cerraste una semana',sem,'La revisión de los domingos'],['🏠','Empezaste a juntar para irte',!!(K&&K.ahorrado>0),'Plata apartada para independizarte'],
     ['🧮','Cuadraste tu tarjeta',LS('cuadre-ok')==='1','Subiste la cartola y no se te escapó nada']];
-  const n=L.filter(x=>x[2]).length,V=S.logrosAll?L:[...L.filter(x=>x[2]),...L.filter(x=>!x[2]).slice(0,2)];
+  const n=L.filter(x=>x[2]).length,V=S.logrosAll?L:[...L.filter(x=>x[2]),...L.filter(x=>!x[2]).slice(0,1)];
   el.innerHTML=`<div class="card-h"><h2>🏅 Logros</h2><span class="pill ${n===L.length?'ok':''}">${n} de ${L.length}</span></div>${V.map(([i,t,ok,sub])=>`<div class="logro ${ok?'':'no'}"><i>${i}</i><div><b>${t}</b><small>${sub}</small></div></div>`).join('')}${V.length<L.length?`<button class="logro-mas" onclick="S.logrosAll=1;renderLogros()">Ver los ${L.length-V.length} que faltan</button>`:''}<div style="height:6px"></div>`}
 
 function renderCoach(){renderLogros();
@@ -1781,8 +1814,8 @@ function renderDeseos(){const el=$('deseos-c');if(!el)return;const L=DES(),E=L.f
     ${ok?`<div class="ya"><button class="no" onclick="deseoNo(${d.id})">💪 Ya no lo quiero</button><button class="si" onclick="openDeseo(${d.id})">Decidir</button></div>`:''}</div>
     ${ok?'':`<button class="x" style="position:static;margin:0;float:none" onclick="deseoBorrar(${d.id})" aria-label="Quitar">×</button>`}</div>`};
   el.innerHTML=`<div class="card-h"><h2>⏳ Lista de deseos</h2>${ag?`<span class="pill ok">Te aguantaste ${fmt(ag)}</span>`:''}</div>
-  ${E.length?E.map(fila).join(''):`<div class="lead">¿Viste algo que quieres? Anótalo aquí en vez de comprarlo. En 72 horas te pregunto si todavía lo quieres: la mayoría de las veces se te pasa.</div>`}
-  <button class="btn p" style="margin:10px 0 14px" onclick="openCheck()">+ Algo que quiero comprar</button>`}
+  ${E.length?E.map(fila).join('')+`<button class="btn p" style="margin:10px 0 14px" onclick="openCheck()">+ Algo que quiero comprar</button>`
+   :`<button class="crow" onclick="openCheck()"><div class="ic">🛍</div><div class="cm"><b>¿Viste algo que quieres?</b><small>Anótalo y en 3 días te pregunto si todavía lo quieres</small></div><span class="chev">›</span></button>`}`}
 
 // ---------- Por pagar: deudas que no son cuotas (ej: PSA grading). Se pagan antes que cualquier gusto ----------
 // ajustes.deudas = [{id, que, monto, desde, nota}]
@@ -2073,7 +2106,7 @@ const SUGS=['Jumbo','Almuerzo','Café','Delivery','Uber','Metro','Farmacia'];
 // Lo que más anotas a mano va primero; se completa con las sugerencias de siempre.
 function sugs(){const n={};[...S.gastos,...S.prev].filter(g=>(g.fuente==='app'||g.fuente==='manual')&&!g.pulldex&&g.monto>0).forEach(g=>{const d=(g.descripcion||'').trim();if(d&&d.length<=18&&d!=='Gasto')n[d]=(n[d]||0)+1});
   const top=Object.entries(n).filter(([,c])=>c>1).sort((a,b)=>b[1]-a[1]).map(([d])=>d);
-  return [...new Set([...top,...SUGS].map(x=>x[0].toUpperCase()+x.slice(1)))].slice(0,8)}
+  return [...new Set([...top,...SUGS].map(x=>x[0].toUpperCase()+x.slice(1)))].slice(0,6)}
 
 function openAdd(pre){
   openSheet(`<h3>Anotar gasto</h3>

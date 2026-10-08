@@ -192,7 +192,7 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
    en la barra de abajo (5 pestañas iguales con ícono y nombre: Hoy, Gastos, Cuotas, Plata, Coach; anotar está en Hoy y en el
    botón "+ Anotar" de Gastos): **Cuotas** (cuánto se va al mes en cuotas y fijos,
    un solo recuadro con lo que pagas al mes, la regla del 30%, lo que falta en total y los próximos 6 meses; "¿Puedo comprar algo
-   en cuotas?", "Todo lo que debes" y cada cuota en una fila corta; subir cartola / agregar a mano como botones chicos), **Gastos** (cómo vas vs. donde deberías ir hoy, pendientes, categorías, últimos gastos, cuotas,
+   en cuotas?", "Lo que debes" y cada cuota en una fila corta; subir cartola / agregar a mano como botones chicos), **Gastos** (cómo vas vs. donde deberías ir hoy, pendientes, categorías, últimos gastos, cuotas,
    negocio, meses, presupuesto), **Plata** (camino a la meta, próximo movimiento, plan de ahorro del mes; fondo gadgets, por pagar, APV e
    impuestos como filas cortas que abren su detalle en una hoja; bono, sueldos y patrimonio en hojas) y **Coach** (hábitos del mes con puntaje y botón para
    resolver cada uno, Pregúntale a Claude, consejos con acción, avisos). Nada importante bajo el scroll de Hoy.
@@ -201,17 +201,20 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 4. Anotar un gasto debe tomar menos de 3 segundos. La categoría es automática.
 5. Premiar el autocontrol ("te aguantaste $X") y mostrar el costo en 10 años de cada compra.
 6. No es asesoría financiera: mantener los avisos "no soy asesor" en las secciones de impuestos e inversión.
-8. **Números en casillas, no en frases.** Los totales se muestran con `tiles()` (etiqueta corta + número compacto con `kCLP`,
-   estado ok/bad con color): Gastos (gastos · cuotas · te pasaste/te quedan), Cuotas (te falta · libre en · otra cuota),
-   Lo que debes (tarjetas · cuotas · deudas). Colores de categoría = paleta validada para daltonismo (`SEG`: comida azul,
-   casa naranjo, suscripciones aqua, ropa amarillo, ocio rosado, tech violeta; el resto gris "Otros"); no usar rojo ni verde
-   de estado para categorías. Gráficos: barras ≤ 24px con punta redondeada y base recta, línea de referencia continua.
 7. **Simple primero, detalle a un toque.** Cada pestaña parte con la pregunta que responde (`tab-s`). Se muestra lo que
    importa y el resto queda tras "Ver…": Gastos muestra las 4 categorías que más pesan (+ las pasadas del tope) y "Ver las N
    categorías"; la barra de colores muestra 4 en la leyenda; Coach muestra solo los hábitos pendientes ("Ver los N que ya
    cumples") y 2 consejos; Plata va en secciones (Lo que tienes y lo que debes · Tus metas) más una sola fila **Herramientas** (`openHerr`:
    bono o comisión, dónde poner cada peso, sueldos, Fintual, patrimonio, impuestos y APV) y "Por pagar" vive dentro de
    "Lo que debes"; el "próximo paso" solo aparece cuando hay algo concreto (impuestos). Antes de agregar algo nuevo a una pestaña, ver qué se puede esconder.
+8. **Números en casillas, no en frases.** Los totales se muestran con `tiles()` (etiqueta corta + número compacto con `kCLP`,
+   estado ok/bad con color): Gastos (gastos · cuotas · te pasaste/te quedan), Cuotas (te falta · libre en · otra cuota),
+   Lo que debes (tarjetas · cuotas · deudas). Colores de categoría = paleta validada para daltonismo (`SEG`: comida azul,
+   casa naranjo, suscripciones aqua, ropa amarillo, ocio rosado, tech violeta; el resto gris "Otros"); no usar rojo ni verde
+   de estado para categorías. Gráficos: barras ≤ 24px con punta redondeada y base recta, línea de referencia continua.
+9. **Modo oscuro** sigue al iPhone (`@media (prefers-color-scheme: dark)` al final del CSS): redefine las variables de color y los
+   pocos componentes con blanco fijo (botones principales pasan a claros con texto oscuro). Todo color nuevo va como variable
+   o con su versión oscura en ese bloque. Coach no cuenta el APV como pendiente (es opcional para Vicho; si lo abre, suma como logro).
 
 ## Pendientes / ideas
 - [x] Seguridad: RLS con clave `x-app-key` (ver arriba). Si algún día hay más usuarios: Supabase Auth + RLS por usuario.
