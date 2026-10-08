@@ -55,6 +55,11 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .logro i{font-style:normal;font-size:22px;width:40px;height:40px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logro.no{opacity:.45}.logro.no i{filter:grayscale(1)}.logro b{display:block;font-size:14.5px}.logro small{color:var(--sec);font-size:12.5px}
 .logro-mas{display:block;width:100%;border:none;background:none;padding:12px 0 4px;font-size:13.5px;font-weight:600;color:var(--sec);text-align:center}
+.wk{display:flex;gap:6px;margin:16px 0 14px;position:relative}
+.wk button{flex:1;min-width:0;border:none;background:rgba(255,255,255,.14);border-radius:12px;padding:6px 0 7px;color:#fff;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:700}
+.wk button span{opacity:.8}.wk i{font-style:normal;font-size:13px;font-weight:800;height:16px;line-height:16px}
+.wk .mal i{opacity:.75}.wk .hoy{background:rgba(255,255,255,.32);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.7)}
+.wk .fut,.wk .fu{background:rgba(255,255,255,.07)}.wk .fu span{opacity:.35}.wk button:active{transform:scale(.94)}
 .h-msg svg.i{width:18px;height:18px;margin-top:1px}
 .h-msg{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.16);border:none;border-radius:18px;padding:11px 13px;font-size:13px;line-height:1.45;position:relative;z-index:1;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:16px 0}
@@ -936,6 +941,14 @@ async function loadPeriodo(){
 
 const SVG=d=>`<svg class="i" viewBox="0 0 24 24">${d}</svg>`;
 const HICO=(c,q)=>SVG(c==='ok'||(c===''&&q>=0)?'<circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/>':c==='bad'||c===''?'<path d="M7.9 2h8.2L22 7.9v8.2L16.1 22H7.9L2 16.1V7.9z"/><path d="M12 8v4M12 16h.01"/>':'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>');
+// La semana en el hero (L a D): ✓ los días que no pasaste tu plata del día, ✕ los que sí; tocar un día abre su detalle.
+function semanaHero(y,m){const H=hoyISO(),hoy=new Date(H+'T12:00:00'),lun=new Date(hoy);lun.setDate(hoy.getDate()-(hoy.getDay()+6)%7);
+  const ini=new Date(y,m-2,23,12),cie=new Date(y,m-1,22,12),largo=Math.round((cie-ini)/864e5)+1,ideal=Math.max(1,(S.ppto-S.V.cuo)/largo),by={};
+  S.gastos.filter(g=>!g.pulldex).forEach(g=>by[g.fecha]=(by[g.fecha]||0)+g.monto);
+  const ISO=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  return `<div class="wk">${['L','M','M','J','V','S','D'].map((l,i)=>{const d=new Date(lun);d.setDate(lun.getDate()+i);const f=ISO(d),v=by[f]||0,fuera=d<ini||d>cie,fut=f>H;
+    const k=fuera?'fu':fut?'fut':f===H?'hoy':v>ideal?'mal':'ok';
+    return `<button class="${k}" ${fuera||fut?'disabled':`onclick="event.stopPropagation();openDia('${f}')"`} aria-label="${l} ${d.getDate()}: ${fmt(v)}"><span>${l}</span><i>${k==='ok'?'✓':k==='mal'?'✕':k==='hoy'?(v>ideal?'✕':'•'):''}</i></button>`}).join('')}</div>`}
 // Lo básico al día cuando ya te pasaste: tope de comida + transporte repartido en 30 días (≈ $9.500 con tus topes).
 const basicoDia=()=>Math.round(((S.techos.comida||250000)+(S.techos.transporte||30000))/30/500)*500;
 // "¿De dónde sale este número?": la cuenta del hero con tus números, en palabras simples.
@@ -977,7 +990,7 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
   const base=esActual?Math.max(total,S.ppto):total,libre=Math.max(0,SUELDO-base),fin=Math.round(libre/2);
   S.V={tot,items,ptot,nt,neg,mes,pvL,CQ,cuo,gast,total,queda,dias,esActual,diario,cupoHoy,gastHoy,manana,semana,semIni:ISO(w0),proy:{base,libre,fin,col:libre-fin,over:total>S.ppto}};
 
-  $('mes-t').textContent=mes;$('greet').textContent=esActual?(+S.periodo.slice(5)!==new Date().getMonth()+1?`Hoy ${new Date().getDate()} · hasta el 22 ${MESL[+S.periodo.slice(5)-1].slice(0,3).toLowerCase()}`:hoyL()):rangoL(S.periodo);
+  $('mes-t').textContent=mes;$('greet').textContent=esActual?`${nm?`Hola, ${nm} · `:''}${fechaHoy().replace(/^(\S{3})\S*/,'$1')}`:rangoL(S.periodo);
   $('viendo').innerHTML=esActual?'':`<div class="nudge"><div>👀 Estás viendo <b>${perL(S.periodo)}</b></div><button onclick="setPer(S.actual)">Volver a hoy</button></div>`;
 
   let cls,lbl,amt,l1,msg,l2=`Incluye ${fmt(cuo)} de cuotas y fijos`;
@@ -996,7 +1009,7 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
     else if(cupoHoy<15000){cls='warn';msg='<span>Margen justo. Cocina en casa y posterga cualquier compra.</span>';}
     else{cls='ok';msg=pausaFin()?`<span>Vas bien. Este mes lo que sobre es para pagar tus tarjetas.</span>`:`<span>Vas bien. Si te mantienes, fin de mes van <b>${fmt(fin)}</b> a Fintual.</span>`;}
   }
-  const rch=esActual?racha():0;$('hero-w').innerHTML=`<div class="hero ${cls}" onclick="${esActual?'openHeroInfo()':''}" style="${esActual?'cursor:pointer':''}"><div class="h-lbl">${lbl}${esActual?' <span style="opacity:.7;font-weight:500">ⓘ</span>':''}${rch>=2?`<span class="racha">🔥 ${rch} días</span>`:''}</div><div class="h-amt">${amt}</div>${esActual&&queda>=0?`${gastHoy>0&&diario>=0?`<div class="h-l2" style="margin:-6px 0 10px">De ${fmt(cupoHoy)} para hoy, ya usaste ${fmt(gastHoy)}</div>`:diario<0?`<div class="h-l2" style="margin:-6px 0 10px">Hoy te pasaste por <b>${fmt(-diario)}</b> (tenías ${fmt(cupoHoy)})</div>`:''}<div class="h-sum"><div class="t" style="border:none;margin:0 0 6px;padding:0"><span>${semana>=0?`Esta semana te quedan${diasSem>1?` <small style="opacity:.75;font-weight:500">(${diasSem} días)</small>`:''}`:'Esta semana te pasaste por'}</span><span>${fmt(Math.abs(semana))}</span></div><div class="t" onclick="event.stopPropagation();tab('gastos')" style="cursor:pointer"><span>Hasta el 22 te quedan <small style="opacity:.75;font-weight:500">(${dias} días)</small></span><span>${fmt(queda)}</span></div></div>`:`<div class="h-l1">${l1}</div><div class="h-l2">${l2}</div>`}<div class="h-bar"><div style="width:${p}%"></div></div><div class="h-msg">${HICO(cls,queda)}${msg}</div></div>`;
+  const rch=esActual?racha():0;$('hero-w').innerHTML=`<div class="hero ${cls}" onclick="${esActual?'openHeroInfo()':''}" style="${esActual?'cursor:pointer':''}"><div class="h-lbl">${lbl}${esActual?' <span style="opacity:.7;font-weight:500">ⓘ</span>':''}${rch>=2?`<span class="racha">🔥 ${rch} días</span>`:''}</div><div class="h-amt">${amt}</div>${esActual&&queda>=0?`${gastHoy>0&&diario>=0?`<div class="h-l2" style="margin:-6px 0 10px">De ${fmt(cupoHoy)} para hoy, ya usaste ${fmt(gastHoy)}</div>`:diario<0?`<div class="h-l2" style="margin:-6px 0 10px">Hoy te pasaste por <b>${fmt(-diario)}</b> (tenías ${fmt(cupoHoy)})</div>`:''}<div class="h-sum"><div class="t" style="border:none;margin:0 0 6px;padding:0"><span>${semana>=0?`Esta semana te quedan${diasSem>1?` <small style="opacity:.75;font-weight:500">(${diasSem} días)</small>`:''}`:'Esta semana te pasaste por'}</span><span>${fmt(Math.abs(semana))}</span></div><div class="t" onclick="event.stopPropagation();tab('gastos')" style="cursor:pointer"><span>Hasta el 22 te quedan <small style="opacity:.75;font-weight:500">(${dias} días)</small></span><span>${fmt(queda)}</span></div></div>`:`<div class="h-l1">${l1}</div><div class="h-l2">${l2}</div>`}${esActual?semanaHero(y,m):`<div class="h-bar"><div style="width:${p}%"></div></div>`}<div class="h-msg">${HICO(cls,queda)}${msg}</div></div>`;
   contar(lbl+S.periodo,esActual&&queda>=0&&diario>=0?diario:null);
 
   const ev=getEv();$('win').innerHTML=esActual&&ev?`<div class="win">💪 Este mes te aguantaste ${fmt(ev)} en compras</div>`:'';
@@ -1018,7 +1031,7 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
 
   // Lo anotado hoy: llena el espacio bajo los botones y deja ver al tiro si falta algo (Scotia, efectivo).
   {const gh=pers.filter(g=>g.fecha===H).sort((a,b)=>b.id-a.id);
-   $('hoy-g').innerHTML=!esActual?'':gh.length?`<div class="card"><div class="card-h"><h2>Hoy anotaste ${fmt(gastHoy)}</h2>${gh.length>3?`<button onclick="openMovs()">Ver los ${gh.length}</button>`:''}</div>${gh.slice(0,3).map(txHtml).join('')}</div>`
+   $('hoy-g').innerHTML=!esActual?'':gh.length?`<div class="card"><div class="card-h"><h2>Hoy anotaste ${fmt(gastHoy)}</h2>${gh.length>3?`<button onclick="openMovs()">Ver los ${gh.length}</button>`:''}</div>${gh.slice(0,3).map(g=>txHtml(g,1)).join('')}</div>`
     :`<div class="nudge"><div>📝 <b>Nada anotado hoy.</b> ¿Pagaste algo con Scotia o en efectivo?</div><button onclick="openAdd()">Anotar</button></div>`;}
 
   const tops=Object.entries(tot).filter(([k])=>k!=='otros').sort((a,b)=>b[1]-a[1]).slice(0,3);
