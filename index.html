@@ -367,12 +367,17 @@ body:not(.ready) .mes-b .chev{display:none}
 .cq .pts i.h{background:var(--amber)}
 .mes6{display:flex;align-items:flex-end;gap:6px;height:92px;margin:6px 0 2px}
 .mes6 div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:10px;color:var(--sec);gap:4px}
-.mes6 div i{width:100%;border-radius:7px 7px 3px 3px;background:var(--ac);min-height:3px;transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.9,.3,1) both}
+.mes6 div i{width:100%;max-width:24px;border-radius:4px 4px 0 0;background:var(--ac);min-height:3px;transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.9,.3,1) both}
 .mes6 div.b i{background:var(--green)}
 .mes6 div em{font-style:normal;font-weight:700;color:var(--text);font-size:9.5px}
 .dq{background:var(--bg3);border-radius:20px;padding:4px 14px 14px;margin-top:14px}
 .dq-t{font-size:15px;font-weight:800;padding:10px 0 2px}.dq-p{font-size:13px;font-weight:600;margin:12px 0 7px}
 .dq .chip{padding:8px 13px;font-size:13px}.dq .verdict .btn{margin-bottom:0}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 4px}
+.tile{background:var(--bg3);border-radius:16px;padding:10px 12px;min-width:0}
+.tile small{display:block;font-size:11.5px;color:var(--sec);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile b{display:block;font-size:17px;font-weight:800;letter-spacing:-.4px;margin-top:2px;white-space:nowrap}
+.sheet .tile{background:#fff}.tile.bad{background:#FEF3F2}.tile.bad b{color:var(--red-d)}.tile.ok{background:#ECFDF3}.tile.ok b{color:var(--green-d)}
 .dia-h{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0 2px;font-size:12px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.04em}
 .dia-h{cursor:pointer}.dia-h:active{opacity:.6}
 .dia-h b{font-size:12.5px;color:var(--sec);font-weight:700;letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
@@ -381,11 +386,11 @@ body:not(.ready) .mes-b .chev{display:none}
 .cats-seg div{height:100%;min-width:3px}
 .cats-l{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--sec)}
 .cats-l span{white-space:nowrap}.cats-l span:before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:5px;vertical-align:0}
-.dd{display:flex;align-items:flex-end;gap:3px;height:96px;margin:12px 0 4px;position:relative;cursor:pointer}
+.dd{display:flex;align-items:flex-end;justify-content:space-between;gap:2px;height:96px;margin:12px 0 4px;position:relative;cursor:pointer}
 .dd:active{opacity:.8}
-.dd i{flex:1;border-radius:5px 5px 2px 2px;background:#E2E2E9;min-height:3px;transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.9,.3,1) both}
+.dd i{flex:1;max-width:24px;border-radius:4px 4px 0 0;background:#E2E2E9;min-height:3px;transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.9,.3,1) both}
 .dd i.hoy{background:var(--navy)}.dd i.over{background:var(--red)}.dd i.fut{background:none;border:1.5px dashed #E2E2E9;min-height:12px}
-.dd b{position:absolute;left:0;right:0;border-top:1.5px dashed var(--green);opacity:.8;pointer-events:none}
+.dd b{position:absolute;left:0;right:0;border-top:1px solid var(--green-d);opacity:.7;pointer-events:none}
 .dd-l{display:flex;justify-content:space-between;font-size:11px;color:var(--hint);margin-bottom:12px}
 .srch{display:flex;align-items:center;gap:8px;background:var(--bg3);border-radius:14px;padding:0 12px;margin-bottom:10px}
 .srch input{flex:1;min-width:0;border:none!important;background:none!important;padding:12px 0!important;box-shadow:none!important;font-size:16px}
@@ -616,12 +621,12 @@ const getKey=()=>{try{return localStorage.getItem('app-key')||''}catch(e){return
 let G_TOK=null,G_ERR=null;(()=>{const h=new URLSearchParams(location.hash.slice(1));if(h.get('access_token')||h.get('error_description')){G_TOK=h.get('access_token');G_ERR=h.get('error_description');history.replaceState(null,'',location.pathname)}})();
 (()=>{const m=location.hash.match(/[#&]k=([\w-]+)/);if(m){try{localStorage.setItem('app-key',m[1])}catch(e){}history.replaceState(null,'',location.pathname)}})();
 const CAT={
- comida:{n:'Comida',ic:'🍽',c:'#12B76A'}, tech:{n:'Compras y tech',ic:'🛍',c:'#7A5AF8'},
- coleccionables:{n:'Cartas y coleccionables',ic:'🃏',c:'#F97316'}, ocio:{n:'Salidas y ocio',ic:'🎮',c:'#64748B'},
- fijo:{n:'Suscripciones',ic:'🔁',c:'#2E90FA'}, transporte:{n:'Transporte',ic:'🚇',c:'#EAB308'},
- salud:{n:'Salud y cuidado',ic:'💈',c:'#EE46BC'}, viajes:{n:'Viajes',ic:'✈️',c:'#15B79E'},
- casa:{n:'Casa',ic:'🏠',c:'#0E9384'}, ropa:{n:'Ropa',ic:'👕',c:'#DD2590'},
- otros:{n:'Sin categoría',ic:'❓',c:'#98A2B3'}
+ comida:{n:'Comida',ic:'🍽',c:'#2a78d6'}, tech:{n:'Compras y tech',ic:'🛍',c:'#4a3aa7'},
+ coleccionables:{n:'Cartas y coleccionables',ic:'🃏',c:'#A3A3AE'}, ocio:{n:'Salidas y ocio',ic:'🎮',c:'#e87ba4'},
+ fijo:{n:'Suscripciones',ic:'🔁',c:'#1baf7a'}, transporte:{n:'Transporte',ic:'🚇',c:'#A3A3AE'},
+ salud:{n:'Salud y cuidado',ic:'💈',c:'#A3A3AE'}, viajes:{n:'Viajes',ic:'✈️',c:'#A3A3AE'},
+ casa:{n:'Casa',ic:'🏠',c:'#eb6834'}, ropa:{n:'Ropa',ic:'👕',c:'#eda100'},
+ otros:{n:'Sin categoría',ic:'❓',c:'#A3A3AE'}
 };
 const TJ={scotiabank:'Scotia',bci:'BCI',santander:'Santander',efectivo:'Efectivo',otro:'Transferencia'};
 const CORTE={scotiabank:22,bci:20};
@@ -1060,7 +1065,7 @@ function renderGastos(){
     const pg=S.prev.filter(g=>g.fecha<=c).reduce((s,g)=>s+g.monto,0),d=V.gast-pg;
     if(pg>0)cmp=`<div class="cmp">${d>0?'📈':'📉'} A esta altura de ${V.pvL} llevabas ${fmt(pg)}. Este mes vas <b style="color:${d>0?'var(--red-d)':'var(--green-d)'}">${fmt(Math.abs(d))} ${d>0?'más arriba':'más abajo'}</b>.</div>`}
   $('g-res').innerHTML=`<div class="card sum"><div class="k">${V.esActual?`Llevas gastado en ${V.mes} (hasta el 22)`:`Gastaste en ${V.mes}`}</div><div class="v">${fmt(V.total)} <span>de ${fmt(S.ppto)}</span></div>
-    <div class="k" style="margin:-2px 0 2px">= tus gastos ${fmt(V.gast)} + cuotas y fijos ${fmt(V.cuo)}${V.queda<0?` · <b style="color:var(--red-d)">te pasaste ${fmt(-V.queda)}</b>`:` · <b style="color:var(--green-d)">te quedan ${fmt(V.queda)}</b>`}</div>
+    ${tiles([['Gastos',kCLP(V.gast)],['Cuotas',kCLP(V.cuo)],V.queda<0?['Te pasaste',kCLP(-V.queda),'bad']:['Te quedan',kCLP(V.queda),'ok']])}
     <div class="pace"><div style="width:${Math.min(100,pc)}%;background:${col}"></div>${V.esActual?`<i style="left:${Math.min(100,ideal)}%"></i>`:''}</div>
     <div class="pace-l"><span>${V.esActual?`La raya: donde deberías ir hoy (${ideal}%)`:`${fmt(V.cuo)} fueron cuotas y fijos`}</span><b style="color:${col}">${pc}%</b></div>${segCats()}${cmp}</div>${diaADia(ini,cierre,largo,hoy)}`;
   const nr=(S.revisar||[]).length,no=(V.items.otros||[]).length;
@@ -1584,10 +1589,15 @@ function openDia(f){const L=S.gastos.filter(g=>g.fecha===f),P=L.filter(g=>!g.pul
   <div class="cmp" style="margin-top:0">${!t?'🎉 Día en cero: no gastaste nada.':t>ideal?`🔴 Gastaste <b>${fmt(t-ideal)}</b> más que tu plata del día (${fmt(ideal)}), o sea ${String(Math.round(t/ideal*10)/10).replace('.',',')} días de una.${top?` Lo que más pesó: ${(CAT[top[0]]||CAT.otros).ic} ${(CAT[top[0]]||CAT.otros).n}.`:''}`:`🟢 Quedaste <b>${fmt(ideal-t)}</b> bajo tu plata del día (${fmt(ideal)}).`}</div>
   <div class="card" style="margin-top:12px">${L.map(g=>txHtml(g,1)).join('')||'<div class="empty">Nada anotado este día</div>'}</div>`)}
 // En qué se te fue la plata, en una sola barra de colores (cuotas incluidas).
-function segCats(){const V=S.V,E=Object.entries(V.tot).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);if(V.cuo)E.push(['_cuo',V.cuo]);
-  const T=E.reduce((s,[,v])=>s+v,0);if(!T)return'';const inf=k=>k==='_cuo'?{n:'Cuotas',c:'#344054'}:(CAT[k]||CAT.otros);
-  return `<div class="cats-seg">${E.map(([k,v])=>`<div style="flex:${v};background:${inf(k).c}"></div>`).join('')}</div>
-  <div class="cats-l">${E.slice(0,4).map(([k,v])=>`<span style="--c:${inf(k).c}">${inf(k).n} ${kCLP(v)}</span>`).join('')}${E.length>4?`<span style="--c:#D0D5DD">${E.length-4} más</span>`:''}</div>`}
+// En qué se te fue la plata, en una sola barra (cuotas incluidas). Orden y color fijos por categoría (paleta validada para
+// daltonismo: comida, casa, suscripciones, ropa, ocio, tech); el resto va junto como "Otros" y las cuotas al final.
+const SEG=['comida','casa','fijo','ropa','ocio','tech'];
+// Casillas de números: etiqueta chica + número grande (estado opcional: ok / bad)
+const tiles=L=>`<div class="tiles">${L.map(([l,v,c])=>`<div class="tile ${c||''}"><small>${l}</small><b>${v}</b></div>`).join('')}</div>`;
+function segCats(){const V=S.V,t=V.tot,E=SEG.filter(k=>t[k]>0).map(k=>[CAT[k].n,t[k],CAT[k].c]),ot=Object.entries(t).filter(([k,v])=>v>0&&!SEG.includes(k)).reduce((s,[,v])=>s+v,0);
+  if(ot)E.push(['Otros',ot,'#A3A3AE']);if(V.cuo)E.push(['Cuotas y fijos',V.cuo,'#52514e']);if(!E.length)return'';
+  return `<div class="cats-seg">${E.map(([n,v,c])=>`<div style="flex:${v};background:${c}" title="${n}: ${fmt(v)}"></div>`).join('')}</div>
+  <div class="cats-l">${E.map(([n,v,c])=>`<span style="--c:${c}">${n} ${kCLP(v)}</span>`).join('')}</div>`}
 // Día a día: cuánto gastaste cada día vs. lo que podías gastar por día (la línea verde).
 function diaADia(ini,cierre,largo,hoy){const V=S.V,by={},ISO=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   S.gastos.filter(g=>!g.pulldex).forEach(g=>by[g.fecha]=(by[g.fecha]||0)+g.monto);
@@ -1596,7 +1606,7 @@ function diaADia(ini,cierre,largo,hoy){const V=S.V,by={},ISO=d=>d.getFullYear()+
   const pasados=D.filter(x=>x.f<=H),dg=pasados.filter(x=>x.v<=ideal).length;
   return `<div class="card"><div class="card-h"><h2>Día a día</h2>${V.esActual?`<span class="pill ${dg>=pasados.length/2?'ok':'warn'}">${dg} de ${pasados.length} días en verde</span>`:''}</div>
   <div class="dd" onclick="ddTap(event,this)" role="button" aria-label="Toca un día para ver el detalle">${D.map(x=>`<i data-f="${x.f}" class="${x.f>H?'fut':x.f===H?'hoy':x.v>ideal?'over':''}" style="height:${x.f>H?0:Math.max(3,Math.min(100,x.v/mx*100))}%" title="${x.f}: ${fmt(x.v)}"></i>`).join('')}<b style="bottom:${ideal/mx*100}%"></b></div>
-  <div class="dd-l"><span>${ini.getDate()} ${MES[ini.getMonth()].toLowerCase()}</span><span>Toca un día · línea verde: ${fmt(ideal)}</span><span>${cierre.getDate()} ${MES[cierre.getMonth()].toLowerCase()}</span></div></div>`}
+  <div class="dd-l"><span>${ini.getDate()} ${MES[ini.getMonth()].toLowerCase()}</span><span>Toca un día · línea: ${fmt(ideal)} al día</span><span>${cierre.getDate()} ${MES[cierre.getMonth()].toLowerCase()}</span></div></div>`}
 // Cuotas: cuántas te quedan de cada una, cuánto falta pagar y cuándo se libera la plata.
 // $387k, $1,2M: montos cortos para las barras
 const kCLP=v=>!v?'$0':v>=1e6?'$'+(Math.round(v/1e5)/10).toString().replace('.',',')+'M':'$'+Math.round(v/1000)+'k';
@@ -1635,7 +1645,7 @@ function renderCuotasTab(){const el=$('cuo-v');if(!el||!S.V)return;const V=S.V,p
   el.innerHTML=`<div class="card sum"><div class="k">Pagas cada mes en cuotas y fijos</div><div class="v">${fmt(V.cuo)} <span>al mes</span></div>
     <div class="pace"><div style="width:${Math.min(100,pc)}%;background:${ok?'var(--green)':'var(--red)'}"></div><i style="left:30%"></i></div>
     <div class="pace-l"><span>La raya: tu regla del 30%</span><b style="color:${ok?'var(--green-d)':'var(--red-d)'}">${pc}% de tu presupuesto</b></div>
-    <div class="cmp">${ok?`🟢 Tienes espacio, pero cada cuota nueva te amarra meses.`:`🔴 <b>Cero cuotas nuevas</b>${baja?` hasta ${perL(baja.p).toLowerCase()}, cuando bajas al ${Math.round(baja.v/S.ppto*100)}%`:''}.`}${falta?` Te faltan <b>${fmt(falta)}</b> en total${libre?` y quedas libre en <b>${perL(libre).toLowerCase()}</b>`:''}.`:''}</div>
+    ${tiles([['Te falta',kCLP(falta)],['Libre en',libre?MES[+libre.slice(5)-1]+' '+libre.slice(2,4):'—'],ok?['Otra cuota','Puedes','ok']:['Otra cuota',baja?'En '+MES[+baja.p.slice(5)-1].toLowerCase():'No','bad']])}
     ${cq.length?`<div class="mes6" style="margin-top:12px">${M.map((m,i)=>`<div class="${i&&m.v<M[i-1].v?'b':''}"><em>${kCLP(m.v)}</em><i style="height:${Math.max(3,m.v/mx*62)}px"></i>${MESL[+m.p.slice(5)-1].slice(0,3)}</div>`).join('')}</div>`:''}</div>
     <button class="btn p" style="margin:0 0 14px" onclick="openCheck();setTimeout(()=>{const b=document.querySelectorAll('#nc-ch .chip')[3];if(b)b.click()},50)">🤔 ¿Puedo comprar algo en cuotas?</button>
     <button class="crow" style="background:var(--card);border-radius:22px;padding:12px 16px;margin-bottom:14px;box-shadow:var(--sh)" onclick="openDebo()"><div class="ic">🧾</div><div class="cm"><b>Lo que debes</b><small>Para quedar en cero</small></div><b class="m-der">${fmt(debo().total)}</b><span class="chev">›</span></button>
@@ -1811,9 +1821,8 @@ function debo(){const per=S.actual,G=(S.periodo===per?S.gastos:[]),CQ=cuotasDe(p
   return{tarj,fut,tt,tf,td,total:tt+tf+td}}
 function openDebo(){const D=debo(),cie=k=>CORTE[k]?` · cierra el ${CORTE[k]}`:'';
   openSheet(`<h3>🧾 Lo que debes</h3><p>Todo junto: tus tarjetas de este mes, las cuotas que faltan y tus deudas. Pagando esto quedas en cero.</p>
-  <div class="card sum"><div class="k">Total</div><div class="v">${fmt(D.total)}</div>
-   <div class="cats-seg">${[[D.tt,'#344054'],[D.tf,'#F79009'],[D.td,'#F04438']].filter(([v])=>v>0).map(([v,c])=>`<div style="flex:${v};background:${c}"></div>`).join('')}</div>
-   <div class="cats-l"><span style="--c:#344054">Tarjetas ${kCLP(D.tt)}</span>${D.tf?`<span style="--c:#F79009">Cuotas que faltan ${kCLP(D.tf)}</span>`:''}${D.td?`<span style="--c:#F04438">Deudas ${kCLP(D.td)}</span>`:''}</div></div>
+  <div class="card sum"><div class="k">Total para quedar en cero</div><div class="v">${fmt(D.total)}</div>
+   ${tiles([['1. Tarjetas',kCLP(D.tt)],['2. Cuotas',kCLP(D.tf)],['3. Deudas',kCLP(D.td)]])}</div>
   <div class="sec-t" style="margin-left:2px">1. Tus tarjetas de este mes</div>
   <div class="card">${D.tarj.map(x=>`<div class="cq" style="cursor:default"><div class="t"><b>${TJ[x.k]||'Otras'}</b><span>${fmt(x.total)}</span></div>
     <small>${x.compras?`Compras de este mes ${fmt(x.compras)}${x.neg?` (incluye ${fmt(x.neg)} del negocio)`:''}`:'Sin compras este mes'}${x.cuotas?` · cuotas de compras viejas ${fmt(x.cuotas)}`:''}${x.fijos?` · fijos ${fmt(x.fijos)}`:''}${cie(x.k)}</small>

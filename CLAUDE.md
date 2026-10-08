@@ -201,6 +201,11 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 4. Anotar un gasto debe tomar menos de 3 segundos. La categoría es automática.
 5. Premiar el autocontrol ("te aguantaste $X") y mostrar el costo en 10 años de cada compra.
 6. No es asesoría financiera: mantener los avisos "no soy asesor" en las secciones de impuestos e inversión.
+8. **Números en casillas, no en frases.** Los totales se muestran con `tiles()` (etiqueta corta + número compacto con `kCLP`,
+   estado ok/bad con color): Gastos (gastos · cuotas · te pasaste/te quedan), Cuotas (te falta · libre en · otra cuota),
+   Lo que debes (tarjetas · cuotas · deudas). Colores de categoría = paleta validada para daltonismo (`SEG`: comida azul,
+   casa naranjo, suscripciones aqua, ropa amarillo, ocio rosado, tech violeta; el resto gris "Otros"); no usar rojo ni verde
+   de estado para categorías. Gráficos: barras ≤ 24px con punta redondeada y base recta, línea de referencia continua.
 7. **Simple primero, detalle a un toque.** Cada pestaña parte con la pregunta que responde (`tab-s`). Se muestra lo que
    importa y el resto queda tras "Ver…": Gastos muestra las 4 categorías que más pesan (+ las pasadas del tope) y "Ver las N
    categorías"; la barra de colores muestra 4 en la leyenda; Coach muestra solo los hábitos pendientes ("Ver los N que ya
