@@ -259,6 +259,10 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval("S.aj.deudas=[{id:1,que:'PSA',monto:490000}];openDebo()");
  checks['lo que debes: total, tarjetas, cuotas que faltan y deudas']=t('sheet').includes('Lo que debes')&&t('sheet').includes('Tus tarjetas de este mes')&&t('sheet').includes('Scotia')&&t('sheet').includes('PSA')&&t('sheet').includes('Prepago de cuotas');
  w.eval("closeSheet();renderMetas()");checks['lo que debes: fila en Plata']=t('metas').includes('Lo que debes');w.eval('S.aj.deudas=[]');
+ // Hoy: el número se explica al tocarlo; pasado del mes muestra lo básico al día en vez de $0
+ w.eval("tab('hoy');openHeroInfo()");checks['hoy: al tocar el número se explica la cuenta']=t('sheet').includes('¿De dónde sale este número?')&&t('sheet').includes('Presupuesto del mes')&&t('sheet').includes('Cuotas y fijos');w.eval('closeSheet()');
+ w.eval("S.pptoBak=S.ppto;S.ppto=100000;render()");checks['hoy: pasado del mes muestra lo básico al día, no $0']=t('hero-w').includes('solo lo básico')&&t('hero-w').includes('al día')&&!/\$0(?!\d|\.)/.test(t('hero-w'));
+ w.eval('openHeroInfo()');checks['hoy: pasado del mes, la cuenta dice cuánto vas pasado']=t('sheet').includes('Vas pasado del mes por');w.eval('closeSheet();S.ppto=S.pptoBak;render()');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();

@@ -936,6 +936,20 @@ async function loadPeriodo(){
 
 const SVG=d=>`<svg class="i" viewBox="0 0 24 24">${d}</svg>`;
 const HICO=(c,q)=>SVG(c==='ok'||(c===''&&q>=0)?'<circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/>':c==='bad'||c===''?'<path d="M7.9 2h8.2L22 7.9v8.2L16.1 22H7.9L2 16.1V7.9z"/><path d="M12 8v4M12 16h.01"/>':'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>');
+// Lo básico al día cuando ya te pasaste: tope de comida + transporte repartido en 30 días (≈ $9.500 con tus topes).
+const basicoDia=()=>Math.round(((S.techos.comida||250000)+(S.techos.transporte||30000))/30/500)*500;
+// "¿De dónde sale este número?": la cuenta del hero con tus números, en palabras simples.
+function openHeroInfo(){const V=S.V;if(!V||!V.esActual)return;const ayer=V.gast-V.gastHoy,inicio=V.queda+V.gastHoy;
+  const r=(t,v,b,c)=>`<div class="row"${b?' style="border-top:1.5px solid var(--text)"':''}><span${b?' style="color:var(--text);font-weight:700"':''}>${t}</span><b style="${c?'color:'+c:''}">${v}</b></div>`;
+  openSheet(`<h3>¿De dónde sale este número?</h3><p>Tu presupuesto del mes, menos lo que ya está comprometido, repartido en los días que quedan hasta el 22.</p>
+  <div class="card">${r('Presupuesto del mes',fmt(S.ppto))}${r('− Cuotas y fijos (se pagan solos)',fmt(V.cuo))}${r('− Lo que gastaste hasta ayer',fmt(ayer))}
+   ${r('= Te quedaba al empezar hoy',fmt(inicio),1,inicio<0?'var(--red-d)':'')}
+   ${inicio>0?r(`÷ ${V.dias} día${V.dias>1?'s':''} hasta el 22`,'= '+fmt(V.cupoHoy)+' para hoy')+r('− Hoy gastaste',fmt(V.gastHoy))+r('= Hoy puedes gastar',fmt(Math.max(0,V.diario)),1,V.diario<0?'var(--red-d)':'var(--green-d)'):(V.gastHoy?r('− Hoy gastaste',fmt(V.gastHoy)):'')+r('= Vas pasado del mes por',fmt(-V.queda),1,'var(--red-d)')}</div>
+  ${inicio<=0?`<div class="cmp">🔴 Ya no queda plata del mes: te pasaste por <b>${fmt(-V.queda)}</b>. Por eso la app te muestra <b>lo básico al día (${fmt(basicoDia())})</b>: tu tope de comida y transporte repartido en el mes. Úsalo solo en súper y metro hasta el 22. El 23 parte un mes nuevo y el número vuelve.</div>`
+   :V.diario<0?`<div class="cmp">🟠 Hoy te pasaste por <b>${fmt(-V.diario)}</b>. No se pierde el mes: lo repartí en los días que quedan. Desde mañana tienes <b>${fmt(V.manana)}</b> al día.</div>`
+   :`<div class="cmp">🟢 Si hoy gastas menos, mañana el número sube. Si te pasas, baja para el resto de los días.</div>`}
+  <button class="btn p" onclick="closeSheet();tab('gastos')">Ver en qué se me fue</button>
+  <button class="btn" style="margin-top:8px;background:var(--bg3);color:var(--text)" onclick="closeSheet();tab('cuotas')">Ver mis cuotas</button>`)}
 function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase():'🙂';
   // Negocio (PULLDEX) solo para quien tiene reglas o gastos de negocio
   $('m-neg-b').style.display=S.reglas.some(r=>r.negocio)||(S.gastos||[]).some(g=>g.pulldex)?'':'none';
@@ -966,10 +980,14 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
   $('mes-t').textContent=mes;$('greet').textContent=esActual?(+S.periodo.slice(5)!==new Date().getMonth()+1?`Hoy ${new Date().getDate()} · hasta el 22 ${MESL[+S.periodo.slice(5)-1].slice(0,3).toLowerCase()}`:hoyL()):rangoL(S.periodo);
   $('viendo').innerHTML=esActual?'':`<div class="nudge"><div>👀 Estás viendo <b>${perL(S.periodo)}</b></div><button onclick="setPer(S.actual)">Volver a hoy</button></div>`;
 
-  let cls,lbl,amt,l1,msg;
+  let cls,lbl,amt,l1,msg,l2=`Incluye ${fmt(cuo)} de cuotas y fijos`;
   if(!esActual){cls='';lbl=queda>=0?`Te sobró en ${mes}`:`Te pasaste en ${mes}`;amt=fmt(Math.abs(queda));l1=`Gastaste ${fmt(total)} de ${fmt(S.ppto)}`;msg=queda>=0?'<span>Mes cerrado en positivo.</span>':'<span>Mes cerrado en rojo. Que no se repita.</span>';}
   // El número grande siempre es lo que PUEDES gastar (nunca lo que te pasaste): lo pasado va en una línea aparte.
-  else if(queda<0){cls='bad';lbl='Hasta el 22 puedes gastar';amt='$0';l1=`Te pasaste del mes por ${fmt(-queda)}: cada peso más sale de tu ahorro`;msg='<span>Freno total: solo súper y transporte hasta el 22.</span>';}
+  // Pasado del mes: en vez de un $0 que no dice nada, un número útil: cuánto al día SOLO para lo básico (súper y metro).
+  else if(queda<0){const gb=pers.filter(g=>g.fecha===H&&['comida','transporte'].includes(g.categoria_clave)).reduce((s,g)=>s+g.monto,0);
+    cls='bad';lbl='Hasta el 22, solo lo básico';amt=`${fmt(basicoDia())}<span style="font-size:.4em;font-weight:600;opacity:.8"> al día</span>`;
+    l1=`Te pasaste del mes por ${fmt(-queda)}`;l2=gb?`Hoy llevas ${fmt(gb)} en súper y metro${gb>basicoDia()?': ya pasaste el básico de hoy':''}`:'Súper y metro, nada más. Lo demás espera al 23.';
+    msg='<span>Lo que gastes ahora sale de tu ahorro. Toca el número para ver la cuenta.</span>';}
   else if(diario<0){cls='warn';lbl='Desde mañana puedes gastar';amt=`${fmt(manana)}<span style="font-size:.4em;font-weight:600;opacity:.8"> al día</span>`;
     msg=`<span>No se pierde el mes: lo que te pasaste hoy lo repartí en los ${dias-1} días que quedan.</span>`;}
   else{
@@ -978,7 +996,7 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
     else if(cupoHoy<15000){cls='warn';msg='<span>Margen justo. Cocina en casa y posterga cualquier compra.</span>';}
     else{cls='ok';msg=pausaFin()?`<span>Vas bien. Este mes lo que sobre es para pagar tus tarjetas.</span>`:`<span>Vas bien. Si te mantienes, fin de mes van <b>${fmt(fin)}</b> a Fintual.</span>`;}
   }
-  const rch=esActual?racha():0;$('hero-w').innerHTML=`<div class="hero ${cls}"><div class="h-lbl">${lbl}${rch>=2?`<span class="racha">🔥 ${rch} días</span>`:''}</div><div class="h-amt">${amt}</div>${esActual&&queda>=0?`${gastHoy>0&&diario>=0?`<div class="h-l2" style="margin:-6px 0 10px">De ${fmt(cupoHoy)} para hoy, ya usaste ${fmt(gastHoy)}</div>`:diario<0?`<div class="h-l2" style="margin:-6px 0 10px">Hoy te pasaste por <b>${fmt(-diario)}</b> (tenías ${fmt(cupoHoy)})</div>`:''}<div class="h-sum"><div class="t" style="border:none;margin:0 0 6px;padding:0"><span>${semana>=0?`Esta semana te quedan${diasSem>1?` <small style="opacity:.75;font-weight:500">(${diasSem} días)</small>`:''}`:'Esta semana te pasaste por'}</span><span>${fmt(Math.abs(semana))}</span></div><div class="t" onclick="tab('gastos')" style="cursor:pointer"><span>Hasta el 22 te quedan <small style="opacity:.75;font-weight:500">(${dias} días)</small></span><span>${fmt(queda)}</span></div></div>`:`<div class="h-l1">${l1}</div><div class="h-l2">Incluye ${fmt(cuo)} de cuotas y fijos</div>`}<div class="h-bar"><div style="width:${p}%"></div></div><div class="h-msg">${HICO(cls,queda)}${msg}</div></div>`;
+  const rch=esActual?racha():0;$('hero-w').innerHTML=`<div class="hero ${cls}" onclick="${esActual?'openHeroInfo()':''}" style="${esActual?'cursor:pointer':''}"><div class="h-lbl">${lbl}${esActual?' <span style="opacity:.7;font-weight:500">ⓘ</span>':''}${rch>=2?`<span class="racha">🔥 ${rch} días</span>`:''}</div><div class="h-amt">${amt}</div>${esActual&&queda>=0?`${gastHoy>0&&diario>=0?`<div class="h-l2" style="margin:-6px 0 10px">De ${fmt(cupoHoy)} para hoy, ya usaste ${fmt(gastHoy)}</div>`:diario<0?`<div class="h-l2" style="margin:-6px 0 10px">Hoy te pasaste por <b>${fmt(-diario)}</b> (tenías ${fmt(cupoHoy)})</div>`:''}<div class="h-sum"><div class="t" style="border:none;margin:0 0 6px;padding:0"><span>${semana>=0?`Esta semana te quedan${diasSem>1?` <small style="opacity:.75;font-weight:500">(${diasSem} días)</small>`:''}`:'Esta semana te pasaste por'}</span><span>${fmt(Math.abs(semana))}</span></div><div class="t" onclick="event.stopPropagation();tab('gastos')" style="cursor:pointer"><span>Hasta el 22 te quedan <small style="opacity:.75;font-weight:500">(${dias} días)</small></span><span>${fmt(queda)}</span></div></div>`:`<div class="h-l1">${l1}</div><div class="h-l2">${l2}</div>`}<div class="h-bar"><div style="width:${p}%"></div></div><div class="h-msg">${HICO(cls,queda)}${msg}</div></div>`;
   contar(lbl+S.periodo,esActual&&queda>=0&&diario>=0?diario:null);
 
   const ev=getEv();$('win').innerHTML=esActual&&ev?`<div class="win">💪 Este mes te aguantaste ${fmt(ev)} en compras</div>`:'';
