@@ -161,6 +161,7 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   "Hoy te pasaste por $Y"; si te pasas del mes, "Hasta el 22, solo lo básico: $X al día" (`basicoDia()` = tope de comida + transporte / 30,
   para súper y metro; un $0 solo no le decía nada a Vicho). Ahí mismo dice **por qué**: "Más que nada por X (+$Y)" = la categoría que más se pasó de su tope (si es Casa, aclara que es lo de independizarte). Tocar el número abre `openHeroInfo()`: "¿De dónde sale este número?"
   con la cuenta (presupuesto − cuotas − gastado hasta ayer ÷ días − hoy).
+- Si vas bien, el mensaje del recuadro es **una misión concreta** ("Misión de hoy: no pasar de $X", + cero delivery si comida > 80%) con la racha que gana (Vicho es indeciso: una sola cosa que hacer). Sin gastos hoy, la tarjeta "Nada anotado hoy" tiene **No gasté** (`localStorage['cero-<fecha>']` → "Día sin gastos"), para separar un día sin gastos de un olvido.
 - En el recuadro de Hoy, en vez de una barra va **la semana** (`semanaHero`: L a D, ✓ = ese día no pasaste tu plata del día,
   ✕ = sí, hoy marcado; tocar un día abre `openDia`). Arriba: "Hola, Vicho · Mié 7 oct". Debajo va "Esta semana te quedan" (lun–dom, sin
   pasar del 22) para las compras que no caben en un día.
