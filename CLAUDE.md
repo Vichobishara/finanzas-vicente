@@ -196,6 +196,11 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 4. Anotar un gasto debe tomar menos de 3 segundos. La categoría es automática.
 5. Premiar el autocontrol ("te aguantaste $X") y mostrar el costo en 10 años de cada compra.
 6. No es asesoría financiera: mantener los avisos "no soy asesor" en las secciones de impuestos e inversión.
+7. **Simple primero, detalle a un toque.** Cada pestaña parte con la pregunta que responde (`tab-s`). Se muestra lo que
+   importa y el resto queda tras "Ver…": Gastos muestra las 4 categorías que más pesan (+ las pasadas del tope) y "Ver las N
+   categorías"; la barra de colores muestra 4 en la leyenda; Coach muestra solo los hábitos pendientes ("Ver los N que ya
+   cumples") y 2 consejos; Plata va en secciones (Lo que tienes y lo que debes · Tus metas · Herramientas) y "Por pagar" vive
+   dentro de "Lo que debes". Antes de agregar algo nuevo a una pestaña, ver qué se puede esconder.
 
 ## Pendientes / ideas
 - [x] Seguridad: RLS con clave `x-app-key` (ver arriba). Si algún día hay más usuarios: Supabase Auth + RLS por usuario.
