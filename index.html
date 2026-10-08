@@ -1060,11 +1060,12 @@ function renderGastos(){
     const pg=S.prev.filter(g=>g.fecha<=c).reduce((s,g)=>s+g.monto,0),d=V.gast-pg;
     if(pg>0)cmp=`<div class="cmp">${d>0?'📈':'📉'} A esta altura de ${V.pvL} llevabas ${fmt(pg)}. Este mes vas <b style="color:${d>0?'var(--red-d)':'var(--green-d)'}">${fmt(Math.abs(d))} ${d>0?'más arriba':'más abajo'}</b>.</div>`}
   $('g-res').innerHTML=`<div class="card sum"><div class="k">${V.esActual?`Llevas gastado en ${V.mes} (hasta el 22)`:`Gastaste en ${V.mes}`}</div><div class="v">${fmt(V.total)} <span>de ${fmt(S.ppto)}</span></div>
+    <div class="k" style="margin:-2px 0 2px">= tus gastos ${fmt(V.gast)} + cuotas y fijos ${fmt(V.cuo)}${V.queda<0?` · <b style="color:var(--red-d)">te pasaste ${fmt(-V.queda)}</b>`:` · <b style="color:var(--green-d)">te quedan ${fmt(V.queda)}</b>`}</div>
     <div class="pace"><div style="width:${Math.min(100,pc)}%;background:${col}"></div>${V.esActual?`<i style="left:${Math.min(100,ideal)}%"></i>`:''}</div>
     <div class="pace-l"><span>${V.esActual?`La raya: donde deberías ir hoy (${ideal}%)`:`${fmt(V.cuo)} fueron cuotas y fijos`}</span><b style="color:${col}">${pc}%</b></div>${segCats()}${cmp}</div>${diaADia(ini,cierre,largo,hoy)}`;
   const nr=(S.revisar||[]).length,no=(V.items.otros||[]).length;
   $('g-pend').innerHTML=(nr?`<div class="nudge"><div>🔁 <b>${nr} transferencia${nr>1?'s':''} por revisar</b> · no cuentan hasta que me digas</div><button onclick="openRev()">Revisar</button></div>`:'')+(no?`<div class="nudge"><div>❓ <b>${no} gasto${no>1?'s':''} sin categoría</b></div><button onclick="openCat('otros')">Ordenar</button></div>`:'');
-  $('g-ult').innerHTML=porDia(S.gastos.slice(0,6))||'<div class="empty">Aún no hay gastos este mes 🎉</div>';
+  $('g-ult').innerHTML=porDia(S.gastos.slice(0,4))||'<div class="empty">Aún no hay gastos este mes 🎉</div>';
 }
 
 // ---------- Coach: hábitos del mes con puntaje, y consejos que se pueden hacer con un toque ----------
