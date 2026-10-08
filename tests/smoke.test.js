@@ -62,7 +62,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['barra de navegación']=d.body.classList.contains('ready')&&d.querySelectorAll('#nav button[data-t]').length===5&&!d.querySelector('#nav button.add')&&!!d.querySelector('[data-tab="gastos"] .tab-h button');
  w.eval("tab('gastos')");checks['pestaña gastos']=!d.querySelector('[data-tab=gastos]').hidden&&d.querySelector('[data-tab=hoy]').hidden;
  w.eval("tab('coach')");checks['coach en pestaña']=t('coach').length>20;w.eval("tab('hoy')");
- checks['coach: hábitos con puntaje']=/\d\/\d/.test(t('coach-hab'))&&t('coach-hab').includes('Todo ordenado')&&t('coach-hab').includes('Mandaste plata a Fintual');
+ checks['coach: hábitos con puntaje, primero lo pendiente']=/\d\/\d/.test(t('coach-hab'))&&(t('coach-hab').includes('que ya cumples')||t('coach-hab').includes('Todo ordenado'))&&(w.eval('S.habAll=1;renderCoach()'),t('coach-hab').includes('Todo ordenado')&&t('coach-hab').includes('Mandaste plata a Fintual'));w.eval('S.habAll=0;renderCoach()');
  checks['coach: consejos con botón']=!!d.querySelector('#coach .tip .go');
  checks['gastos: resumen del mes']=t('g-res').includes('de $1.000.000')&&t('g-pend').includes('por revisar')&&t('g-ult').includes('Jumbo');
  checks['plata: plan, APV e impuestos a la vista']=t('fin').includes('Fintual')&&t('apv-c').includes('APV')&&t('tax-c').includes('SII')&&t('meta').includes('Colchón');
@@ -137,7 +137,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['por pagar: muestra la deuda y el total']=t('deudas-c').includes('PSA')&&t('deudas-c').includes('$490.000')&&t('deudas-c').includes('La pagué');
  // Plata compacta: filas cortas que abren el detalle
  w.eval("S.aj.fondo={que:'iPhone Duo',meta:2100000,ahorrado:300000,mensual:0};S.aj.deudas=[{id:1,que:'PSA',monto:490000}];render()");
- checks['plata compacta: fondo, deudas, APV e impuestos en filas']=t('metas').includes('iPhone Duo')&&t('metas').includes('$300.000 de $2.100.000')&&t('metas').includes('$490.000')&&t('metas').includes('Impuestos');
+ checks['plata compacta: lo que tienes y debes, metas e impuestos en filas']=t('metas').includes('iPhone Duo')&&t('metas').includes('$300.000 de $2.100.000')&&t('metas').includes('Lo que debes')&&t('metas').includes('Tus metas')&&t('metas').includes('Impuestos');
  w.eval("verCard('deudas-c')");checks['plata compacta: la fila abre el detalle']=t('sheet').includes('La pagué');w.eval('closeSheet()');
  // Guía para ponerla en la pantalla de inicio
  w.eval('guiaInicio()');checks['guía inicio: pasos y no está en la tienda']=t('sheet').includes('Ponla en tu pantalla de inicio')&&t('sheet').includes('No la busques en la')&&d.querySelectorAll('#sheet .step').length>=3;w.eval('closeSheet()');

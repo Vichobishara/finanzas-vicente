@@ -514,6 +514,7 @@ body:not(.ready) .mes-b .chev{display:none}
 
   <section class="tab" data-tab="gastos" hidden>
   <div class="tab-h"><h2 class="tab-t">Gastos</h2><button onclick="openAdd()"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Anotar</button></div>
+  <p class="tab-s">¿En qué se me está yendo la plata este mes?</p>
   <div id="g-res"></div>
   <div id="g-pend"></div>
   <div class="card">
@@ -525,7 +526,6 @@ body:not(.ready) .mes-b .chev{display:none}
     <div id="g-ult"></div>
   </div>
   <div class="card menu">
-    <button class="crow" onclick="tab('cuotas')"><div class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg></div><div class="cm"><b>Cuotas y fijos</b><small id="m-cuo">—</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openSubs()"><div class="ic" style="font-size:18px">🔁</div><div class="cm"><b>Suscripciones</b><small>Todo lo que pagas cada mes, y cuánto es al año</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openCuadrar()"><div class="ic" style="font-size:18px">🧮</div><div class="cm"><b>Cuadrar con la cartola</b><small>Sube la cartola y agrego lo que se te pasó anotar</small></div><span class="chev">›</span></button>
     <button class="crow" id="m-neg-b" onclick="openNeg()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 22V12h6v10"/></svg></div><div class="cm"><b>Negocio (PULLDEX)</b><small>Gastos y ventas: ¿gana o pierde plata?</small></div><span class="chev">›</span></button>
@@ -536,19 +536,21 @@ body:not(.ready) .mes-b .chev{display:none}
 
   <section class="tab" data-tab="cuotas" hidden>
   <h2 class="tab-t">Cuotas</h2>
+  <p class="tab-s">¿Cuánto pago cada mes por compras que ya hice?</p>
   <div id="cuo-v"></div>
   </section>
 
   <section class="tab" data-tab="plata" hidden>
   <h2 class="tab-t">Tu plata</h2>
-  <p class="tab-s">Lo que tienes, lo que te toca ahorrar y cómo llegar a tu meta.</p>
+  <p class="tab-s">¿Cuánto tengo, cuánto debo y cuánto me falta para mi meta?</p>
   <button class="meta" id="meta" onclick="openMeta()"></button>
   <div id="next"></div>
   <div class="card" id="fin"></div>
-  <div class="card menu" id="metas"></div>
+  <div id="metas"></div>
   <div hidden><div class="card" id="fondo-c"></div><div class="card" id="deudas-c"></div><div class="card" id="cobrar-c"></div><div class="card" id="apv-c"></div><div class="card" id="tax-c"></div></div>
+  <div class="sec-t">Herramientas</div>
   <div class="card menu">
-    <button class="crow" onclick="openPlata()"><div class="ic">📍</div><div class="cm"><b>Dónde poner cada peso</b><small>Tu orden: APV, colchón, largo plazo</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="openPlata()"><div class="ic">📍</div><div class="cm"><b>Dónde poner cada peso</b><small>Cómo repartir lo que ahorras</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openBono()"><div class="ic">🎁</div><div class="cm"><b>¿Te llegó un bono o comisión?</b><small>Cuotas, tarjeta, deudas y el resto a Fintual</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openFin()"><div class="ic">💼</div><div class="cm"><b>Sueldos y ahorro real</b><small>Lo que te entra y lo que de verdad ahorraste</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openFintual()"><div class="ic">🔗</div><div class="cm"><b id="m-fin-t">Conectar Fintual</b><small id="m-fin">Tu saldo y tus aportes se anotan solos</small></div><span class="chev">›</span></button>
@@ -559,6 +561,7 @@ body:not(.ready) .mes-b .chev{display:none}
 
   <section class="tab" data-tab="coach" hidden>
   <h2 class="tab-t">Coach</h2>
+  <p class="tab-s">¿Qué hago este mes para mejorar?</p>
   <div id="coach-hab"></div>
   <div class="card" id="deseos-c"></div>
   <div class="card" id="logros-c"></div>
@@ -567,6 +570,7 @@ body:not(.ready) .mes-b .chev{display:none}
   </div>
   <h3 class="sec-t" id="m-tips">Consejos con tus números</h3>
   <div id="coach"></div>
+  <div class="sec-t">Ajustes y extras</div>
   <div class="card menu" style="margin-top:6px">
     <button class="crow" onclick="openRevision()"><div class="ic" style="font-size:18px">🗓</div><div class="cm"><b>Revisión de la semana</b><small>2 minutos los domingos: cierras la semana ordenado</small></div><span class="chev">›</span></button>
     <button class="crow" id="m-inv" onclick="openInvitar()" style="display:none"><div class="ic" style="font-size:18px">👥</div><div class="cm"><b>Invitar a alguien</b><small>Tu papá, tus amigos: cada uno con su app y sus datos privados</small></div><span class="chev">›</span></button>
@@ -1002,13 +1006,15 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
 
   const tops=Object.entries(tot).filter(([k])=>k!=='otros').sort((a,b)=>b[1]-a[1]).slice(0,3);
   const ks=[...KS,'otros'].filter(k=>tot[k]||(S.techos[k]&&k!=='otros'));
-  $('top3').innerHTML=tops.length?ks.map(catRow).join('')+`<button class="crow" onclick="openCuotas()"><div class="ic">💳</div><div class="cm"><b>Cuotas y fijos</b><small>se descuentan solas</small></div><div class="ca">${fmt(cuo)}</div></button>`:'<div class="empty">Aún no hay gastos este mes 🎉</div>';
+  // Primero lo que más pesa (y las que pasaron su tope); el resto a un toque, para no llenar la pantalla
+  {const ord=ks.filter(k=>k!=='otros').sort((a,b)=>(tot[b]||0)-(tot[a]||0)),sobre=ord.filter(k=>S.techos[k]&&(tot[k]||0)>S.techos[k]),ver=[...new Set([...ord.slice(0,4),...sobre])].filter(k=>tot[k]);
+   $('top3').innerHTML=tops.length?ver.map(catRow).join('')+(ks.length>ver.length?`<button class="logro-mas" onclick="openAll()">Ver las ${ks.length} categorías ›</button>`:''):'<div class="empty">Aún no hay gastos este mes 🎉</div>';}
   const pend=(S.revisar||[]).length+(items.otros||[]).length,nb=$('nav-b');nb.textContent=pend;nb.classList.toggle('on',pend>0);
   document.body.classList.add('ready');salirLogin();navPill();
 
   $('m-movs').textContent=S.gastos.length?`Ver todos (${S.gastos.length})`:'Ver todos';
   {const vivas=S.cuotas.filter(c=>!c.recurrente&&c.primer_periodo&&(infoCuota(c,S.periodo).por||0)>0),fin=vivas.map(c=>addM(c.primer_periodo,c.total_cuotas-1)).sort().pop();
-   $('m-cuo').textContent=`${fmt(cuo)} al mes`+(fin?` · libre de cuotas en ${perL(fin)}`:' · se suman solas');}
+   if($('m-cuo'))$('m-cuo').textContent=`${fmt(cuo)} al mes`+(fin?` · libre de cuotas en ${perL(fin)}`:' · se suman solas');}
   $('m-ppto').textContent=`${fmt(S.ppto)} (incluye cuotas)`;
   renderGastos();renderCuotasTab();renderCoach();renderPlata();entrar();
 }
@@ -1100,19 +1106,18 @@ function renderCoach(){renderLogros();
   else{const H=habitos(),cu=H.filter(h=>h.ok!==null),n=cu.filter(h=>h.ok).length,t=cu.length,f=t-n,pc=Math.round(n/t*100),ya=H.filter(h=>h.ok===false&&h.b&&!['openCuotas()',"tab('plata')"].includes(h.b[1])).length;
     const c=f===0?'var(--green)':f<=2?'var(--amber)':'var(--red)';
     el.innerHTML=`<div class="card"><div class="score"><div class="ring" style="background:conic-gradient(${c} ${pc}%,var(--bg3) 0)"><span>${n}/${t}</span></div><div><b>${f===0?'Mes de millonario 🏆':f<=2?'Vas bien, te falta poco':'Hay que ordenarse'}</b><small>${f===0?'Cumpliste todo. Así se llega.':`Te ${f>1?`faltan ${f} cosas`:'falta 1 cosa'}.${ya?` ${ya===f?(f>1?'Todas se arreglan':'Se arregla'):ya>1?`${ya} se arreglan`:'1 se arregla'} ahora con un toque.`:' Se arregla con el mes: tú sigue a raya.'}`}</small></div></div>
-      ${[...H.filter(h=>h.ok===false),...H.filter(h=>h.ok!==false)].map(h=>`<div class="hab"><div class="ck ${h.ok?'ok':h.ok===null?'wait':''}">${h.ok?'✓':h.ok===null?'⏳':''}</div><div class="cm"><b>${h.t}</b><small>${h.s}</small></div>${h.b&&!h.ok?`<button onclick="${h.b[1]}">${h.b[0]}</button>`:''}</div>`).join('')}</div>`;}
+      ${(()=>{const pend=H.filter(h=>h.ok===false),resto=H.filter(h=>h.ok!==false),L=S.habAll||!pend.length?[...pend,...resto]:pend;return L.map(h=>`<div class="hab"><div class="ck ${h.ok?'ok':h.ok===null?'wait':''}">${h.ok?'✓':h.ok===null?'⏳':''}</div><div class="cm"><b>${h.t}</b><small>${h.s}</small></div>${h.b&&!h.ok?`<button onclick="${h.b[1]}">${h.b[0]}</button>`:''}</div>`).join('')+(L.length<H.length?`<button class="logro-mas" onclick="S.habAll=1;renderCoach()">Ver los ${H.length-L.length} que ya cumples ✓</button>`:'')})()}</div>`;}
   const TL=tipsList();$('m-tips').style.display=TL.length?'':'none';
-  $('coach').innerHTML=TL.map(([i,t,a])=>`<div class="tip"><i>${i}</i><div class="cm2">${t}${a?`<br><button class="go" onclick="${a[1]}">${a[0]}</button>`:''}</div></div>`).join('');
+  const vt=S.tipsAll?TL:TL.slice(0,2);$('coach').innerHTML=vt.map(([i,t,a])=>`<div class="tip"><i>${i}</i><div class="cm2">${t}${a?`<br><button class="go" onclick="${a[1]}">${a[0]}</button>`:''}</div></div>`).join('')+(TL.length>vt.length?`<button class="logro-mas" onclick="S.tipsAll=1;renderCoach()">Ver ${TL.length-vt.length} consejo${TL.length-vt.length>1?'s':''} más ›</button>`:'');
 }
 
 function nextMove(){
   const m=new Date().getMonth()+1,T=S.tax;
   if(T&&T.dev>50000&&m>=3&&m<=5)return['🧾',`Pide la reliquidación en la Operación Renta`,`Te podrían devolver ≈ ${fmt(Math.round(T.dev/10000)*10000)}`,'tax-c'];
-  if(!apvOk())return['🎯','Abre tu APV régimen A en Fintual',`Aportando ${fmt(APV_MES)} al mes, el Estado te pone hasta ${fmt(APV_BONO)} al año`,'apv-c'];
   if(T&&T.dev>50000)return['🧾',`Abril ${+T.y+1}: pide la reliquidación`,`Te podrían devolver ≈ ${fmt(Math.round(T.dev/10000)*10000)} de impuestos`,'tax-c'];
   return['🛡','No te pases del presupuesto','Así el ahorro de fin de mes queda intacto','fin'];
 }
-function renderNext(){if(!S.V.esActual){$('next').innerHTML='';return}const[i,b,s,to]=nextMove();$('next').innerHTML=`<button class="next" onclick="${to==='fin'?`$('fin').scrollIntoView({behavior:'smooth',block:'center'})`:`verCard('${to}')`}"><i>${i}</i><div class="cm"><b>${b}</b><small>${s}</small></div><span class="chev">›</span></button>`}
+function renderNext(){if(!S.V.esActual){$('next').innerHTML='';return}const[i,b,s,to]=nextMove();$('next').innerHTML=`<button class="next" onclick="${to==='fin'?`$('fin').scrollIntoView({behavior:'smooth',block:'center'})`:to==='debo'?'openDebo()':`verCard('${to}')`}"><i>${i}</i><div class="cm"><b>${b}</b><small>${s}</small></div><span class="chev">›</span></button>`}
 
 // ---------- Plata: la meta, el plan de ahorro, el APV y los impuestos, todo a la vista ----------
 const ahorroDe=per=>S.ahorros.filter(a=>a.periodo===per).reduce((s,a)=>s+a.monto,0);
@@ -1204,15 +1209,14 @@ function renderMetas(){const el=$('metas');if(!el)return;const F=S.aj.fondo,D=DE
   const fila=(id,ic,t,sub,der)=>`<button class="crow" onclick="verCard('${id}')"><div class="ic">${ic}</div><div class="cm"><b>${t}</b><small>${sub}</small></div>${der||''}<span class="chev">›</span></button>`;
   const K=S.aj.casa,kn=K?casaNecesitas(K):0;
   const C=caja();
-  el.innerHTML=`<button class="crow" onclick="openCaja()"><div class="ic">🏦</div><div class="cm"><b>Tu caja</b><small>${C.monto===null?'Cuánto tienes en la cuenta y cuánto viene en la tarjeta':`${fmt(C.monto)} en la cuenta · próxima factura ≈ ${fmt(C.factura)}`}</small></div><span class="chev">›</span></button>`
-   +(()=>{const D=debo();return `<button class="crow" onclick="openDebo()"><div class="ic">🧾</div><div class="cm"><b>Lo que debes</b><small>${D.total?`Tarjetas ${kCLP(D.tt)}${D.tf?` · cuotas que faltan ${kCLP(D.tf)}`:''}${D.td?` · deudas ${kCLP(D.td)}`:''}`:'Nada: estás en cero 🙌'}</small></div>${D.total?`<b class="m-der">${fmt(D.total)}</b>`:''}<span class="chev">›</span></button>`})()
-   +`<button class="crow" onclick="openCasa()"><div class="ic">🏠</div><div class="cm"><b>Independizarme</b><small>${K?`${fmt(K.ahorrado||0)} de ${fmt(kn)}${K.mensual?` · llegas en ${perL(addM(S.actual,Math.ceil(Math.max(0,kn-(K.ahorrado||0))/K.mensual)))}`:''}`:'Calcula cuánto necesitas para irte a vivir solo'}</small></div>${K?`<span class="mini"><i style="width:${Math.min(100,(K.ahorrado||0)/kn*100)}%"></i></span>`:''}<span class="chev">›</span></button>`
+  el.innerHTML=`<div class="sec-t">Lo que tienes y lo que debes</div><div class="card menu"><button class="crow" onclick="openCaja()"><div class="ic">🏦</div><div class="cm"><b>Tu caja</b><small>${C.monto===null?'Cuánto tienes en la cuenta y cuánto viene en la tarjeta':`${fmt(C.monto)} en la cuenta · próxima factura ≈ ${fmt(C.factura)}`}</small></div><span class="chev">›</span></button>`
+   +(()=>{const D=debo();return `<button class="crow" onclick="openDebo()"><div class="ic">🧾</div><div class="cm"><b>Lo que debes</b><small>${D.total?'Tarjetas, cuotas que faltan y deudas':'Nada: estás en cero 🙌'}</small></div>${D.total?`<b class="m-der">${fmt(D.total)}</b>`:''}<span class="chev">›</span></button>`})()
+   +(()=>{const B=COB(),bt=B.reduce((s,x)=>s+x.monto,0);return fila('cobrar-c','📥','Por cobrar',B.length?B.map(x=>esc(x.que)).join(', '):'Plata que te deben: un reembolso, el IVA, una venta',bt?`<b class="m-der" style="color:var(--green-d)">${fmt(bt)}</b>`:'')})()
+   +`</div><div class="sec-t">Tus metas</div><div class="card menu"><button class="crow" onclick="openCasa()"><div class="ic">🏠</div><div class="cm"><b>Independizarme</b><small>${K?`${fmt(K.ahorrado||0)} de ${fmt(kn)}${K.mensual?` · llegas en ${perL(addM(S.actual,Math.ceil(Math.max(0,kn-(K.ahorrado||0))/K.mensual)))}`:''}`:'Calcula cuánto necesitas para irte a vivir solo'}</small></div>${K?`<span class="mini"><i style="width:${Math.min(100,(K.ahorrado||0)/kn*100)}%"></i></span>`:''}<span class="chev">›</span></button>`
    +fila('fondo-c','🎧',F?F.que:'Fondo gadgets',F?`${fmt(F.ahorrado)} de ${fmt(F.meta)}`:'Junta para tu próximo gadget sin tocar el mes',
       F?`<span class="mini"><i style="width:${Math.min(100,F.ahorrado/F.meta*100)}%"></i></span>`:'')
-   +fila('deudas-c','🧾','Por pagar',D.length?D.map(x=>x.que).join(', '):'No le debes a nadie 🙌',tot?`<b class="m-der">${fmt(tot)}</b>`:'')
-   +(()=>{const B=COB(),bt=B.reduce((s,x)=>s+x.monto,0);return fila('cobrar-c','📥','Por cobrar',B.length?B.map(x=>esc(x.que)).join(', '):'Plata que te deben: un reembolso, el IVA, una venta',bt?`<b class="m-der" style="color:var(--green-d)">${fmt(bt)}</b>`:'')})()
    +fila('apv-c','🎯',apvOk()?`APV ${new Date().getFullYear()}`:'APV: plata gratis del Estado',apvOk()?`${fmt(a)} de ${fmt(APV_ANUAL)}`:'Pendiente: abrirlo en Fintual')
-   +fila('tax-c','🧾','Impuestos',!T?'Anota tus liquidaciones':dev>50000?`El SII te debe ≈ ${fmt(dev)}`:'Al día');
+   +fila('tax-c','🧾','Impuestos',!T?'Anota tus liquidaciones':dev>50000?`El SII te debe ≈ ${fmt(dev)}`:'Al día')+'</div>';
   // Si la hoja de detalle está abierta, que muestre lo nuevo (ej: después de "La pagué")
   const v=document.querySelector('#sheet [data-vista]');if(v&&sheetOn())v.innerHTML=cardSin(v.dataset.vista)}
 
@@ -1550,7 +1554,7 @@ function openDia(f){const L=S.gastos.filter(g=>g.fecha===f),P=L.filter(g=>!g.pul
 function segCats(){const V=S.V,E=Object.entries(V.tot).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);if(V.cuo)E.push(['_cuo',V.cuo]);
   const T=E.reduce((s,[,v])=>s+v,0);if(!T)return'';const inf=k=>k==='_cuo'?{n:'Cuotas',c:'#344054'}:(CAT[k]||CAT.otros);
   return `<div class="cats-seg">${E.map(([k,v])=>`<div style="flex:${v};background:${inf(k).c}"></div>`).join('')}</div>
-  <div class="cats-l">${E.slice(0,7).map(([k,v])=>`<span style="--c:${inf(k).c}">${inf(k).n} ${kCLP(v)}</span>`).join('')}</div>`}
+  <div class="cats-l">${E.slice(0,4).map(([k,v])=>`<span style="--c:${inf(k).c}">${inf(k).n} ${kCLP(v)}</span>`).join('')}${E.length>4?`<span style="--c:#D0D5DD">${E.length-4} más</span>`:''}</div>`}
 // Día a día: cuánto gastaste cada día vs. lo que podías gastar por día (la línea verde).
 function diaADia(ini,cierre,largo,hoy){const V=S.V,by={},ISO=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   S.gastos.filter(g=>!g.pulldex).forEach(g=>by[g.fecha]=(by[g.fecha]||0)+g.monto);
@@ -1774,6 +1778,7 @@ function openDebo(){const D=debo(),cie=k=>CORTE[k]?` · cierra el ${CORTE[k]}`:'
   ${D.fut.length?`<div class="sec-t" style="margin-left:2px">2. Cuotas que faltan después de este mes</div><div class="card">${D.fut.map(c=>`<button class="crow" onclick="openCuota(${c.id})"><div class="cm"><b>${esc(c.nombre)}</b><small>${c.quedan} cuota${c.quedan>1?'s':''} de ${fmt(c.monto_cuota)} · ${TJ[c.tarjeta]||''}</small></div><div class="ca">${fmt(c.restante)}</div></button>`).join('')}</div>
     <div class="lead" style="padding:0 4px 4px">Para adelantarlas: en la app del banco busca "Prepago de cuotas" (pagar de más la tarjeta no las adelanta). Después toca la cuota aquí → "La adelanté".</div>`:''}
   ${D.td?`<div class="sec-t" style="margin-left:2px">${D.fut.length?3:2}. Deudas fuera de la tarjeta</div><div class="card">${DEU().map(d=>`<div class="crow" style="cursor:default"><div class="cm"><b>${esc(d.que)}</b><small>${esc(d.nota||'')}</small></div><div class="ca">${fmt(d.monto)}</div></div>`).join('')}</div>`:''}
+  <div class="chips" style="margin:2px 0 12px"><button class="chip" onclick="editDeuda()">+ Debo algo fuera de la tarjeta</button></div>
   <div class="cmp">💡 Ojo con las líneas de crédito de tu cuenta corriente: si usaste alguna, esa va primero (cobra interés alto) y no aparece aquí.</div>`)}
 async function saveCaja(){const m=($('cj-m').value||'').trim()?val('cj-m'):null;
   await saveAj('perfil',{...PERF(),caja:m,caja_fecha:hoyISO(),caja_min:val('cj-min')||300000});toast('✅ Caja actualizada');openCaja()}
