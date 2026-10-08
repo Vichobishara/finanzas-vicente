@@ -279,6 +279,19 @@ body.ready .nav{display:grid}
 .nav button.add{background:#fff;color:var(--navy);flex:0 0 50px;width:50px;min-width:50px;padding:0;margin:0 5px;box-shadow:inset 0 -1px 1px rgba(18,18,23,.06),0 4px 14px -4px rgba(18,18,23,.3)}
 .nav button.add svg.i{width:24px;height:24px;stroke-width:2.6}
 @media (prefers-reduced-motion:reduce){.nav-pill{transition:none}}
+/* 5 pestañas: cada una con ícono y nombre abajo (siempre se lee dónde está todo); la píldora marca la activa */
+.nav button,.nav button.on{flex:1 1 0;flex-direction:column;gap:2px;padding:0;font-size:10.5px;font-weight:700;letter-spacing:-.1px}
+.nav button span,.nav button.on span{display:block;line-height:1}
+.nav button svg.i{width:21px;height:21px}
+.nav button.add{flex:0 0 50px}
+.nav i,.nav button.on i{top:3px;left:calc(50% + 5px);right:auto}
+/* La activa se marca suave (fondo gris claro + ícono y nombre en negro), no con una píldora negra: con 5 pestañas respira mejor */
+.nav{width:min(calc(100% - 16px),440px);padding:5px;grid-template-columns:2fr auto 3fr;background:rgba(255,255,255,.9)}
+.nav-pill{height:52px;top:5px;background:rgba(18,18,23,.07);box-shadow:none}
+.nav button{height:52px;color:var(--hint);font-weight:600}
+.nav button.on{color:var(--navy);font-weight:800}
+.nav button.on svg.i{stroke-width:2.4}
+.nav button.add{width:46px;min-width:46px;flex:0 0 46px;height:46px;margin:0 4px;background:var(--navy);color:#fff;box-shadow:0 6px 16px -6px rgba(18,18,23,.5)}
 .tab-t{font-size:28px;font-weight:800;letter-spacing:-.8px;margin:2px 0 16px}
 .tab-s{font-size:13.5px;color:var(--sec);margin:-8px 0 14px}
 body.ready .app{padding-bottom:calc(110px + var(--safe-b))}
@@ -352,6 +365,27 @@ body:not(.ready) .mes-b .chev{display:none}
 .mes6 div i{width:100%;border-radius:7px 7px 3px 3px;background:var(--ac);min-height:3px;transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.9,.3,1) both}
 .mes6 div.b i{background:var(--green)}
 .mes6 div em{font-style:normal;font-weight:700;color:var(--text);font-size:9.5px}
+.dq{background:var(--bg3);border-radius:20px;padding:4px 14px 14px;margin-top:14px}
+.dq-t{font-size:15px;font-weight:800;padding:10px 0 2px}.dq-p{font-size:13px;font-weight:600;margin:12px 0 7px}
+.dq .chip{padding:8px 13px;font-size:13px}.dq .verdict .btn{margin-bottom:0}
+.dia-h{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0 2px;font-size:12px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.04em}
+.dia-h{cursor:pointer}.dia-h:active{opacity:.6}
+.dia-h b{font-size:12.5px;color:var(--sec);font-weight:700;letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
+.dia-h+.crow{padding-top:8px}
+.cats-seg{display:flex;height:10px;border-radius:99px;overflow:hidden;gap:2px;margin:14px 0 8px}
+.cats-seg div{height:100%;min-width:3px}
+.cats-l{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--sec)}
+.cats-l span{white-space:nowrap}.cats-l span:before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:5px;vertical-align:0}
+.dd{display:flex;align-items:flex-end;gap:3px;height:96px;margin:12px 0 4px;position:relative;cursor:pointer}
+.dd:active{opacity:.8}
+.dd i{flex:1;border-radius:5px 5px 2px 2px;background:#E2E2E9;min-height:3px;transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.9,.3,1) both}
+.dd i.hoy{background:var(--navy)}.dd i.over{background:var(--red)}.dd i.fut{background:none;border:1.5px dashed #E2E2E9;min-height:12px}
+.dd b{position:absolute;left:0;right:0;border-top:1.5px dashed var(--green);opacity:.8;pointer-events:none}
+.dd-l{display:flex;justify-content:space-between;font-size:11px;color:var(--hint);margin-bottom:12px}
+.srch{display:flex;align-items:center;gap:8px;background:var(--bg3);border-radius:14px;padding:0 12px;margin-bottom:10px}
+.srch input{flex:1;min-width:0;border:none!important;background:none!important;padding:12px 0!important;box-shadow:none!important;font-size:16px}
+.fchips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:0 -20px 4px;padding-left:20px;padding-right:20px;scrollbar-width:none}
+.fchips::-webkit-scrollbar{display:none}.fchips .chip{flex-shrink:0;padding:7px 12px;font-size:13px}
 .chk{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);width:100%;background:none;border-left:none;border-right:none;border-top:none;text-align:left}
 .chk .bx{width:24px;height:24px;border-radius:8px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0}
 .chk.on .bx{background:var(--green);border-color:var(--green)}
@@ -491,13 +525,18 @@ body:not(.ready) .mes-b .chev{display:none}
     <div id="g-ult"></div>
   </div>
   <div class="card menu">
-    <button class="crow" onclick="openCuotas()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg></div><div class="cm"><b>Cuotas y fijos</b><small id="m-cuo">—</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="tab('cuotas')"><div class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg></div><div class="cm"><b>Cuotas y fijos</b><small id="m-cuo">—</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openSubs()"><div class="ic" style="font-size:18px">🔁</div><div class="cm"><b>Suscripciones</b><small>Todo lo que pagas cada mes, y cuánto es al año</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openCuadrar()"><div class="ic" style="font-size:18px">🧮</div><div class="cm"><b>Cuadrar con la cartola</b><small>Sube la cartola y agrego lo que se te pasó anotar</small></div><span class="chev">›</span></button>
     <button class="crow" id="m-neg-b" onclick="openNeg()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 22V12h6v10"/></svg></div><div class="cm"><b>Negocio (PULLDEX)</b><small>Gastos y ventas: ¿gana o pierde plata?</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openMeses()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg></div><div class="cm"><b>Meses anteriores</b><small>Compara cómo te fue</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="editPpto()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></div><div class="cm"><b>Presupuesto del mes</b><small id="m-ppto">—</small></div><span class="chev">›</span></button>
   </div>
+  </section>
+
+  <section class="tab" data-tab="cuotas" hidden>
+  <h2 class="tab-t">Cuotas</h2>
+  <div id="cuo-v"></div>
   </section>
 
   <section class="tab" data-tab="plata" hidden>
@@ -507,10 +546,10 @@ body:not(.ready) .mes-b .chev{display:none}
   <div id="next"></div>
   <div class="card" id="fin"></div>
   <div class="card menu" id="metas"></div>
-  <div hidden><div class="card" id="fondo-c"></div><div class="card" id="deudas-c"></div><div class="card" id="apv-c"></div><div class="card" id="tax-c"></div></div>
+  <div hidden><div class="card" id="fondo-c"></div><div class="card" id="deudas-c"></div><div class="card" id="cobrar-c"></div><div class="card" id="apv-c"></div><div class="card" id="tax-c"></div></div>
   <div class="card menu">
     <button class="crow" onclick="openPlata()"><div class="ic">📍</div><div class="cm"><b>Dónde poner cada peso</b><small>Tu orden: APV, colchón, largo plazo</small></div><span class="chev">›</span></button>
-    <button class="crow" onclick="openBono()"><div class="ic">🎁</div><div class="cm"><b>¿Te llegó un bono?</b><small>Te digo dónde va cada peso</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="openBono()"><div class="ic">🎁</div><div class="cm"><b>¿Te llegó un bono o comisión?</b><small>Cuotas, tarjeta, deudas y el resto a Fintual</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openFin()"><div class="ic">💼</div><div class="cm"><b>Sueldos y ahorro real</b><small>Lo que te entra y lo que de verdad ahorraste</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openFintual()"><div class="ic">🔗</div><div class="cm"><b id="m-fin-t">Conectar Fintual</b><small id="m-fin">Tu saldo y tus aportes se anotan solos</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="editPat()"><div class="ic">✏️</div><div class="cm"><b>Actualizar mi patrimonio</b><small id="m-pat">Fintual, cartas y ETH</small></div><span class="chev">›</span></button>
@@ -542,7 +581,8 @@ body:not(.ready) .mes-b .chev{display:none}
   <div class="nav-g"><button data-t="hoy" class="on" onclick="tab('hoy')"><svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Hoy</span></button>
   <button data-t="gastos" onclick="tab('gastos')"><svg class="i" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>Gastos</span><i id="nav-b"></i></button></div>
   <button class="add" onclick="openAdd()" aria-label="Anotar gasto"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
-  <div class="nav-g"><button data-t="plata" onclick="tab('plata')"><svg class="i" viewBox="0 0 24 24"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg><span>Plata</span></button>
+  <div class="nav-g"><button data-t="cuotas" onclick="tab('cuotas')"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg><span>Cuotas</span></button>
+  <button data-t="plata" onclick="tab('plata')"><svg class="i" viewBox="0 0 24 24"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg><span>Plata</span></button>
   <button data-t="coach" onclick="tab('coach')"><svg class="i" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/></svg><span>Coach</span></button></div>
 </nav>
 
@@ -573,10 +613,13 @@ const CAT={
  coleccionables:{n:'Cartas y coleccionables',ic:'🃏',c:'#F97316'}, ocio:{n:'Salidas y ocio',ic:'🎮',c:'#64748B'},
  fijo:{n:'Suscripciones',ic:'🔁',c:'#2E90FA'}, transporte:{n:'Transporte',ic:'🚇',c:'#EAB308'},
  salud:{n:'Salud y cuidado',ic:'💈',c:'#EE46BC'}, viajes:{n:'Viajes',ic:'✈️',c:'#15B79E'},
+ casa:{n:'Casa',ic:'🏠',c:'#0E9384'}, ropa:{n:'Ropa',ic:'👕',c:'#DD2590'},
  otros:{n:'Sin categoría',ic:'❓',c:'#98A2B3'}
 };
 const TJ={scotiabank:'Scotia',bci:'BCI',santander:'Santander',efectivo:'Efectivo',otro:'Transferencia'};
 const CORTE={scotiabank:22,bci:20};
+// Orden en que se muestran las categorías (Casa: lo de independizarse; cuenta para la meta Independizarme)
+const KS=['comida','fijo','tech','casa','ropa','transporte','salud','ocio','coleccionables','viajes'];
 let SUELDO=1900000;
 const UTM=71649,APV_ANUAL=40*UTM,APV_MES=Math.round(APV_ANUAL/12),APV_BONO=6*UTM;
 const TR=[[13.5,0],[30,.04],[50,.08],[70,.135],[90,.23],[120,.304],[310,.35],[1e9,.40]];
@@ -684,7 +727,7 @@ function contar(k,v){const el=document.querySelector('#hero-w .h-amt'),h=documen
   const f=t=>{const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=fmt(from+(v-from)*e);if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)}
 function entrar(){if(!S.sk)return;S.sk=false;document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('enter');void t.offsetWidth;t.classList.add('enter')});setTimeout(()=>document.querySelectorAll('.tab').forEach(t=>t.classList.remove('enter')),900)}
 
-const TABS=['hoy','gastos','plata','coach'];let tabAct='hoy';
+const TABS=['hoy','gastos','cuotas','plata','coach'];let tabAct='hoy';
 function tab(t){const dx=TABS.indexOf(t)>TABS.indexOf(tabAct)?'18px':'-18px',cambia=t!==tabAct;tabAct=t;
   document.querySelectorAll('.tab').forEach(x=>{x.hidden=x.dataset.tab!==t;x.classList.remove('tab-in');if(cambia&&!x.hidden){x.style.setProperty('--dx',dx);void x.offsetWidth;x.classList.add('tab-in');clearTimeout(x._t);x._t=setTimeout(()=>x.classList.remove('tab-in'),1100)}});document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));navPill();window.scrollTo(0,0)}
 // Barra "liquid glass": la píldora se desliza con rebote y se estira al moverse; se puede arrastrar con el dedo.
@@ -853,6 +896,8 @@ async function _loadAll(){
     try{if(localStorage.getItem('apv-abierto')==='1'&&!apvOk())saveAj('apv',{abierto:true,fecha:hoyISO()},true);
       const l=+localStorage.getItem('evitado-'+S.actual)||0;if(l&&!getEv())saveAj('evitado',{...(S.aj.evitado||{}),[S.actual]:l},true);}catch(e){}
     await loadPeriodo();loadIngresos();
+    // Lo comprado para la casa (todos los meses) avanza la meta Independizarme
+    api('gastos?categoria_clave=eq.casa&pulldex=eq.false&select=monto,estado').then(r=>{S.casaComp=(r||[]).filter(g=>!g.estado||g.estado==='ok').reduce((s,g)=>s+g.monto,0);renderMetas()}).catch(()=>{});
     if(!S.aj.perfil)return bienvenida();
     if(/[?&]revision/.test(location.search)){history.replaceState(null,'',location.pathname);return openRevision()}
     if(S.periodo===S.actual&&!sheetOn())avisar();
@@ -938,6 +983,7 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
 
   // Máximo 3 avisos (en orden de importancia) para que nada quede escondido bajo la barra; el resto aparece cuando resuelves estos.
   let nz='',arma=false;const rev=items.otros||[],tr=S.revisar||[];
+  if(esActual){const dl=DES().find(d=>d.estado==='espera'&&listo(d));if(dl)nz+=`<div class="nudge"><div>⏳ <b>Pasaron 3 días:</b> ¿todavía quieres ${esc(dl.que)} (${fmt(dl.monto)})?</div><button onclick="openDeseo(${dl.id})">Decidir</button></div>`}
   if(tr.length)nz+=`<div class="nudge"><div>🔁 <b>${tr.length} transferencia${tr.length>1?'s':''} por revisar</b> · no cuentan hasta que me digas</div><button onclick="openRev()">Revisar</button></div>`;
   if(esActual&&S.aj.perfil&&LS('arma-ok')!=='1'&&LS('arma-cerrado')!==hoyISO()){const P=armaPasos(),n=P.filter(p=>p.ok).length;if(n<P.length)arma=true,nz+=`<div class="nudge"><div>🧩 <b>Arma tu app</b> · ${n} de ${P.length} listos</div><button onclick="armaApp()">Seguir</button></div>`;else LS('arma-ok','1')}
   if(esActual&&[0,1].includes(hoy.getDay())&&!LS('revision-'+semanaDe()))nz+=`<div class="nudge"><div>🗓 <b>Revisión de la semana</b> · 2 minutos y cierras la semana ordenado</div><button onclick="openRevision()">Hacer</button></div>`;
@@ -956,7 +1002,7 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
     :`<div class="nudge"><div>📝 <b>Nada anotado hoy.</b> ¿Pagaste algo con Scotia o en efectivo?</div><button onclick="openAdd()">Anotar</button></div>`;}
 
   const tops=Object.entries(tot).filter(([k])=>k!=='otros').sort((a,b)=>b[1]-a[1]).slice(0,3);
-  const ks=['comida','fijo','tech','transporte','salud','ocio','coleccionables','viajes','otros'].filter(k=>tot[k]||(S.techos[k]&&k!=='otros'));
+  const ks=[...KS,'otros'].filter(k=>tot[k]||(S.techos[k]&&k!=='otros'));
   $('top3').innerHTML=tops.length?ks.map(catRow).join('')+`<button class="crow" onclick="openCuotas()"><div class="ic">💳</div><div class="cm"><b>Cuotas y fijos</b><small>se descuentan solas</small></div><div class="ca">${fmt(cuo)}</div></button>`:'<div class="empty">Aún no hay gastos este mes 🎉</div>';
   const pend=(S.revisar||[]).length+(items.otros||[]).length,nb=$('nav-b');nb.textContent=pend;nb.classList.toggle('on',pend>0);
   document.body.classList.add('ready');salirLogin();navPill();
@@ -965,7 +1011,7 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
   {const vivas=S.cuotas.filter(c=>!c.recurrente&&c.primer_periodo&&(infoCuota(c,S.periodo).por||0)>0),fin=vivas.map(c=>addM(c.primer_periodo,c.total_cuotas-1)).sort().pop();
    $('m-cuo').textContent=`${fmt(cuo)} al mes`+(fin?` · libre de cuotas en ${perL(fin)}`:' · se suman solas');}
   $('m-ppto').textContent=`${fmt(S.ppto)} (incluye cuotas)`;
-  renderGastos();renderCoach();renderPlata();entrar();
+  renderGastos();renderCuotasTab();renderCoach();renderPlata();entrar();
 }
 
 // ---------- Gastos: cómo vas, qué falta ordenar y lo último que anotaste ----------
@@ -977,13 +1023,13 @@ function renderGastos(){
   let cmp='';
   if(V.esActual&&S.prev.length){const cut=new Date(new Date(y,m-3,23).getTime()+(hoy-ini)),c=cut.getFullYear()+'-'+String(cut.getMonth()+1).padStart(2,'0')+'-'+String(cut.getDate()).padStart(2,'0');
     const pg=S.prev.filter(g=>g.fecha<=c).reduce((s,g)=>s+g.monto,0),d=V.gast-pg;
-    cmp=`<div class="cmp">${d>0?'📈':'📉'} A esta altura de ${V.pvL} llevabas ${fmt(pg)}. Este mes vas <b style="color:${d>0?'var(--red-d)':'var(--green-d)'}">${fmt(Math.abs(d))} ${d>0?'más arriba':'más abajo'}</b>.</div>`}
+    if(pg>0)cmp=`<div class="cmp">${d>0?'📈':'📉'} A esta altura de ${V.pvL} llevabas ${fmt(pg)}. Este mes vas <b style="color:${d>0?'var(--red-d)':'var(--green-d)'}">${fmt(Math.abs(d))} ${d>0?'más arriba':'más abajo'}</b>.</div>`}
   $('g-res').innerHTML=`<div class="card sum"><div class="k">${V.esActual?`Llevas gastado en ${V.mes} (hasta el 22)`:`Gastaste en ${V.mes}`}</div><div class="v">${fmt(V.total)} <span>de ${fmt(S.ppto)}</span></div>
     <div class="pace"><div style="width:${Math.min(100,pc)}%;background:${col}"></div>${V.esActual?`<i style="left:${Math.min(100,ideal)}%"></i>`:''}</div>
-    <div class="pace-l"><span>${V.esActual?`La raya: donde deberías ir hoy (${ideal}%)`:`${fmt(V.cuo)} fueron cuotas y fijos`}</span><b style="color:${col}">${pc}%</b></div>${cmp}</div>`;
+    <div class="pace-l"><span>${V.esActual?`La raya: donde deberías ir hoy (${ideal}%)`:`${fmt(V.cuo)} fueron cuotas y fijos`}</span><b style="color:${col}">${pc}%</b></div>${segCats()}${cmp}</div>${diaADia(ini,cierre,largo,hoy)}`;
   const nr=(S.revisar||[]).length,no=(V.items.otros||[]).length;
   $('g-pend').innerHTML=(nr?`<div class="nudge"><div>🔁 <b>${nr} transferencia${nr>1?'s':''} por revisar</b> · no cuentan hasta que me digas</div><button onclick="openRev()">Revisar</button></div>`:'')+(no?`<div class="nudge"><div>❓ <b>${no} gasto${no>1?'s':''} sin categoría</b></div><button onclick="openCat('otros')">Ordenar</button></div>`:'');
-  $('g-ult').innerHTML=S.gastos.slice(0,5).map(txHtml).join('')||'<div class="empty">Aún no hay gastos este mes 🎉</div>';
+  $('g-ult').innerHTML=porDia(S.gastos.slice(0,6))||'<div class="empty">Aún no hay gastos este mes 🎉</div>';
 }
 
 // ---------- Coach: hábitos del mes con puntaje, y consejos que se pueden hacer con un toque ----------
@@ -1116,17 +1162,18 @@ function renderPlata(){
   const fz=FIN();$('m-fin-t').textContent=fz?'Fintual conectado':'Conectar Fintual';
   $('m-fin').textContent=!fz?'Tu saldo y tus aportes se anotan solos':fz.error?'⚠️ Hay que volver a conectar':'Al día · '+haceTxt(fz.sync_at);
   $('m-pat').textContent=dp===null?'Fintual, cartas y ETH':dp<1?'Lo actualizaste hoy':`Lo actualizaste hace ${dp} día${dp>1?'s':''}${dp>35?' ⚠️':''}`;
-  renderNext();renderMeta();renderFondo();renderDeudas();renderMetas();finAlAbrir();
+  renderNext();renderMeta();renderFondo();renderDeudas();renderCobrar();renderMetas();finAlAbrir();
 }
 
 // ---------- Plata compacta: fondo, deudas, APV e impuestos son filas cortas; el detalle se abre en una hoja ----------
 // Las tarjetas completas se siguen pintando (ocultas) y la hoja muestra una copia que se refresca en cada render().
-const VISTA={'fondo-c':'🎧 Fondo gadgets','deudas-c':'🧾 Por pagar','apv-c':'🎯 APV','tax-c':'🧾 Impuestos'};
+const VISTA={'fondo-c':'🎧 Fondo gadgets','deudas-c':'🧾 Por pagar','cobrar-c':'📥 Por cobrar','apv-c':'🎯 APV','tax-c':'🧾 Impuestos'};
 function cardSin(id){const c=$(id).cloneNode(true);c.querySelectorAll('.card-h h2').forEach(n=>n.remove());return c.innerHTML}
 function verCard(id){openSheet(`<h3>${VISTA[id]}</h3><div data-vista="${id}">${cardSin(id)}</div>`)}
 // ---------- Meta "Independizarme" (ajustes.casa {arriendo, muebles, ahorrado, mensual}) ----------
 // Necesitas = garantía (1 arriendo) + primer mes + corretaje (medio arriendo) + lo básico para amoblar.
-const casaNecesitas=K=>Math.round((K.arriendo||0)*2.5+(K.muebles||0));
+// Lo que ya compraste en la categoría Casa (S.casaComp, de todos los meses) se descuenta de lo que falta para amoblar.
+const casaNecesitas=K=>Math.round((K.arriendo||0)*2.5+Math.max(0,(K.muebles||0)-(S.casaComp||0)));
 function openCasa(){const K=S.aj.casa||{arriendo:450000,muebles:800000,ahorrado:0,mensual:100000},sue=SUELDO||0;
   const n=casaNecesitas(K),falta=Math.max(0,n-(K.ahorrado||0)),m=K.mensual?Math.ceil(falta/K.mensual):null,vivir=Math.round(K.arriendo*1.15+60000),pc=sue?Math.round(vivir/sue*100):0;
   openSheet(`<h3>🏠 Independizarme</h3><p>Lo que necesitas <b>para irte</b> y lo que te va a costar <b>cada mes</b> después.</p>
@@ -1139,6 +1186,7 @@ function openCasa(){const K=S.aj.casa||{arriendo:450000,muebles:800000,ahorrado:
     <div class="row"><span>Primer mes de arriendo</span><b>${fmt(K.arriendo)}</b></div>
     <div class="row"><span>Corretaje (medio mes)</span><b>${fmt(K.arriendo/2)}</b></div>
     <div class="row"><span>Amoblar lo básico</span><b>${fmt(K.muebles)}</b></div>
+    ${S.casaComp?`<div class="row"><span>🏠 Ya compraste para tu casa</span><b style="color:var(--green-d)">−${fmt(Math.min(S.casaComp,K.muebles||0))}</b></div>`:''}
     <div class="row" style="border-top:1px solid var(--border)"><span><b>Necesitas para irte</b></span><b>${fmt(n)}</b></div>
   </div>
   <div class="lead" style="padding:12px 0">${falta?`Te faltan <b>${fmt(falta)}</b>.${m?` Apartando ${fmt(K.mensual)} al mes te vas en <b>${perL(addM(S.actual,m))}</b>.`:''}`:'🎉 Ya tienes la plata para irte.'}<br>
@@ -1158,10 +1206,12 @@ function renderMetas(){const el=$('metas');if(!el)return;const F=S.aj.fondo,D=DE
   const K=S.aj.casa,kn=K?casaNecesitas(K):0;
   const C=caja();
   el.innerHTML=`<button class="crow" onclick="openCaja()"><div class="ic">🏦</div><div class="cm"><b>Tu caja</b><small>${C.monto===null?'Cuánto tienes en la cuenta y cuánto viene en la tarjeta':`${fmt(C.monto)} en la cuenta · próxima factura ≈ ${fmt(C.factura)}`}</small></div><span class="chev">›</span></button>`
+   +(()=>{const D=debo();return `<button class="crow" onclick="openDebo()"><div class="ic">🧾</div><div class="cm"><b>Lo que debes</b><small>${D.total?`Tarjetas ${kCLP(D.tt)}${D.tf?` · cuotas que faltan ${kCLP(D.tf)}`:''}${D.td?` · deudas ${kCLP(D.td)}`:''}`:'Nada: estás en cero 🙌'}</small></div>${D.total?`<b class="m-der">${fmt(D.total)}</b>`:''}<span class="chev">›</span></button>`})()
    +`<button class="crow" onclick="openCasa()"><div class="ic">🏠</div><div class="cm"><b>Independizarme</b><small>${K?`${fmt(K.ahorrado||0)} de ${fmt(kn)}${K.mensual?` · llegas en ${perL(addM(S.actual,Math.ceil(Math.max(0,kn-(K.ahorrado||0))/K.mensual)))}`:''}`:'Calcula cuánto necesitas para irte a vivir solo'}</small></div>${K?`<span class="mini"><i style="width:${Math.min(100,(K.ahorrado||0)/kn*100)}%"></i></span>`:''}<span class="chev">›</span></button>`
    +fila('fondo-c','🎧',F?F.que:'Fondo gadgets',F?`${fmt(F.ahorrado)} de ${fmt(F.meta)}`:'Junta para tu próximo gadget sin tocar el mes',
       F?`<span class="mini"><i style="width:${Math.min(100,F.ahorrado/F.meta*100)}%"></i></span>`:'')
    +fila('deudas-c','🧾','Por pagar',D.length?D.map(x=>x.que).join(', '):'No le debes a nadie 🙌',tot?`<b class="m-der">${fmt(tot)}</b>`:'')
+   +(()=>{const B=COB(),bt=B.reduce((s,x)=>s+x.monto,0);return fila('cobrar-c','📥','Por cobrar',B.length?B.map(x=>esc(x.que)).join(', '):'Plata que te deben: un reembolso, el IVA, una venta',bt?`<b class="m-der" style="color:var(--green-d)">${fmt(bt)}</b>`:'')})()
    +fila('apv-c','🎯',apvOk()?`APV ${new Date().getFullYear()}`:'APV: plata gratis del Estado',apvOk()?`${fmt(a)} de ${fmt(APV_ANUAL)}`:'Pendiente: abrirlo en Fintual')
    +fila('tax-c','🧾','Impuestos',!T?'Anota tus liquidaciones':dev>50000?`El SII te debe ≈ ${fmt(dev)}`:'Al día');
   // Si la hoja de detalle está abierta, que muestre lo nuevo (ej: después de "La pagué")
@@ -1179,17 +1229,23 @@ function openPlata(){
   </div>
   <p class="fine">No soy asesor financiero: son reglas generales aplicadas a tus números.</p>`);
 }
-function openBono(){openSheet(`<h3>🎁 ¿Te llegó un bono?</h3><p>Pon cuánto te llegó líquido ese mes y te digo dónde va cada peso.</p>
+function openBono(){openSheet(`<h3>🎁 ¿Te llegó un bono?</h3><p>Pon cuánto te llegó líquido y te digo en qué orden va cada peso: cuotas, tarjeta, deudas, lo que dejas en la cuenta y el resto a Fintual.</p>
   <input id="b-in" class="amt-in" inputmode="numeric" placeholder="$0" oninput="fmtIn(this);calcBono()"><div id="b-out" style="padding:6px 0 10px"></div>
   <p class="fine">No soy asesor financiero ni tributario. La UTM usada es ${fmt(UTM)}.</p>`);$('b-in').focus()}
+// Mes con comisión grande: el orden de Vicho. 1) adelantar cuotas, 2) pagar la tarjeta, 3) deudas, 4) dejar el mes que viene,
+// 5) lo que sobra a Fintual, mitad Risky (largo plazo) y mitad conservador. El impuesto alto vuelve en abril (reliquidación).
 function calcBono(){
   const x=val('b-in'),o=$('b-out');if(!x){o.innerHTML='';return}
-  if(x<=SUELDO){o.innerHTML=`<div class="row"><span>Es un mes normal: sigue el plan de siempre.</span></div>`;return}
-  const extra=x-SUELDO,inv=Math.round(extra*.7),apv=Math.min(inv,APV_ANUAL),rv=inv-apv,libre=extra-inv;
-  o.innerHTML=`<div class="row"><span>Sueldo normal (para el mes)</span><b>${fmt(SUELDO)}</b></div><div class="row"><span>Extra del bono</span><b>${fmt(extra)}</b></div>
-  <div class="row"><span>→ APV régimen A</span><b style="color:var(--green-d)">${fmt(apv)}</b></div>${rv?`<div class="row"><span>→ Fintual largo plazo</span><b style="color:var(--green-d)">${fmt(rv)}</b></div>`:''}
-  <div class="row"><span>→ Para ti, sin culpa (30%)</span><b>${fmt(libre)}</b></div>
-  <small style="color:var(--sec);font-size:12px;display:block;padding-top:8px">El impuesto alto que te retengan ese mes lo recuperas en abril con la reliquidación.</small>`;
+  const C=caja(),adel=C.desp,tarj=C.factura,deu=DEU().reduce((s,d)=>s+d.monto,0),mes=C.min,sobra=x-adel-tarj-deu-mes,r=Math.round(Math.max(0,sobra)/2);
+  const fila=(n,t,v,sub)=>`<div class="lever"><i style="font-style:normal;font-weight:800">${n}</i><div style="flex:1"><b>${t}</b>${sub?`<br><small style="color:var(--sec)">${sub}</small>`:''}</div><b style="color:var(--text);white-space:nowrap">${fmt(v)}</b></div>`;
+  o.innerHTML=fila('1','Adelantar todas las cuotas',adel,adel?`Lo que falta después de este mes. En la app: Cuotas → cada una → "La adelanté".`:'No te quedan cuotas 🎉')
+   +fila('2','Pagar la tarjeta',tarj,'Lo de este mes: compras con tarjeta + cuotas de este mes')
+   +(deu?fila('3','Pagar lo que debes',deu,DEU().map(d=>esc(d.que)).join(', ')):'')
+   +fila(deu?'4':'3','Dejar en la cuenta',mes,'Para débito, efectivo y transferencias hasta el próximo sueldo. Lo que gastes con tarjeta lo paga el sueldo que viene.')
+   +(sobra>0?`<div class="cmp" style="margin-top:6px"><b>Te sobran ${fmt(sobra)} → Fintual</b><div class="row" style="padding:8px 0 4px"><span>📈 Risky (largo plazo)</span><b style="color:var(--green-d)">${fmt(r)}</b></div><div class="row" style="padding:4px 0 0;border:none"><span>🛟 Conservador (para irte / colchón)</span><b style="color:var(--green-d)">${fmt(Math.max(0,sobra)-r)}</b></div></div>
+     <button class="btn p" onclick="closeSheet();openAhorro()">Ya lo mandé → anotar</button>`
+     :`<div class="cmp" style="margin-top:6px">🔴 No alcanza para todo: faltan ${fmt(-sobra)}. Primero tarjeta y deudas; las cuotas adelántalas solo con lo que sobre.</div>`)
+   +`<small style="color:var(--sec);font-size:12px;display:block;padding-top:10px">APV: opcional. Régimen A te regala 15% de lo que pongas, pero queda para la jubilación. El impuesto alto que te retengan este mes vuelve en abril con la reliquidación (Plata → Impuestos).</small>`;
 }
 
 const PAT=()=>S.aj.patrimonio||{fintual:13047596,cartas:5000000,eth:1440000};
@@ -1441,17 +1497,17 @@ function catRow(k){
   const sub=!t?(s?'sin tope este mes':'bloqueado este mes 🚫'):s>t?`te pasaste por ${fmt(s-t)}`:`te quedan ${fmt(t-s)}`;
   return `<button class="crow" onclick="openCat('${k}')"><div class="ic">${c.ic}</div><div class="cm"><b>${c.n}</b><small>${sub}</small><div class="bar"><div style="width:${pc}%;background:${col}"></div></div></div><div class="ca" style="color:${tcol}">${fmt(s)}</div></button>`;
 }
-function txHtml(g){const c=CAT[g.categoria_clave]||CAT.otros;const d=g.fecha.slice(8,10)+'/'+g.fecha.slice(5,7);
-  return `<button class="crow" onclick="openTx(${g.id})"><div class="ic">${c.ic}</div><div class="cm"><b>${g.descripcion}</b><small>${TJ[g.tarjeta]||g.tarjeta} · ${d}${g.pulldex?' · negocio':''}</small></div><div class="ca" style="color:${g.monto<0?'var(--green-d)':'var(--text)'}">${fmt(-g.monto)}</div></button>`}
+function txHtml(g,sinF){const c=CAT[g.categoria_clave]||CAT.otros;const d=g.fecha.slice(8,10)+'/'+g.fecha.slice(5,7);
+  return `<button class="crow" onclick="openTx(${g.id})"><div class="ic">${c.ic}</div><div class="cm"><b>${g.descripcion}</b><small>${TJ[g.tarjeta]||g.tarjeta}${sinF?'':' · '+d}${g.pulldex?' · negocio':''}</small></div><div class="ca" style="color:${g.monto<0?'var(--green-d)':'var(--text)'}">${fmt(-g.monto)}</div></button>`}
 
 function openAll(){
-  const V=S.V,ks=['comida','fijo','tech','transporte','salud','ocio','coleccionables','viajes'].filter(k=>V.tot[k]||S.techos[k]);
+  const V=S.V,ks=KS.filter(k=>V.tot[k]||S.techos[k]);
   openSheet(`<h3>Todo ${V.mes}</h3><p>Toca una categoría para ver sus gastos.</p><div class="card">${ks.map(catRow).join('')}<button class="crow" onclick="openCuotas()"><div class="ic">💳</div><div class="cm"><b>Cuotas y fijos</b><small>se descuentan solas</small></div><div class="ca">${fmt(V.cuo)}</div></button></div>${V.nt?`<button class="crow" onclick="openNeg()" style="border:none"><div class="ic">🧩</div><div class="cm"><b>Negocio (TCG Logs / PULLDEX)</b><small>no cuenta en tu presupuesto</small></div><div class="ca">${fmt(V.nt)}</div></button>`:''}`);
 }
 function openCat(k){
   const V=S.V,c=CAT[k]||CAT.otros,s=V.tot[k]||0,t=S.techos[k]||0,p=V.ptot[k],it=V.items[k]||[];
-  const info=k==='otros'?'Tócalos y elige la categoría. La app lo recuerda para la próxima.':`${fmt(s)}${t?' de '+fmt(t):''}${p?` · en ${V.pvL} fueron ${fmt(p)}`:''}`;
-  openSheet(`<h3>${c.ic} ${c.n}</h3><p>${info}</p><div class="card">${it.map(txHtml).join('')||'<div class="empty">Nada por aquí 🎉</div>'}</div>`);
+  const info=k==='otros'?'Tócalos y elige la categoría. La app lo recuerda para la próxima.':`${fmt(s)}${t?' de '+fmt(t):''}${p?` · en ${V.pvL} fueron ${fmt(p)}`:''}${k==='casa'?'<br>🏠 Lo que compras aquí se descuenta de lo que te falta para amoblar (meta Independizarme).':''}`;
+  openSheet(`<h3>${c.ic} ${c.n}</h3><p>${info}</p><div class="card">${porDia(it)||'<div class="empty">Nada por aquí 🎉</div>'}</div>`);
 }
 async function openNeg(){const V=S.V,g=V.neg.filter(x=>x.monto>0).reduce((s,x)=>s+x.monto,0),v=-V.neg.filter(x=>x.monto<0).reduce((s,x)=>s+x.monto,0);
   const res=(a,b,l)=>`<div class="row"><span style="color:var(--text);font-weight:700">${l||(b>=a?'Vas ganando':'Falta recuperar')}</span><b style="color:${b>=a?'var(--green-d)':'var(--red-d)'}">${fmt(Math.abs(b-a))}</b></div>`;
@@ -1465,14 +1521,53 @@ async function openNeg(){const V=S.V,g=V.neg.filter(x=>x.monto>0).reduce((s,x)=>
 function openVenta(){openSheet(`<h3>💵 Anotar venta</h3><p>Plata que entró por el negocio: cartas vendidas, PULLDEX, etc.</p><input id="v-monto" class="amt-in" inputmode="numeric" placeholder="$0" oninput="fmtIn(this)"><label>¿Qué vendiste?</label><input id="v-desc" placeholder="ej: Charizard PSA 9" onkeydown="if(event.key==='Enter')saveVenta()"><button class="btn p" onclick="saveVenta()">Guardar</button>`);$('v-monto').focus()}
 async function saveVenta(){const m=val('v-monto');if(!m){toast('Pon el monto');return}const d=($('v-desc').value||'').trim();
   try{await api('gastos',{m:'POST',b:{fecha:hoyISO(),monto:-m,descripcion:'Venta'+(d?': '+d:''),tarjeta:'otro',fuente:'app',pulldex:true,categoria_clave:'coleccionables'}});closeSheet();toast(`💵 Venta de ${fmt(m)} anotada`);await loadAll();openNeg()}catch(e){toast('❌ Error');console.error(e)}}
-function openMovs(){openSheet(`<h3>Todos los gastos</h3><p>${perL(S.periodo)} · toca uno para editarlo o borrarlo.</p><div class="card">${S.gastos.map(txHtml).join('')||'<div class="empty">Sin gastos</div>'}</div>`)}
+// Todos los gastos: buscar por nombre, filtrar por categoría y ver el total de cada día.
+function openMovs(k){S.mv={q:'',k:k||''};const ks=[...KS,'otros'].filter(c=>S.gastos.some(g=>g.categoria_clave===c));
+  openSheet(`<h3>Todos los gastos</h3><p>${perL(S.periodo)} · toca uno para editarlo, devolverlo o borrarlo.</p>
+  <div class="srch">${SVG('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>')}<input id="mv-q" placeholder="Buscar (ej: jumbo, uber)" autocomplete="off" oninput="S.mv.q=this.value;mvPinta()"></div>
+  <div class="fchips" id="mv-c"><button class="chip ${!S.mv.k?'on':''}" data-k="" onclick="mvCat(this)">Todo</button>${ks.map(c=>`<button class="chip ${S.mv.k===c?'on':''}" data-k="${c}" onclick="mvCat(this)">${(CAT[c]||CAT.otros).ic} ${(CAT[c]||CAT.otros).n}</button>`).join('')}${S.gastos.some(g=>g.pulldex)?`<button class="chip" data-k="neg" onclick="mvCat(this)">🧩 Negocio</button>`:''}</div>
+  <div id="mv-t" class="lead" style="padding:6px 2px 0"></div><div class="card" id="mv-l"></div>`);mvPinta()}
+function mvCat(b){S.mv.k=b.dataset.k;b.parentNode.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));mvPinta()}
+function mvPinta(){const q=(S.mv.q||'').trim().toLowerCase(),k=S.mv.k;
+  const L=S.gastos.filter(g=>(!k||(k==='neg'?g.pulldex:g.categoria_clave===k&&!g.pulldex))&&(!q||(g.descripcion||'').toLowerCase().includes(q)));
+  const t=L.reduce((s,g)=>s+g.monto,0);$('mv-t').innerHTML=L.length?`<b>${L.length}</b> gasto${L.length>1?'s':''} · <b>${fmt(t)}</b>`:'';
+  $('mv-l').innerHTML=porDia(L)||'<div class="empty">No encontré nada con eso</div>'}
+// Agrupa por día: "Hoy", "Ayer", "Lun 5 oct", con el total de cada día.
+const diaL=f=>{const h=hoyISO(),d=new Date(f+'T12:00:00'),a=new Date(h+'T12:00:00');a.setDate(a.getDate()-1);
+  return f===h?'Hoy':f===a.toISOString().slice(0,10)?'Ayer':`${DIAS[d.getDay()].slice(0,3)} ${d.getDate()} ${MES[d.getMonth()].toLowerCase()}`};
+function porDia(L){const G=[];L.forEach(g=>{const u=G[G.length-1];if(u&&u.f===g.fecha)u.l.push(g);else G.push({f:g.fecha,l:[g]})});
+  return G.map(x=>`<div class="dia-h" onclick="openDia('${x.f}')"><span>${diaL(x.f)}</span><b>${fmt(x.l.filter(g=>!g.pulldex).reduce((s,g)=>s+g.monto,0))}</b></div>${x.l.map(g=>txHtml(g,1)).join('')}`).join('')}
+// Tocar el gráfico: el día más cercano al dedo (las barras son finas, así no hay que atinarle exacto).
+function ddTap(e,el){const I=[...el.querySelectorAll('i')],r=el.getBoundingClientRect(),i=Math.max(0,Math.min(I.length-1,Math.floor((e.clientX-r.left)/r.width*I.length)));
+  const f=I[i].dataset.f;if(f>hoyISO())return toast('Ese día todavía no llega');openDia(f)}
+function openDia(f){const L=S.gastos.filter(g=>g.fecha===f),P=L.filter(g=>!g.pulldex),t=P.reduce((s,g)=>s+g.monto,0),V=S.V,[y,m]=S.periodo.split('-').map(Number);
+  const largo=Math.round((new Date(y,m-1,22)-new Date(y,m-2,23))/864e5)+1,ideal=Math.max(1,(S.ppto-V.cuo)/largo),by={};P.forEach(g=>by[g.categoria_clave]=(by[g.categoria_clave]||0)+g.monto);
+  const top=Object.entries(by).sort((a,b)=>b[1]-a[1])[0];
+  openSheet(`<h3>${diaL(f)==='Hoy'||diaL(f)==='Ayer'?diaL(f)+' · '+fechaL(f):fechaL(f)}</h3>
+  <div class="sum" style="padding:2px 0 6px"><div class="v" style="color:${t>ideal?'var(--red-d)':'var(--green-d)'}">${fmt(t)}</div></div>
+  <div class="cmp" style="margin-top:0">${!t?'🎉 Día en cero: no gastaste nada.':t>ideal?`🔴 Gastaste <b>${fmt(t-ideal)}</b> más que tu plata del día (${fmt(ideal)}), o sea ${String(Math.round(t/ideal*10)/10).replace('.',',')} días de una.${top?` Lo que más pesó: ${(CAT[top[0]]||CAT.otros).ic} ${(CAT[top[0]]||CAT.otros).n}.`:''}`:`🟢 Quedaste <b>${fmt(ideal-t)}</b> bajo tu plata del día (${fmt(ideal)}).`}</div>
+  <div class="card" style="margin-top:12px">${L.map(g=>txHtml(g,1)).join('')||'<div class="empty">Nada anotado este día</div>'}</div>`)}
+// En qué se te fue la plata, en una sola barra de colores (cuotas incluidas).
+function segCats(){const V=S.V,E=Object.entries(V.tot).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);if(V.cuo)E.push(['_cuo',V.cuo]);
+  const T=E.reduce((s,[,v])=>s+v,0);if(!T)return'';const inf=k=>k==='_cuo'?{n:'Cuotas',c:'#344054'}:(CAT[k]||CAT.otros);
+  return `<div class="cats-seg">${E.map(([k,v])=>`<div style="flex:${v};background:${inf(k).c}"></div>`).join('')}</div>
+  <div class="cats-l">${E.slice(0,7).map(([k,v])=>`<span style="--c:${inf(k).c}">${inf(k).n} ${kCLP(v)}</span>`).join('')}</div>`}
+// Día a día: cuánto gastaste cada día vs. lo que podías gastar por día (la línea verde).
+function diaADia(ini,cierre,largo,hoy){const V=S.V,by={},ISO=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  S.gastos.filter(g=>!g.pulldex).forEach(g=>by[g.fecha]=(by[g.fecha]||0)+g.monto);
+  const ideal=Math.max(1,(S.ppto-V.cuo)/largo),D=Array.from({length:largo},(_,i)=>{const d=new Date(ini);d.setDate(ini.getDate()+i);return{f:ISO(d),d,v:by[ISO(d)]||0}});
+  if(!D.some(x=>x.v))return'';const mx=Math.max(ideal*2.2,...D.map(x=>Math.min(x.v,ideal*4))),H=hoyISO();
+  const pasados=D.filter(x=>x.f<=H),dg=pasados.filter(x=>x.v<=ideal).length;
+  return `<div class="card"><div class="card-h"><h2>Día a día</h2>${V.esActual?`<span class="pill ${dg>=pasados.length/2?'ok':'warn'}">${dg} de ${pasados.length} días en verde</span>`:''}</div>
+  <div class="dd" onclick="ddTap(event,this)" role="button" aria-label="Toca un día para ver el detalle">${D.map(x=>`<i data-f="${x.f}" class="${x.f>H?'fut':x.f===H?'hoy':x.v>ideal?'over':''}" style="height:${x.f>H?0:Math.max(3,Math.min(100,x.v/mx*100))}%" title="${x.f}: ${fmt(x.v)}"></i>`).join('')}<b style="bottom:${ideal/mx*100}%"></b></div>
+  <div class="dd-l"><span>${ini.getDate()} ${MES[ini.getMonth()].toLowerCase()}</span><span>Toca un día · línea verde: ${fmt(ideal)}</span><span>${cierre.getDate()} ${MES[cierre.getMonth()].toLowerCase()}</span></div></div>`}
 // Cuotas: cuántas te quedan de cada una, cuánto falta pagar y cuándo se libera la plata.
 // $387k, $1,2M: montos cortos para las barras
 const kCLP=v=>!v?'$0':v>=1e6?'$'+(Math.round(v/1e5)/10).toString().replace('.',',')+'M':'$'+Math.round(v/1000)+'k';
 function infoCuota(c,per){if(c.recurrente)return{fijo:true};if(!c.primer_periodo)return{sin:true};
   const n=mdiff(c.primer_periodo,per)+1,fin=addM(c.primer_periodo,c.total_cuotas-1),por=Math.max(0,c.total_cuotas-Math.max(n,1)+1);
   return{n,fin,quedan:Math.max(0,c.total_cuotas-Math.max(n,1)),por,falta:c.monto_cuota*por,parte:n<1}}
-function openCuotas(){const per=S.periodo,Q=S.cuotas.map(c=>({...c,...infoCuota(c,per)}));
+function cuotasHTML(){const per=S.periodo,Q=S.cuotas.map(c=>({...c,...infoCuota(c,per)}));
   const cq=Q.filter(c=>!c.fijo&&!c.sin&&c.por>0).sort((a,b)=>a.fin<b.fin?-1:1),fijos=Q.filter(c=>c.fijo),sin=Q.filter(c=>c.sin);
   const falta=cq.reduce((s,c)=>s+c.falta,0),libre=cq.length?cq[cq.length-1].fin:null,mCuo=cq.filter(c=>!c.parte).reduce((s,c)=>s+c.monto_cuota,0);
   const M=[...Array(6)].map((_,i)=>{const p=addM(per,i);return{p,v:cuotasDe(p).reduce((s,c)=>s+c.monto_cuota,0)}}),mx=Math.max(1,...M.map(m=>m.v));
@@ -1480,8 +1575,7 @@ function openCuotas(){const per=S.periodo,Q=S.cuotas.map(c=>({...c,...infoCuota(
   const fila=c=>`<button class="cq" onclick="openCuota(${c.id})"><div class="t"><b>${c.nombre}</b><span>${fmt(c.monto_cuota)}</span></div>
     <small>${c.parte?`Parte en ${perL(c.primer_periodo)} · ${c.total_cuotas} cuotas`:c.quedan?`Cuota ${c.n} de ${c.total_cuotas} · te quedan <b>${c.quedan}</b> después de esta · termina en ${perL(c.fin)}`:`Cuota ${c.n} de ${c.total_cuotas} · <b>¡es la última! 🎉</b>`}</small>
     ${c.parte?'':pts(c)}<small style="margin-top:6px">Te faltan <b>${fmt(c.falta)}</b>${c.parte?'':' contando la de este mes'}</small></button>`;
-  openSheet(`<h3>💳 Tus cuotas</h3><p>Cuántas te quedan de cada una y cuándo se te libera la plata.</p>
-  ${cq.length?`<div class="card"><div class="sum" style="padding:4px 0 0"><div class="v">${fmt(falta)} <span>por pagar en cuotas</span></div></div>
+  return `${cq.length?`<div class="card"><div class="sum" style="padding:4px 0 0"><div class="v">${fmt(falta)} <span>por pagar</span></div></div>
     <div class="lead" style="padding-top:6px">${fmt(mCuo)} al mes en ${cq.length} compra${cq.length>1?'s':''}. ${libre?`Quedas <b>libre de cuotas en ${perL(libre)}</b> si no sumas nuevas.`:''}</div>
     <div class="mes6">${M.map((m,i)=>`<div class="${i&&m.v<M[i-1].v?'b':''}"><em>${kCLP(m.v)}</em><i style="height:${Math.max(3,m.v/mx*62)}px"></i>${MESL[+m.p.slice(5)-1].slice(0,3)}</div>`).join('')}</div>
     <p class="fine" style="margin:0 0 6px">Cuotas y fijos de los próximos 6 meses. En verde, los meses en que baja.</p></div>
@@ -1490,7 +1584,18 @@ function openCuotas(){const per=S.periodo,Q=S.cuotas.map(c=>({...c,...infoCuota(
   ${fijos.length?`<h3 class="sec-t" style="margin-left:2px">Fijos todos los meses</h3><div class="card">${fijos.map(c=>`<button class="crow" onclick="openCuota(${c.id})"><div class="cm"><b>${c.nombre}</b><small>Todos los meses</small></div><div class="ca">${fmt(c.monto_cuota)}</div></button>`).join('')}</div>`:''}
   <button class="btn p" onclick="pickCartola()">📄 Subir mi cartola (PDF o foto)</button>
   <button class="btn p" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);box-shadow:none" onclick="openCuota()">✍️ Agregar una a mano</button>
-  <p class="fine" style="margin-top:10px">Con la cartola leo tus compras en cuotas y te muestro la lista para que revises antes de guardar.</p>`)}
+  <p class="fine" style="margin-top:10px">Con la cartola leo tus compras en cuotas y te muestro la lista para que revises antes de guardar.</p>`}
+function openCuotas(){openSheet(`<h3>💳 Tus cuotas</h3><p>Cuántas te quedan de cada una y cuándo se te libera la plata.</p>${cuotasHTML()}`)}
+// Pestaña Cuotas: cuánto se te va al mes, tu regla del 30% y el simulador antes de sumar otra.
+function renderCuotasTab(){const el=$('cuo-v');if(!el||!S.V)return;const V=S.V,pc=Math.round(V.cuo/S.ppto*100),ok=pc<30;
+  const prox=[1,2,3].map(i=>addM(S.periodo,i)).map(p=>({p,v:cuotasDe(p).reduce((s,c)=>s+c.monto_cuota,0)})),baja=prox.find(m=>Math.round(m.v/S.ppto*100)<30);
+  el.innerHTML=`<div class="card sum"><div class="k">Cuotas y fijos este mes</div><div class="v">${fmt(V.cuo)} <span>al mes</span></div>
+    <div class="pace"><div style="width:${Math.min(100,pc)}%;background:${ok?'var(--green)':'var(--red)'}"></div><i style="left:30%"></i></div>
+    <div class="pace-l"><span>La raya: tu regla del 30%</span><b style="color:${ok?'var(--green-d)':'var(--red-d)'}">${pc}% de tu presupuesto</b></div>
+    <div class="cmp">${ok?`🟢 Estás bajo el 30%: tienes espacio, pero cada cuota nueva te amarra meses.`:`🔴 Estás sobre el 30%: <b>cero cuotas nuevas</b>${baja?` hasta ${perL(baja.p).toLowerCase()}, cuando bajas al ${Math.round(baja.v/S.ppto*100)}%`:''}.`}</div></div>
+    <button class="crow" style="background:var(--card);border-radius:22px;padding:12px 16px;margin-bottom:12px;box-shadow:var(--sh)" onclick="openDebo()"><div class="ic">🧾</div><div class="cm"><b>Todo lo que debes: ${fmt(debo().total)}</b><small>Por tarjeta, qué es de este mes y qué es de compras viejas</small></div><span class="chev">›</span></button>
+    <button class="btn p" style="margin:0 0 14px" onclick="openCheck();setTimeout(()=>{const b=document.querySelectorAll('#nc-ch .chip')[3];if(b)b.click()},50)">🤔 ¿Puedo comprar algo en cuotas?</button>
+    ${cuotasHTML()}`}
 // Cartola → función `cartola` (Claude lee el PDF o la foto) → revisas → se guardan en `cuotas`.
 // ---------- Cuadrar la tarjeta con la cartola: lee TODAS las compras (cartola, modo 'compras'), las compara con lo
 // anotado (mismo monto ±$1, fecha ±3 días) y ofrece agregar las que faltan. Las compras en cuotas se saltan: van en Cuotas. ----------
@@ -1594,18 +1699,29 @@ function desearCmp(k){const C=S.cmp,que=k==='a'?C.a:C.b,monto=k==='a'?C.pa:C.pb;
   saveAj('deseos',[{id:Date.now(),que,monto,desde:new Date().toISOString(),estado:'espera'},...DES()].slice(0,40));closeSheet();toast(`⏳ ${que} a tu lista. En 72 horas te pregunto`)}
 
 function desear(){const x=val('a-monto'),que=($('a-desc').value||'').trim()||'Algo que quiero';if(!x)return $('a-monto').focus();
-  const L=[{id:Date.now(),que,monto:x,desde:new Date().toISOString(),estado:'espera'},...DES()].slice(0,40);
+  const L=[{id:Date.now(),que,monto:x,desde:new Date().toISOString(),estado:'espera',...(S.dq&&Object.keys(S.dq).length?{por:S.dq}:{})},...DES()].slice(0,40);
   closeSheet();saveAj('deseos',L);const d=new Date(Date.now()+ESPERA);toast(`⏳ Anotado. El ${d.toLocaleDateString('es-CL',{weekday:'long'})} te pregunto si todavía lo quieres`)}
 async function deseoNo(id){const d=DES().find(x=>x.id===id);if(!d)return;
   await saveAj('deseos',DES().map(x=>x.id===id?{...x,estado:'aguantado'}:x),true);addEv(d.monto);toast(`💪 Te aguantaste ${fmt(d.monto)}: en 10 años serían ${fmt(d.monto*Math.pow(1+RENT,10))}`)}
 async function deseoSi(id){const d=DES().find(x=>x.id===id);if(!d)return;
   await saveAj('deseos',DES().map(x=>x.id===id?{...x,estado:'comprado'}:x));openAdd({m:d.monto,d:d.que})}
+// Pasaron los 3 días: te muestro lo que dijiste ese día y cómo estás hoy, y decides con un toque.
+function openDeseo(id){const d=DES().find(x=>x.id===id);if(!d)return;const V=S.V,F=S.aj.fondo,dias=Math.round((Date.now()-new Date(d.desde))/864e5);
+  const cabe=V.esActual&&V.queda-d.monto>=0,fondo=F&&F.ahorrado>=d.monto,ok=listo(d);
+  openSheet(`<h3>⏳ ¿Todavía quieres ${esc(d.que)}?</h3><p>${fmt(d.monto)} · lo anotaste hace ${dias<1?'menos de un día':dias+' día'+(dias>1?'s':'')}.</p>
+  ${d.por?`<div class="lever"><i style="font-style:normal">🗣</i><div>Ese día dijiste que <b>${dqTxt(d.por)}</b>.</div></div>`:''}
+  <div class="lever"><i style="font-style:normal">${fondo?'🎧':cabe?'✅':'🔴'}</i><div>${fondo?`<b>Tu fondo gadgets lo cubre</b> (${fmt(F.ahorrado)}): no sale de tu mes.`:cabe?`Hoy te alcanza: quedarías con ${fmt(V.queda-d.monto)} hasta el 22.`:`<b>Hoy no te alcanza:</b> te pasarías del mes${V.queda<0?' (ya estás pasado)':` por ${fmt(d.monto-V.queda)}`}.`}</div></div>
+  <div class="lever"><i style="font-style:normal">📈</i><div>Invertidos, esos ${fmt(d.monto)} serían <b>${fmt(d.monto*Math.pow(1+RENT,10))}</b> en 10 años.</div></div>
+  <button class="btn g" onclick="closeSheet();deseoNo(${d.id})">💪 Ya no lo quiero</button>
+  ${ok?`<button class="btn p" style="margin-top:8px" onclick="closeSheet();deseoSi(${d.id})">Sí, lo compro</button>`:''}
+  <button class="btn" style="margin-top:8px;background:var(--bg3);color:var(--text)" onclick="deseoMas(${d.id})">Espérame 3 días más</button>`)}
+async function deseoMas(id){await saveAj('deseos',DES().map(x=>x.id===id?{...x,desde:new Date().toISOString()}:x));closeSheet();toast('⏳ Listo, te pregunto en 3 días')}
 async function deseoBorrar(id){await saveAj('deseos',DES().filter(x=>x.id!==id))}
 function renderDeseos(){const el=$('deseos-c');if(!el)return;const L=DES(),E=L.filter(d=>d.estado==='espera'),ag=L.filter(d=>d.estado==='aguantado').reduce((s,d)=>s+d.monto,0),F=S.aj.fondo;
   const fila=d=>{const ok=listo(d),pc=Math.min(100,(Date.now()-new Date(d.desde))/ESPERA*100),h=Math.max(1,Math.ceil((ESPERA-(Date.now()-new Date(d.desde)))/36e5));
     return`<div class="dz"><div class="reloj" style="background:conic-gradient(${ok?'var(--green)':'var(--amber)'} ${pc}%,var(--bg3) 0)"><span>${ok?'✓':h>24?Math.round(h/24)+'d':h+'h'}</span></div>
     <div class="cm"><b>${d.que} · ${fmt(d.monto)}</b><small>${ok?'Pasaron las 72 horas. ¿Todavía lo quieres?':`Te pregunto en ${h>36?Math.round(h/24)+' días':h+' horas'}. Invertido serían ${fmt(d.monto*Math.pow(1+RENT,10))} en 10 años.`}${ok&&F&&F.ahorrado>=d.monto?' Tu fondo gadgets lo cubre.':''}</small>
-    ${ok?`<div class="ya"><button class="no" onclick="deseoNo(${d.id})">💪 Ya no lo quiero</button><button class="si" onclick="deseoSi(${d.id})">Sí, lo compro</button></div>`:''}</div>
+    ${ok?`<div class="ya"><button class="no" onclick="deseoNo(${d.id})">💪 Ya no lo quiero</button><button class="si" onclick="openDeseo(${d.id})">Decidir</button></div>`:''}</div>
     ${ok?'':`<button class="x" style="position:static;margin:0;float:none" onclick="deseoBorrar(${d.id})" aria-label="Quitar">×</button>`}</div>`};
   el.innerHTML=`<div class="card-h"><h2>⏳ Lista de deseos</h2>${ag?`<span class="pill ok">Te aguantaste ${fmt(ag)}</span>`:''}</div>
   ${E.length?E.map(fila).join(''):`<div class="lead">¿Viste algo que quieres? Anótalo aquí en vez de comprarlo. En 72 horas te pregunto si todavía lo quieres: la mayoría de las veces se te pasa.</div>`}
@@ -1635,6 +1751,31 @@ function openCaja(){const C=caja(),sobra=C.monto===null?0:C.monto-C.min,dd=C.fec
   <div class="lever"><i style="font-style:normal">🛟</i><div>Deja siempre <b>${fmt(C.min)}</b> fijos en la cuenta. ${C.monto===null?'':sobra>0?`Hoy te sobran <b>${fmt(sobra)}</b>: el día antes del sueldo, lo que siga sobrando va al plan (colchón / Fintual)${S.aj.fondo?` o al fondo ${esc(S.aj.fondo.que)}`:''}.`:`Hoy estás <b>${fmt(-sobra)}</b> bajo el mínimo: cero gastos con débito hasta el sueldo.`}</div></div>
   <label>Mínimo en la cuenta</label><input id="cj-min" inputmode="numeric" oninput="fmtIn(this)" value="$${C.min.toLocaleString('es-CL')}">
   <button class="btn p" onclick="saveCaja()">Guardar</button>`)}
+// ---------- Lo que debes: todo junto y por tarjeta (compras del mes + cuotas del mes), las cuotas que faltan y las deudas ----------
+// Para no enredarse con los números de la tarjeta: qué parte es de este mes y qué parte es de compras viejas.
+function debo(){const per=S.actual,G=(S.periodo===per?S.gastos:[]),CQ=cuotasDe(per).filter(c=>!c.recurrente),FJ=cuotasDe(per).filter(c=>c.recurrente);
+  const T={};const t=k=>T[k]=T[k]||{compras:0,neg:0,cuotas:0,fijos:0,lista:[]};
+  G.filter(g=>TARJ.includes(g.tarjeta)).forEach(g=>{const x=t(g.tarjeta);x.compras+=g.monto;if(g.pulldex)x.neg+=g.monto});
+  CQ.forEach(c=>{const k=TARJ.includes(c.tarjeta)?c.tarjeta:'otro';const x=t(k);x.cuotas+=c.monto_cuota;x.lista.push(c)});
+  FJ.filter(c=>TARJ.includes(c.tarjeta)).forEach(c=>{t(c.tarjeta).fijos+=c.monto_cuota});
+  const tarj=Object.entries(T).map(([k,x])=>({k,...x,total:x.compras+x.cuotas+x.fijos})).filter(x=>x.total>0).sort((a,b)=>b.total-a.total);
+  const fut=CQ.filter(c=>c.restante>0).map(c=>({...c,quedan:c.total_cuotas-c.n})).sort((a,b)=>b.restante-a.restante);
+  const tt=tarj.reduce((s,x)=>s+x.total,0),tf=fut.reduce((s,c)=>s+c.restante,0),td=DEU().reduce((s,d)=>s+d.monto,0);
+  return{tarj,fut,tt,tf,td,total:tt+tf+td}}
+function openDebo(){const D=debo(),cie=k=>CORTE[k]?` · cierra el ${CORTE[k]}`:'';
+  openSheet(`<h3>🧾 Lo que debes</h3><p>Todo junto: tus tarjetas de este mes, las cuotas que faltan y tus deudas. Pagando esto quedas en cero.</p>
+  <div class="card sum"><div class="k">Total</div><div class="v">${fmt(D.total)}</div>
+   <div class="cats-seg">${[[D.tt,'#344054'],[D.tf,'#F79009'],[D.td,'#F04438']].filter(([v])=>v>0).map(([v,c])=>`<div style="flex:${v};background:${c}"></div>`).join('')}</div>
+   <div class="cats-l"><span style="--c:#344054">Tarjetas ${kCLP(D.tt)}</span>${D.tf?`<span style="--c:#F79009">Cuotas que faltan ${kCLP(D.tf)}</span>`:''}${D.td?`<span style="--c:#F04438">Deudas ${kCLP(D.td)}</span>`:''}</div></div>
+  <div class="sec-t" style="margin-left:2px">1. Tus tarjetas de este mes</div>
+  <div class="card">${D.tarj.map(x=>`<div class="cq" style="cursor:default"><div class="t"><b>${TJ[x.k]||'Otras'}</b><span>${fmt(x.total)}</span></div>
+    <small>${x.compras?`Compras de este mes ${fmt(x.compras)}${x.neg?` (incluye ${fmt(x.neg)} del negocio)`:''}`:'Sin compras este mes'}${x.cuotas?` · cuotas de compras viejas ${fmt(x.cuotas)}`:''}${x.fijos?` · fijos ${fmt(x.fijos)}`:''}${cie(x.k)}</small>
+    ${x.lista.length?`<small style="margin-top:4px">${x.lista.map(c=>`${esc(c.nombre)} ${c.n}/${c.total_cuotas}`).join(' · ')}</small>`:''}</div>`).join('')||'<div class="empty">Nada en tarjetas este mes</div>'}</div>
+  <div class="lead" style="padding:0 4px 4px">Esto lo pagas con el sueldo de fin de mes. Va a subir con lo que gastes con tarjeta hasta el cierre.</div>
+  ${D.fut.length?`<div class="sec-t" style="margin-left:2px">2. Cuotas que faltan después de este mes</div><div class="card">${D.fut.map(c=>`<button class="crow" onclick="openCuota(${c.id})"><div class="cm"><b>${esc(c.nombre)}</b><small>${c.quedan} cuota${c.quedan>1?'s':''} de ${fmt(c.monto_cuota)} · ${TJ[c.tarjeta]||''}</small></div><div class="ca">${fmt(c.restante)}</div></button>`).join('')}</div>
+    <div class="lead" style="padding:0 4px 4px">Para adelantarlas: en la app del banco busca "Prepago de cuotas" (pagar de más la tarjeta no las adelanta). Después toca la cuota aquí → "La adelanté".</div>`:''}
+  ${D.td?`<div class="sec-t" style="margin-left:2px">${D.fut.length?3:2}. Deudas fuera de la tarjeta</div><div class="card">${DEU().map(d=>`<div class="crow" style="cursor:default"><div class="cm"><b>${esc(d.que)}</b><small>${esc(d.nota||'')}</small></div><div class="ca">${fmt(d.monto)}</div></div>`).join('')}</div>`:''}
+  <div class="cmp">💡 Ojo con las líneas de crédito de tu cuenta corriente: si usaste alguna, esa va primero (cobra interés alto) y no aparece aquí.</div>`)}
 async function saveCaja(){const m=($('cj-m').value||'').trim()?val('cj-m'):null;
   await saveAj('perfil',{...PERF(),caja:m,caja_fecha:hoyISO(),caja_min:val('cj-min')||300000});toast('✅ Caja actualizada');openCaja()}
 function renderDeudas(){const el=$('deudas-c');if(!el)return;const D=DEU(),tot=D.reduce((s,x)=>s+x.monto,0);
@@ -1650,6 +1791,33 @@ function saveDeuda(){const que=$('d-que').value.trim(),monto=val('d-monto');if(!
   closeSheet();saveAj('deudas',[...DEU(),{id:Date.now(),que,monto,desde:hoyISO(),nota:$('d-nota').value.trim()}]);toast('🧾 Anotado')}
 async function deudaPagada(id){const x=DEU().find(d=>d.id===id);if(!x||!confirm(`¿Pagaste ${x.que}?`))return;
   await saveAj('deudas',DEU().filter(d=>d.id!==id));toast('✅ Una deuda menos')}
+// ---------- Por cobrar: plata que te deben (un reembolso, el IVA, una venta). No cuenta hasta que llega. ----------
+// ajustes.cobrar = [{id, que, monto, desde, nota}]
+const COB=()=>S.aj.cobrar||[];
+function renderCobrar(){const el=$('cobrar-c');if(!el)return;const D=COB(),tot=D.reduce((s,x)=>s+x.monto,0);
+  el.innerHTML=`<div class="card-h"><h2>📥 Por cobrar</h2>${tot?`<span class="pill ok">${fmt(tot)}</span>`:''}</div>
+  ${D.length?`<div class="lead">Plata que te deben. <b>No la cuentes hasta que esté en tu cuenta</b>: cuando llegue, decides adónde va.</div>${D.map(x=>`<div class="crow" style="cursor:default"><div class="ic">📥</div><div class="cm"><b>${esc(x.que)}</b><small><span style="color:var(--text);font-weight:600">${fmt(x.monto)}</span>${x.nota?' · '+esc(x.nota):''}</small></div><button class="chip" onclick="cobroLlego(${x.id})">Llegó</button></div>`).join('')}`:`<div class="lead">Nadie te debe nada. Si alguien te tiene que devolver plata (un reembolso, el IVA, una venta), anótalo para no olvidarlo.</div>`}
+  <div class="chips" style="margin:10px 0 14px"><button class="chip" onclick="editCobro()">+ Me deben algo</button></div>`}
+function editCobro(){openSheet(`<h3>📥 Me deben algo</h3><p>Lo tienes a la vista hasta que llegue. No suma a tu mes.</p>
+  <label>¿Quién o qué?</label><input id="cb-que" placeholder="ej: IVA del iPhone, Marina, venta de cartas">
+  <label>¿Cuánto?</label><input id="cb-monto" inputmode="numeric" oninput="fmtIn(this)" placeholder="$0">
+  <label>Nota (opcional)</label><input id="cb-nota" placeholder="ej: cuando se facture">
+  <button class="btn p" onclick="saveCobro()">Guardar</button>`)}
+function saveCobro(){const que=$('cb-que').value.trim(),monto=val('cb-monto');if(!que||!monto)return toast('Pon quién y cuánto');
+  closeSheet();saveAj('cobrar',[...COB(),{id:Date.now(),que,monto,desde:hoyISO(),nota:$('cb-nota').value.trim()}]);toast('📥 Anotado')}
+// Llegó: sale de la lista y eliges adónde va, para que no se diluya en el mes.
+async function cobroLlego(id){const x=COB().find(d=>d.id===id);if(!x)return;await saveAj('cobrar',COB().filter(d=>d.id!==id),true);renderMetas();
+  const K=S.aj.casa,F=S.aj.fondo,op=(d,ic,t,s)=>`<button class="crow" onclick="cobroA('${d}',${x.monto})"><div class="ic">${ic}</div><div class="cm"><b>${t}</b><small>${s}</small></div><span class="chev">›</span></button>`;
+  openSheet(`<h3>🎉 Llegaron ${fmt(x.monto)}</h3><p>${esc(x.que)}. Si no le das destino ahora, se gasta solo. ¿Adónde va?</p><div class="card">
+   ${K?op('casa','🏠','Lo aparto para irme',`Independizarme: ${fmt(K.ahorrado||0)} → ${fmt((K.ahorrado||0)+x.monto)}`):''}
+   ${op('fintual','📈','A Fintual',pausaFin()?'Ojo: este mes primero van las tarjetas':'Se suma a tu patrimonio')}
+   ${F?op('fondo','🎧','Al fondo '+esc(F.que),`${fmt(F.ahorrado)} → ${fmt(F.ahorrado+x.monto)}`):''}
+   ${op('nada','💳','A pagar la tarjeta','No lo anoto en ninguna meta')}</div>`)}
+async function cobroA(d,x){try{
+  if(d==='casa')await saveAj('casa',{...S.aj.casa,ahorrado:(S.aj.casa.ahorrado||0)+x},true);
+  else if(d==='fondo')await saveAj('fondo',{...S.aj.fondo,ahorrado:S.aj.fondo.ahorrado+x},true);
+  else if(d==='fintual'){await api('ahorros',{m:'POST',b:{destino:'fintual',monto:x,fecha:hoyISO(),periodo:addM(S.actual,-1)}});const p=PAT();await saveAj('patrimonio',{...p,fintual:p.fintual+x,fecha:hoyISO()},true)}
+  closeSheet();toast(d==='nada'?'✅ Listo':`✅ ${fmt(x)} con destino`);loadAll()}catch(e){toast('❌ Error');console.error(e)}}
 
 // ---------- Fondo gadgets: plata apartada para tecnología, así no sale del mes ----------
 // ajustes.fondo = {que, meta, ahorrado, mensual}
@@ -1690,7 +1858,7 @@ function openCuota(id){
   <label>Tipo</label><div class="chips" id="q-tipo"><button class="chip ${c.recurrente?'':'on'}" data-v="0" onclick="selTipo(this)">En cuotas</button><button class="chip ${c.recurrente?'on':''}" data-v="1" onclick="selTipo(this)">Fijo todos los meses</button></div>
   <div id="q-cuo" style="display:${c.recurrente?'none':'block'}"><label>Total de cuotas</label><input id="q-tot" inputmode="numeric" value="${c.total_cuotas||12}">
   <label>En ${S.V.mes} vas en la cuota…</label><input id="q-n" inputmode="numeric" value="${Math.max(1,n)}"></div>
-  <button class="btn p" onclick="saveCuota(${id||0})">Guardar</button>${id?`<button class="btn d" onclick="endCuota(${id})">Ya no la pago</button>`:''}`);
+  <button class="btn p" onclick="saveCuota(${id||0})">Guardar</button>${id&&!c.recurrente&&(infoCuota(c,S.actual).quedan||0)>0?`<button class="btn" style="margin-top:8px;background:var(--bg3);color:var(--text)" onclick="adelantarCuota(${id})">💸 La adelanté (pagué lo que faltaba)</button>`:''}${id?`<button class="btn d" onclick="endCuota(${id})">Ya no la pago</button>`:''}`);
 }
 function selTipo(b){$('q-tipo').querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('q-cuo').style.display=b.dataset.v==='1'?'none':'block'}
 async function saveCuota(id){
@@ -1704,6 +1872,13 @@ async function saveCuota(id){
     closeSheet();toast(rec?'✅ Fijo guardado':`✅ Termina en ${perL(addM(b.primer_periodo,tot-1))}`);loadAll();
   }catch(e){toast('❌ Error');console.error(e)}
 }
+// Adelantar: la cuota de este mes se queda (ya viene en la boleta) y lo que faltaba se anota hoy como un gasto de una vez.
+async function adelantarCuota(id){const c=S.cuotas.find(x=>x.id===id);if(!c)return;const I=infoCuota(c,S.actual),rest=c.monto_cuota*(I.quedan||0);
+  if(!rest)return toast('Ya es la última cuota');
+  if(!confirm(`¿Pagaste ${fmt(rest)} para adelantar las ${I.quedan} cuotas que faltaban de ${c.nombre}? Lo anoto hoy como gasto y la cuota termina este mes.`))return;
+  try{await api('cuotas?id=eq.'+id,{m:'PATCH',b:{total_cuotas:Math.max(1,I.n)}});
+    await api('gastos',{m:'POST',b:{fecha:hoyISO(),monto:rest,descripcion:'Adelanto cuotas · '+c.nombre,tarjeta:c.tarjeta||'otro',fuente:'app',...(guess(c.nombre).cat!=='otros'?{categoria_clave:guess(c.nombre).cat}:{})}});
+    closeSheet();toast(`💸 Adelantada: desde el próximo mes son ${fmt(c.monto_cuota)} menos de cuotas`);loadAll()}catch(e){toast('❌ Error');console.error(e)}}
 async function endCuota(id){if(!confirm('¿Ya no la pagas? Deja de descontarse.'))return;try{await api('cuotas?id=eq.'+id,{m:'PATCH',b:{activa:false}});closeSheet();toast('🎉 Una menos');loadAll()}catch(e){toast('❌ Error')}}
 function openRev(){const R=S.revisar;if(!R.length){closeSheet();return}
   openSheet(`<h3>🔁 Transferencias por revisar</h3><p>Llegaron solas desde el correo. No cuentan en tu presupuesto hasta que me digas si fueron gasto.</p><div class="card">${R.map(g=>`<button class="crow" onclick="openRevTx(${g.id})"><div class="ic" style="background:#F2F4F7">🔁</div><div class="cm"><b>${g.destinatario||g.descripcion}</b><small>${g.fecha.slice(8,10)}/${g.fecha.slice(5,7)}</small></div><div class="ca">${fmt(g.monto)}</div></button>`).join('')}</div>`)}
@@ -1846,17 +2021,25 @@ function sugs(){const n={};[...S.gastos,...S.prev].filter(g=>(g.fuente==='app'||
 function openAdd(pre){
   openSheet(`<h3>Anotar gasto</h3>
   <input id="a-monto" class="amt-in" inputmode="numeric" placeholder="$0" autocomplete="off" enterkeyhint="next" onkeydown="if(event.key==='Enter')$('a-desc').focus()" oninput="fmtIn(this)" value="${pre&&pre.m?'$'+pre.m.toLocaleString('es-CL'):''}">
-  <label>¿En qué?</label><input id="a-desc" placeholder="ej: almuerzo" autocomplete="off" enterkeyhint="done" onkeydown="if(event.key==='Enter')saveAdd()" value="${pre&&pre.d?pre.d.replace(/"/g,'&quot;'):''}">
-  <div class="sugs">${sugs().map(s=>`<button onclick="$('a-desc').value=this.textContent;$('a-desc').focus()">${s.replace(/</g,'&lt;')}</button>`).join('')}</div>
+  <label>¿En qué?</label><input id="a-desc" placeholder="ej: almuerzo" autocomplete="off" enterkeyhint="done" oninput="aCat()" onkeydown="if(event.key==='Enter')saveAdd()" value="${pre&&pre.d?pre.d.replace(/"/g,'&quot;'):''}">
+  <div class="sugs">${sugs().map(s=>`<button onclick="$('a-desc').value=this.textContent;aCat();$('a-desc').focus()">${s.replace(/</g,'&lt;')}</button>`).join('')}</div>
+  <div class="cmp" id="a-cat" style="display:none"></div>
   <label>Pagaste con</label>${cardChips()}
   <button class="btn p" onclick="saveAdd()">Guardar</button>`);
-  if(!pre)$('a-monto').focus();
+  S.aSel=null;aCat();if(!pre)$('a-monto').focus();
 }
+// Muestra en qué categoría va a caer mientras escribes (la adivina sola) y deja cambiarla con un toque.
+function aCat(abrir){const el=$('a-cat');if(!el)return;const d=$('a-desc').value.trim(),G=guess(d),k=S.aSel||G.cat,c=CAT[k]||CAT.otros;
+  if(!d&&!S.aSel&&!abrir){el.style.display='none';return}el.style.display='block';
+  el.innerHTML=abrir?`<div style="margin-bottom:8px">¿En qué categoría va?</div><div class="chips">${KS.map(x=>`<button class="chip ${x===k?'on':''}" onclick="S.aSel='${x}';aCat()">${CAT[x].ic} ${CAT[x].n}</button>`).join('')}</div>`
+    :`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span>${G.neg&&!S.aSel?'🧩 Va como <b>negocio</b>':`Va en <b>${c.ic} ${k==='otros'?'Sin categoría':c.n}</b>`}</span><button class="chip" style="padding:6px 12px;font-size:12.5px" onclick="aCat(1)">Cambiar</button></div>`}
 async function saveAdd(){
   const monto=val('a-monto'),desc=($('a-desc').value||'').trim()||'Gasto';
   if(!monto){toast('Pon el monto');$('a-monto').focus();return}
   try{
-    const r=await api('gastos',{m:'POST',h:{Prefer:'return=representation'},b:{fecha:hoyISO(),monto,descripcion:desc,tarjeta:S.card,fuente:'app'}});
+    const r=await api('gastos',{m:'POST',h:{Prefer:'return=representation'},b:{fecha:hoyISO(),monto,descripcion:desc,tarjeta:S.card,fuente:'app',...(S.aSel?{categoria_clave:S.aSel}:{})}});
+    // Si elegiste otra categoría que la que adivinaba, la recuerdo para la próxima (primera palabra, como al editar).
+    {const p=desc.split(' ')[0].toLowerCase();if(S.aSel&&S.aSel!==guess(desc).cat&&p.length>2&&desc!=='Gasto'&&!S.reglas.some(x=>x.palabra.toLowerCase()===p))api('reglas_categoria',{m:'POST',b:{palabra:p,categoria_clave:S.aSel,negocio:false}}).catch(()=>{})}
     const g=r[0],c=CAT[g.categoria_clave]||CAT.otros;closeSheet();
     // Siempre vuelve al mes de hoy (antes saltaba al mes siguiente si la tarjeta ya había cerrado).
     S.periodo=S.actual;await loadAll();
@@ -1867,16 +2050,17 @@ async function saveAdd(){
 
 // Deshacer lo recién anotado (lo creó la app, no viene de un correo: se puede borrar de verdad).
 async function undoAdd(id){try{await api('gastos?id=eq.'+id,{m:'DELETE'});if(sheetOn())closeSheet();toast('↩️ Listo, no se anotó');loadAll()}catch(e){toast('❌ No se pudo deshacer')}}
-function openCheck(){S.nc=1;
+function openCheck(){S.nc=1;S.dq={};
   openSheet(`<h3>🤔 ¿Me alcanza?</h3><p>Antes de comprar, pon cuánto sale. Te digo la verdad.</p>
   <input id="a-monto" class="amt-in" inputmode="numeric" placeholder="$0" autocomplete="off" oninput="fmtIn(this);evalCheck()">
   <label>¿Qué es?</label><input id="a-desc" placeholder="ej: cartas, zapatillas, sushi" autocomplete="off" oninput="evalCheck()">
-  <label>¿Cómo lo pagarías?</label><div class="chips" id="nc-ch">${[1,3,6,12].map(n=>`<button class="chip ${n===1?'on':''}" onclick="S.nc=${n};document.querySelectorAll('#nc-ch .chip').forEach(b=>b.classList.remove('on'));this.classList.add('on');evalCheck()">${n===1?'Al contado':n+' cuotas'}</button>`).join('')}</div>
+  <label>¿Cómo lo pagarías?</label><div class="chips" id="nc-ch">${[1,3,6,12,24].map(n=>`<button class="chip ${n===1?'on':''}" onclick="S.nc=${n};document.querySelectorAll('#nc-ch .chip').forEach(b=>b.classList.remove('on'));this.classList.add('on');evalCheck()">${n===1?'Al contado':n+' cuotas'}</button>`).join('')}</div>
   <div class="verdict" id="verdict"></div>
   <div id="chk-ia"></div>
   <div id="chk-btns" style="display:none">
-    <button class="btn g" onclick="skipBuy()">💪 Mejor no lo compro</button>
-    <button class="btn p" style="margin-top:8px" onclick="desear()">⏳ Lo pienso 72 horas</button>
+    <div class="dq" id="dq"></div>
+    <div id="chk-gen"><button class="btn g" onclick="skipBuy()">💪 Mejor no lo compro</button>
+    <button class="btn p" style="margin-top:8px" onclick="desear()">⏳ Lo pienso 72 horas</button></div>
     <button class="chip" style="margin:10px 0 0" onclick="openComparar()">🤔 ¿Dudas entre dos? Compáralos</button>
     <button class="btn p" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="boughtIt()">Lo compré igual → anotar</button>
     <button class="btn p" id="chk-ia-btn" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text)" onclick="askCheck()">🤖 Segunda opinión de Claude</button>
@@ -1890,21 +2074,47 @@ function evalCheck(){
   if(!x){el.className='verdict';$('chk-btns').style.display='none';return}
   $('chk-btns').style.display='block';
   const t=S.techos[cat]||0,s=V.tot[cat]||0,catN=cat!=='otros'&&CAT[cat]?CAT[cat].n:null;
-  const X=x,nc=S.nc||1,mc=Math.round(X/nc);x=nc>1?mc:X;const cuoP=Math.round(V.cuo/S.ppto*100),cuoP2=Math.round((V.cuo+mc)/S.ppto*100);
+  const X=x,nc=S.nc||1,mc=Math.round(X/nc);x=nc>1?mc:X;const PL=nc>1?planCuotas(mc,nc):null;const cuoP=Math.round(V.cuo/S.ppto*100),cuoP2=Math.round((V.cuo+mc)/S.ppto*100);
   const q2=V.queda-x,d2=V.dias>1?q2/(V.dias-1):q2,dd=Math.max(1,V.cupoHoy),eq=String(Math.round(x/dd*10)/10).replace('.',','),fin2=Math.round(Math.max(0,SUELDO-Math.max(V.total+x,S.ppto))/2);
   let c,h,b;
   if(neg){c='neg';h='🧩 Es para el negocio';b=`No toca tu presupuesto personal, pero son ${fmt(x)} que tienen que volver con ventas.`}
   else if(cat==='coleccionables'&&!t){c='bad';h='🚫 No. Cartas bloqueadas este mes';b=`Este mes los coleccionables personales tienen tope $0. Si es para PULLDEX, escribe "pulldex" en la descripción.`}
-  else if(nc>1&&cuoP>=30){c='bad';h='🔴 No: cero cuotas nuevas';b=`Ya tienes ${fmt(V.cuo)} al mes amarrados en cuotas y fijos (${cuoP}% de tu presupuesto). Con esta quedarías en ${cuoP2}%. Si no te alcanza al contado, no te alcanza.`}
+  else if(nc>1&&cuoP>=30&&!(X>=500000&&PL&&PL.sobre<=3&&PL.fin30)){c='bad';h='🔴 No: cero cuotas nuevas';b=`Ya tienes ${fmt(V.cuo)} al mes amarrados en cuotas y fijos (${cuoP}% de tu presupuesto). Con esta quedarías en ${cuoP2}%${PL&&PL.sobre>3?` y seguirías sobre el 30% por ${PL.sobre} meses`:''}. Si no te alcanza al contado, no te alcanza.`}
+  else if(nc>1&&cuoP>=30){c='warn';h='🟡 Se puede, con una condición';b=`Tus cuotas quedan sobre el 30% solo ${PL.sobre} mes${PL.sobre>1?'es':''} y después bajan (${perL(PL.fin30).toLowerCase()}: ${PL.fin30P}%). <b>Condición: ninguna otra cuota hasta ${perL(PL.fin30).toLowerCase()}.</b> Vale solo si son sin interés.`}
   else if(q2<0){c='bad';h='🔴 No te alcanza';b=`Te pasarías del mes por ${fmt(-q2)} y eso sale de tu ahorro: a Fintual irían ${fmt(fin2)} en vez de ${fmt(V.proy.fin)}.`}
   else if(x<=Math.max(0,V.diario)){c='ok';h='✅ Sí, te alcanza';b=`Después de esto, hoy te quedarían ${fmt(V.diario-x)}. Fintual sigue intacto.`}
   else if(catN&&t&&s+x>t){c='warn';h=`⚠️ Te alcanza, pero te pasas en ${catN}`;b=`Quedarías ${fmt(s+x-t)} sobre el tope de ${catN}. Son ${eq} días de tu plata diaria: desde mañana tendrías ${fmt(d2)} al día (hoy partiste con ${fmt(V.cupoHoy)}).`}
   else{c='warn';h='⚠️ Te alcanza, pero te aprieta';b=`Son <b>${eq} días</b> de tu plata diaria${x<=V.semana?', pero cabe en lo que te queda esta semana':''}. Desde mañana tendrías ${fmt(d2)} al día (hoy partiste con ${fmt(V.cupoHoy)}).`}
-  if(nc>1&&!(c==='bad'&&cuoP>=30))b+=`<br>💳 ${nc} cuotas de ${fmt(mc)}: te amarras hasta ${perL(addM(S.actual,nc))} y tus cuotas pasan al ${cuoP2}% del presupuesto.`;
+  if(nc>1&&!(c==='bad'&&cuoP>=30))b+=`<br>💳 ${nc} cuotas de ${fmt(mc)}: te amarras hasta ${perL(addM(PL.pp,nc-1)).toLowerCase()}.`;
+  if(PL)b+=PL.html;
   {const K=S.aj.casa;if(!neg&&K&&K.mensual>0&&X>=20000){const sem=Math.round(X/K.mensual*4.3);if(sem>=1)b+=`<br>🏠 Te atrasa la mudanza ~${sem} semana${sem>1?'s':''}.`}}
   if(!neg)b+=`<br><span style="color:var(--sec);font-size:13px">💡 Invertidos, esos ${fmt(X)} serían ${fmt(X*Math.pow(1.06,10))} en 10 años.</span>`;
-  el.className='verdict on '+c;el.innerHTML=`<b class="vt">${h}</b>${b}`;
+  el.className='verdict on '+c;el.innerHTML=`<b class="vt">${h}</b>${b}`;S.chkC=c;dqPinta();
 }
+// ---------- Decidir: 3 preguntas rápidas y un consejo claro (comprar, esperar 72 horas o no) ----------
+const DQ=[['nec','¿Lo necesitas o lo quieres?',[['n','Lo necesito'],['q','Lo quiero']]],['par','¿Ya tienes algo que hace lo mismo?',[['s','Sí'],['n','No']]],
+  ['uso','¿Cuántas veces lo usarías al mes?',[[1,'1 o menos'],[4,'Cada semana'],[12,'Varias por semana'],[30,'Todos los días']]]];
+const dqTxt=q=>q?[q.nec==='n'?'lo necesitas':q.nec==='q'?'lo quieres, no lo necesitas':'',q.par==='s'?'ya tienes algo parecido':q.par==='n'?'no tienes nada parecido':'',q.uso?`lo usarías ${q.uso===1?'1 vez al mes o menos':q.uso===30?'todos los días':q.uso+' veces al mes'}`:''].filter(Boolean).join(', '):'';
+function dqSel(k,v){S.dq[k]=v;dqPinta()}
+function dqPinta(){const el=$('dq');if(!el)return;const q=S.dq||{},X=val('a-monto'),n=Object.keys(q).length;
+  let h=`<div class="dq-t">Antes de decidir, 3 preguntas</div>`+DQ.map(([k,t,o])=>`<div class="dq-p">${t}</div><div class="chips">${o.map(([v,l])=>`<button class="chip ${q[k]===v?'on':''}" onclick="dqSel('${k}',${typeof v==='number'?v:`'${v}'`})">${l}</button>`).join('')}</div>`).join('');
+  if(n===3&&X){const pts=(q.nec==='q')+(q.par==='s')+(q.uso<=1)+(S.chkC==='warn'),uso=X/(q.uso*24);
+    const r=S.chkC==='bad'||pts>=3?['bad','🛑 Mi consejo: no lo compres','La plata no da y/o no lo vas a aprovechar. Anótalo como aguantado y suma a tu racha.','skipBuy()','💪 No lo compro']
+      :pts>=1?['warn','⏳ Mi consejo: espera 3 días',`Si en 72 horas lo sigues queriendo, cómpralo sin culpa. Te pregunto el ${new Date(Date.now()+ESPERA).toLocaleDateString('es-CL',{weekday:'long'})}.`,'desear()','⏳ Lo pienso 72 horas']
+      :['ok','✅ Mi consejo: cómpralo','Te alcanza, lo necesitas y lo vas a usar harto.','boughtIt()','Lo compré → anotar'];
+    h+=`<div class="verdict on ${r[0]}" style="margin-top:14px"><b class="vt">${r[1]}</b>${r[2]}<br><span style="color:var(--sec);font-size:13px">Usándolo ${q.uso===30?'todos los días':q.uso+' vez'+(q.uso>1?'es':'')+' al mes'} por 2 años, cada uso te sale <b>${fmt(uso)}</b>.</span>
+      <button class="btn ${r[0]==='ok'?'p':'g'}" style="margin-top:10px${r[0]==='warn'?';background:var(--navy)':''}" onclick="${r[3]}">${r[4]}</button></div>`}
+  el.innerHTML=h;const g=$('chk-gen');if(g)g.style.display=n===3&&X?'none':''}
+// Cómo queda tu carga de cuotas mes a mes con esta compra (las que ya tienes + la nueva), y cuántos meses pasa del 30%.
+function planCuotas(mc,nc){const hoy=hoyISO(),pp=addM(periodoDe(hoy,S.card),1),N=Math.min(8,Math.max(6,nc)),ppto=S.ppto||1;
+  const M=Array.from({length:N},(_,i)=>{const per=addM(pp,i),ya=cuotasDe(per).reduce((s,c)=>s+c.monto_cuota,0),nueva=i<nc?mc:0;return{per,ya,nueva,t:ya+nueva,p:Math.round((ya+nueva)/ppto*100)}});
+  let sobre=0;for(const m of M){if(m.p>=30)sobre++;else break}const f=M.find(m=>m.p<30);
+  const mx=Math.max(...M.map(m=>m.t),ppto*.3),dd=+hoy.slice(8),cor=CORTE[S.card]||22;
+  const html=`<div style="margin-top:12px;font-size:12.5px;color:var(--sec)">Tus cuotas al mes con esta compra</div>
+    <div class="mes6">${M.map(m=>`<div><em>${kCLP(m.t)}</em><i style="height:${Math.max(4,m.t/mx*100)}%;background:${m.p>=30?'var(--red)':'var(--green)'};box-shadow:inset 0 ${Math.round(m.nueva/mx*92)}px 0 rgba(255,255,255,.35)"></i>${MES[+m.per.slice(5)-1]}</div>`).join('')}</div>
+    <div style="font-size:12px;color:var(--sec)">La parte clara es la cuota nueva. Rojo = sobre el 30% de tu presupuesto.</div>
+    ${dd<=cor&&TJ[S.card]&&S.card!=='efectivo'?`<div class="cmp">🗓 Con ${TJ[S.card]} cierras el ${cor}: si compras desde el ${cor+1}, la primera cuota se corre a ${perL(addM(pp,1)).toLowerCase()}.</div>`:''}`;
+  return{pp,M,sobre,fin30:f?f.per:null,fin30P:f?f.p:null,html}}
 function ctxIA(){const V=S.V,ks=Object.keys(CAT);
   return{hoy:hoyISO(),dias_hasta_el_22:V.dias,presupuesto:S.ppto,cuotas_y_fijos_total:V.cuo,cuotas_pct_presupuesto:Math.round(V.cuo/S.ppto*100),
     cuotas_y_fijos:V.CQ.map(c=>({nombre:c.nombre,monto:c.monto_cuota,detalle:c.label})),ya_gastaste:V.gast,te_quedan:V.queda,diario:Math.round(V.diario),
@@ -1990,9 +2200,22 @@ function openTx(id){
   <label>Es de</label><div class="chips" id="neg-ch"><button class="chip ${!g.pulldex?'on':''}" data-v="0" onclick="selNeg(this)">Personal</button><button class="chip ${g.pulldex?'on':''}" data-v="1" onclick="selNeg(this)">Negocio</button></div>
   <label>Monto${g.monto<0?' (venta)':''}</label><input id="e-monto" inputmode="numeric" oninput="fmtIn(this)" value="$${Math.abs(g.monto).toLocaleString('es-CL')}">
   <button class="btn p" onclick="saveTx(${id})">Guardar</button>
+  ${g.monto>0?`<button class="btn" style="margin-top:8px;background:var(--bg3);color:var(--text)" onclick="openDevol(${id})">↩️ Devolví algo / me reembolsaron</button>`:''}
   <button class="btn d" onclick="delTx(${id})">Borrar gasto</button>`);
   $('sheet').querySelector('.chips').id='cat-ch';
 }
+// Devoluciones y reembolsos: baja el monto del gasto (sin borrarlo) y deja la nota en la descripción.
+function openDevol(id){const g=S.gastos.find(x=>x.id===id);if(!g)return;
+  openSheet(`<h3>↩️ Devolví algo</h3><p>${esc(g.descripcion)} · ${fmt(g.monto)}. ¿Cuánto te devolvieron? El gasto baja y vuelve a tu mes.</p>
+  <input id="dv-m" class="amt-in" inputmode="numeric" placeholder="$0" oninput="fmtIn(this);dvPinta(${g.monto})">
+  <div class="chips" style="margin-top:12px"><button class="chip" onclick="$('dv-m').value='$'+(${g.monto}).toLocaleString('es-CL');dvPinta(${g.monto})">Lo devolví todo</button><button class="chip" onclick="$('dv-m').value='$'+Math.round(${g.monto}/2).toLocaleString('es-CL');dvPinta(${g.monto})">La mitad</button></div>
+  <div class="cmp" id="dv-r" style="display:none"></div>
+  <button class="btn p" onclick="saveDevol(${id})">Guardar devolución</button>`);$('dv-m').focus()}
+function dvPinta(m){const x=val('dv-m'),el=$('dv-r');if(!x){el.style.display='none';return}el.style.display='block';
+  el.innerHTML=x>=m?'El gasto queda en <b>$0</b> y deja de contar en tu mes.':`El gasto queda en <b>${fmt(m-x)}</b> y vuelven <b style="color:var(--green-d)">${fmt(x)}</b> a tu mes.`}
+async function saveDevol(id){const g=S.gastos.find(x=>x.id===id),x=Math.min(val('dv-m'),g?g.monto:0);if(!g||!x)return toast('Pon cuánto te devolvieron');
+  const nota=` · devolución ${fmt(x)}`,b=x>=g.monto?{estado:'ignorado',descripcion:g.descripcion+' · devuelto'}:{monto:g.monto-x,descripcion:g.descripcion+nota};
+  try{await api('gastos?id=eq.'+id,{m:'PATCH',b});closeSheet();await loadAll();toast(`↩️ Vuelven ${fmt(x)} a tu mes`)}catch(e){toast('❌ Error');console.error(e)}}
 function selNeg(b){$('neg-ch').querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on')}
 async function saveTx(id){
   const g=S.gastos.find(x=>x.id===id);

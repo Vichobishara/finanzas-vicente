@@ -40,8 +40,10 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   transferencia (match ILIKE más largo). Transferencias a cuentas propias no se importan (filtro en el script).
 - Función `anotar_atajo(monto_txt, comercio)`: la llama el atajo de iOS vía `/rest/v1/rpc/anotar_atajo`; limpia el
   monto ("$12.990", "CLP 12.990") e inserta el gasto Scotia con fuente `atajo`.
-- `categorias` (clave, nombre, techo, color): comida 250k, fijo 200k, tech 100k, transporte 30k,
-  salud 60k, ocio 70k, coleccionables 0 (bloqueado), viajes, otros.
+- `categorias` (clave, nombre, techo, color): comida 250k, fijo 200k, tech 100k, casa 100k, ropa 50k, transporte 30k,
+  salud 60k, ocio 70k, coleccionables 0 (bloqueado), viajes, otros. **Casa** = lo de independizarse (electrodomésticos,
+  muebles, IKEA/Sodimac): todo lo comprado en Casa (`S.casaComp`, todos los meses) se descuenta de "amoblar" en la meta
+  Independizarme. **Ropa** existe para que la ropa no caiga en tech. Orden en la app: `KS` en index.html.
 - `reglas_categoria` (palabra, categoria_clave, negocio): la app agrega reglas cuando el usuario corrige una categoría.
 - `cuotas` (nombre, monto_cuota, total_cuotas, tarjeta, activa, primer_periodo, recurrente)
   - La cuota N de un periodo se calcula con `primer_periodo`; `recurrente = true` = fijo mensual (Santander, Crossfit).
@@ -52,7 +54,8 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   `deseos` [{id, que, monto, desde, estado espera|aguantado|comprado}] (lista de deseos, regla de 72 horas: aguantarse suma a
   `evitado`), `fondo` {que, meta, ahorrado, mensual} (fondo gadgets: lo comprado con el fondo queda como gasto `ignorado`).
   `deudas` [{id, que, monto, desde, nota}] (tarjeta "Por pagar" en Plata: deudas que no son cuotas, ej. PSA; no cuentan en el
-  presupuesto, "La pagué" las quita). Ingresos inciertos (comisiones que quizás llegan) **no** se anotan: Vicho no quiere contar con ellos.
+  presupuesto, "La pagué" las quita). `cobrar` [{id, que, monto, desde, nota}] (tarjeta "Por cobrar" en Plata: plata que le
+  deben, ej. el IVA del iPhone; no cuenta hasta que llega; "Llegó" la quita y pregunta adónde va: casa, Fintual, fondo o tarjeta). Ingresos inciertos (comisiones que quizás llegan) **no** se anotan: Vicho no quiere contar con ellos.
 - `ingresos` también tiene `ref_externa` (único, id del correo) y `fuente` (manual | app | toku_auto). El script importa
   los abonos de TOKU SPA y no duplica si ya hay uno manual con el mismo monto (±5 días).
 - `ahorros` (fecha, monto, destino fintual|apv|colchon, periodo): lo que Vicho **de verdad** transfirió. `periodo` = mes del sueldo.
@@ -94,8 +97,26 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   Logros en Coach (`renderLogros`).
 - Gastos → **Suscripciones**: gastos `fijo` de 3 meses agrupados + fijos recurrentes; "La di de baja" → `ajustes.bajas`.
 - ¿Me alcanza? → **¿Cuál me compro?** compara 2 opciones (costo real con reventa, atraso de metas, 10 años).
+- ¿Me alcanza? en cuotas (3, 6, 12, 24): `planCuotas()` dibuja la carga de cuotas de los próximos meses con la compra
+  (primera cuota = boleta siguiente según el cierre de la tarjeta) y avisa si comprando después del cierre se corre un mes.
+  Regla del 30%: "No" salvo compra ≥ $500.000 cuyas cuotas bajan del 30% en ≤ 3 meses → "Se puede, con una condición"
+  (ninguna otra cuota hasta ese mes; solo si son sin interés).
+- Cuota → **La adelanté**: la cuota de este mes se queda (`total_cuotas` = la cuota actual) y lo que faltaba se anota hoy
+  como gasto "Adelanto cuotas · X". Las compras en cuotas aparecen en el detalle de Scotia dos veces: el total (solo registro)
+  y "NOMBRE 01/12" (lo que se cobra cada mes). Si cuota × N = precio, son sin interés.
+- Gasto → **Devolví algo**: baja el monto (deja "· devolución $X" en la descripción); si devolvió todo queda `ignorado`.
+- Anotar gasto muestra en qué categoría cae mientras escribes (`aCat`) y se puede cambiar; si la cambias, se aprende la regla.
+- Gastos: barra de colores por categoría, gráfico **Día a día** (cada día vs. lo que podías gastar por día), listas agrupadas
+  por día con su total (tocar el gráfico o el encabezado de un día abre `openDia`: sus gastos vs. la plata del día), y "Ver todos" con buscador y filtro por categoría.
+- **Decidir compras** (¿Me alcanza?): 3 preguntas (¿lo necesitas o lo quieres?, ¿tienes algo parecido?, ¿cuántas veces al mes?)
+  → consejo: comprar / esperar 72 horas / no, con costo por uso a 2 años. Las respuestas se guardan en el deseo (`por`).
+  A las 72 horas aparece en Hoy "Pasaron 3 días" → `openDeseo`: lo que dijiste ese día, si hoy te alcanza (o lo cubre el
+  fondo) y "Ya no lo quiero" / "Sí, lo compro" / "Espérame 3 días más".
 - Coach → **Widget en tu inicio**: script de Scriptable (`widgetJS`) con el código personal → `rpc/widget(token)`.
 
+- Plata → **Lo que debes** (`debo()`, `openDebo()`; también desde la pestaña Cuotas): total para quedar en cero = tarjetas de
+  este mes por separado (compras del mes, cuotas de compras viejas y fijos de esa tarjeta, cuándo cierra) + cuotas que faltan
+  después de este mes + deudas. Explica que pagar de más la tarjeta no adelanta cuotas (hay que pedir "prepago").
 - Plata → **Tu caja** (`openCaja()`): `perfil.caja` (lo que hay en la cuenta, a mano), `caja_fecha`, `caja_min` (default $300.000).
   Muestra la próxima factura estimada = compras con tarjeta del mes (scotiabank/bci/santander) + cuotas no recurrentes del mes,
   y las cuotas que quedan después. **La caja no suma al presupuesto**: paga efectivo/transferencias hasta el sueldo; lo que pase
@@ -155,12 +176,17 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - Sueldo base esperado: $2.000.000. Lo que no se gasta del presupuesto se reparte 50% Fintual / 50% colchón.
 - APV régimen A: 40 UTM/año ($239k/mes) → bono 15%, tope 6 UTM. UTM hardcodeada en 71.649: **actualizar cada año**.
 - Reliquidación anual del impuesto único (art. 47, un empleador): se estima con base_tributable e impuesto de `ingresos`.
-- Mes con bono (> $2M): 70% del extra a invertir (APV hasta 40 UTM, luego Fintual), 30% libre.
+- Mes con bono/comisión (Plata → "¿Te llegó un bono o comisión?", `calcBono`): el orden de Vicho = 1) adelantar todas las
+  cuotas (`caja().desp`), 2) pagar la tarjeta (`caja().factura`), 3) deudas, 4) dejar en la cuenta el mínimo de caja (`perfil.caja_min`, Vicho usa $500.000; lo que
+  gaste con tarjeta el mes siguiente lo paga el sueldo siguiente),
+  5) lo que sobra a Fintual, mitad Risky y mitad conservador. APV es opcional (régimen A, 15%): Vicho prefiere plata líquida
+  para independizarse. El impuesto alto de esos meses vuelve en abril con la reliquidación (art. 47), no con el APV.
 - Proyección a millonario: 6% real anual sobre Fintual + ETH; las cartas no crecen en el modelo.
 
 ## Principios de UX (no negociables)
 1. La pestaña **Hoy** es una pantalla y dos botones: **Anotar gasto** y **¿Me alcanza?** (más los avisos y la tarjeta "Hoy anotaste" con los gastos del día, o "Nada anotado hoy"). Lo demás vive
-   en la barra de abajo: **Gastos** (cómo vas vs. donde deberías ir hoy, pendientes, categorías, últimos gastos, cuotas,
+   en la barra de abajo (5 pestañas con ícono y nombre, y el + al centro): **Cuotas** (cuánto se va al mes en cuotas y fijos,
+   la regla del 30% con la fecha en que bajas, "¿Puedo comprar algo en cuotas?" y cada cuota con cuántas quedan), **Gastos** (cómo vas vs. donde deberías ir hoy, pendientes, categorías, últimos gastos, cuotas,
    negocio, meses, presupuesto), **Plata** (camino a la meta, próximo movimiento, plan de ahorro del mes; fondo gadgets, por pagar, APV e
    impuestos como filas cortas que abren su detalle en una hoja; bono, sueldos y patrimonio en hojas) y **Coach** (hábitos del mes con puntaje y botón para
    resolver cada uno, Pregúntale a Claude, consejos con acción, avisos). Nada importante bajo el scroll de Hoy.

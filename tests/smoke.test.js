@@ -59,19 +59,19 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['top categorías']=t('top3').includes('Comida');
  checks['tarjeta Fintual']=t('fin').includes('Fintual');
  checks['camino a millonario']=t('meta').includes('Camino');
- checks['barra de navegación']=d.body.classList.contains('ready')&&d.querySelectorAll('#nav button[data-t]').length===4&&!!d.querySelector('#nav button.add');
+ checks['barra de navegación']=d.body.classList.contains('ready')&&d.querySelectorAll('#nav button[data-t]').length===5&&!!d.querySelector('#nav button.add');
  w.eval("tab('gastos')");checks['pestaña gastos']=!d.querySelector('[data-tab=gastos]').hidden&&d.querySelector('[data-tab=hoy]').hidden;
  w.eval("tab('coach')");checks['coach en pestaña']=t('coach').length>20;w.eval("tab('hoy')");
  checks['coach: hábitos con puntaje']=/\d\/\d/.test(t('coach-hab'))&&t('coach-hab').includes('Todo ordenado')&&t('coach-hab').includes('Mandaste plata a Fintual');
  checks['coach: consejos con botón']=!!d.querySelector('#coach .tip .go');
  checks['gastos: resumen del mes']=t('g-res').includes('de $1.000.000')&&t('g-pend').includes('por revisar')&&t('g-ult').includes('Jumbo');
  checks['plata: plan, APV e impuestos a la vista']=t('fin').includes('Fintual')&&t('apv-c').includes('APV')&&t('tax-c').includes('SII')&&t('meta').includes('Colchón');
- w.eval('openBono()');d.getElementById('b-in').value='$4.000.000';w.eval('calcBono()');checks['bono en su hoja']=t('b-out').includes('APV');w.eval('closeSheet()');
+ w.eval('openBono()');d.getElementById('b-in').value='$4.000.000';w.eval('calcBono()');checks['bono: cuotas, tarjeta y el resto a Fintual']=t('b-out').includes('Adelantar todas las cuotas')&&t('b-out').includes('Pagar la tarjeta')&&t('b-out').includes('Risky');w.eval('closeSheet()');
  checks['transferencias por revisar']=t('nudges').includes('1 transferencia por revisar');
  checks['ignoradas y por revisar no descuentan']=w.eval('S.V.gast')===50000;
  w.eval('openRev()');checks['lista por revisar']=t('sheet').includes('Gustavo');
  w.eval('openRevTx(5)');checks['botón no cuenta']=t('sheet').includes('No cuenta');
- w.eval('openCuotas()');checks['cuotas: cuántas quedan y cuánto falta']=t('sheet').includes('te quedan 2 después de esta')&&t('sheet').includes('por pagar en cuotas')&&t('sheet').includes('$242.400')&&t('sheet').includes('Fijos todos los meses')&&t('sheet').includes('a mano');
+ w.eval('openCuotas()');checks['cuotas: cuántas quedan y cuánto falta']=t('sheet').includes('te quedan 2 después de esta')&&t('sheet').includes('por pagar')&&t('sheet').includes('$242.400')&&t('sheet').includes('Fijos todos los meses')&&t('sheet').includes('a mano');
  w.eval("revisarCartola({fecha_cartola:'',cuotas:[{nombre:'Falabella iPhone',monto_cuota:95000,cuota_actual:4,total_cuotas:12,banco:'Scotiabank'},{nombre:'TOUS',monto_cuota:80800,cuota_actual:1,total_cuotas:3,banco:'Scotiabank'}]})");
  checks['cartola: revisar, la repetida viene desmarcada']=t('sheet').includes('Encontré 2')&&t('sheet').includes('ya la tienes')&&t('sheet').includes('Guardar 1 cuota');
  w.CALLS=[];await w.eval('guardarCartola()');{const c=w.CALLS.find(c=>c.m==='POST'&&c.u.includes('/cuotas'));const b=c&&JSON.parse(c.b);
@@ -216,6 +216,49 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  d.getElementById('cj-m').value='$250.000';await w.eval('saveCaja()');
  {const c=w.CALLS.filter(c=>c.m==='POST'&&c.u.includes('ajustes')).pop();checks['caja: guarda en perfil']=!!c&&/"caja":250000/.test(c.b)&&/"caja_min":300000/.test(c.b);}
  w.eval('closeSheet()');
+ // Casa y Ropa: categorías nuevas; lo comprado para la casa avanza Independizarme
+ w.eval('openTx(1)');checks['categorías: Casa y Ropa para elegir']=t('sheet').includes('🏠 Casa')&&t('sheet').includes('👕 Ropa');
+ checks['casa: lo comprado se descuenta de amoblar']=w.eval("S.casaComp=300000;const r=casaNecesitas({arriendo:400000,muebles:800000});S.casaComp=0;r")===1500000;
+ // Devolví algo: baja el monto y deja la nota
+ w.eval('openDevol(1)');d.getElementById('dv-m').value='$20.000';w.CALLS=[];await w.eval('saveDevol(1)');await new Promise(r=>setTimeout(r,50));
+ {const c=w.CALLS.find(c=>c.m==='PATCH'&&c.u.includes('gastos?id=eq.1'));checks['devolución: baja el gasto a lo que queda']=!!c&&/"monto":30000/.test(c.b)&&c.b.includes('devolución $20.000');}
+ w.eval('closeSheet()');
+ // Por cobrar: aparece en Plata y al llegar se le da destino
+ w.eval("S.aj.cobrar=[{id:7,que:'IVA iPhone',monto:399160}];S.aj.casa={arriendo:400000,muebles:800000,ahorrado:0,mensual:100000};renderMetas()");
+ checks['por cobrar: fila en Plata con el total']=t('metas').includes('Por cobrar')&&t('metas').includes('$399.160');
+ w.CALLS=[];await w.eval('cobroLlego(7)');checks['por cobrar: al llegar pregunta adónde va']=t('sheet').includes('Llegaron $399.160')&&t('sheet').includes('Lo aparto para irme');
+ await w.eval("cobroA('casa',399160)");await new Promise(r=>setTimeout(r,50));
+ checks['por cobrar: sale de la lista y suma a la casa']=w.CALLS.some(c=>c.u.includes('ajustes')&&/"clave":"cobrar","valor":\[\]/.test(c.b))&&w.CALLS.some(c=>c.u.includes('ajustes')&&/"ahorrado":399160/.test(c.b));
+ w.eval('closeSheet();delete S.aj.casa');
+ // ¿Me alcanza? en cuotas: carga mes a mes
+ w.eval('openCheck()');d.getElementById('a-monto').value='$2.400.000';d.getElementById('a-desc').value='iPhone';w.eval('S.nc=24;evalCheck()');
+ checks['¿Me alcanza? en 24 cuotas: muestra la carga mes a mes']=t('verdict').includes('Tus cuotas al mes con esta compra')&&t('verdict').includes('30%');w.eval('closeSheet()');
+ // Anotar: la categoría se ve mientras escribes
+ w.eval('openAdd()');d.getElementById('a-desc').value='jumbo';w.eval('aCat()');checks['anotar: muestra la categoría que adivina']=t('a-cat').includes('Comida');
+ w.eval('aCat(1)');checks['anotar: se puede cambiar la categoría']=d.querySelectorAll('#a-cat .chip').length>=8;w.eval('closeSheet()');
+ // Todos los gastos: buscar y agrupar por día
+ w.eval('openMovs()');d.getElementById('mv-q').value='jumbo';w.eval("S.mv.q='jumbo';mvPinta()");
+ checks['todos los gastos: buscar con total y días']=t('mv-l').includes('Jumbo')&&t('mv-t').includes('1 gasto')&&t('mv-l').includes('Hoy');w.eval('closeSheet()');
+ checks['gastos: día a día y barra por categoría']=t('g-res').includes('Día a día')&&!!d.querySelector('#g-res .cats-seg');
+ // Decidir: 3 preguntas y consejo; a los 3 días aparece en Hoy
+ w.eval('openCheck()');d.getElementById('a-monto').value='$54.000';d.getElementById('a-desc').value='lentes';w.eval("evalCheck();dqSel('nec','q');dqSel('par','s');dqSel('uso',1)");
+ checks['decidir: 3 preguntas dan un consejo con costo por uso']=t('dq').includes('Mi consejo')&&t('dq').includes('cada uso te sale')&&d.getElementById('chk-gen').style.display==='none';
+ w.eval('desear()');await new Promise(r=>setTimeout(r,50));
+ w.eval("S.aj.deseos[0].desde=new Date(Date.now()-80*36e5).toISOString();closeSheet();render()");
+ checks['decidir: a los 3 días aparece en Hoy']=t('nudges').includes('Pasaron 3 días')&&t('nudges').includes('lentes');
+ w.eval('openDeseo(S.aj.deseos[0].id)');checks['decidir: recuerda lo que dijiste']=t('sheet').includes('Ese día dijiste que')&&t('sheet').includes('ya tienes algo parecido')&&t('sheet').includes('Espérame 3 días más');
+ w.eval("closeSheet();S.aj.deseos=[];render()");
+ // Día a día: tocar un día abre su detalle
+ w.eval('openDia(hoyISO())');checks['día a día: detalle del día con sus gastos']=t('sheet').includes('Hoy')&&t('sheet').includes('Jumbo')&&t('sheet').includes('tu plata del día');w.eval('closeSheet()');
+ // Pestaña Cuotas en la barra: regla del 30% y el detalle
+ w.eval("tab('cuotas')");checks['pestaña Cuotas: regla del 30% y lista']=!d.querySelector('[data-tab="cuotas"]').hidden&&t('cuo-v').includes('tu regla del 30%')&&t('cuo-v').includes('¿Puedo comprar algo en cuotas?')&&d.querySelectorAll('#nav button[data-t]').length===5;w.eval("tab('hoy')");
+ // Adelantar cuotas: termina este mes y lo que faltaba queda como gasto de hoy
+ w.confirm=()=>true;w.CALLS=[];await w.eval('adelantarCuota(7)');await new Promise(r=>setTimeout(r,60));
+ checks['adelantar cuotas: termina este mes y anota lo que faltaba']=w.CALLS.some(c=>c.m==='PATCH'&&c.u.includes('cuotas?id=eq.7')&&/"total_cuotas":1/.test(c.b))&&w.CALLS.some(c=>c.m==='POST'&&c.u.includes('gastos')&&c.b.includes('Adelanto cuotas')&&/"monto":161600/.test(c.b));
+ // Lo que debes: tarjetas por separado, cuotas que faltan y deudas
+ w.eval("S.aj.deudas=[{id:1,que:'PSA',monto:490000}];openDebo()");
+ checks['lo que debes: total, tarjetas, cuotas que faltan y deudas']=t('sheet').includes('Lo que debes')&&t('sheet').includes('Tus tarjetas de este mes')&&t('sheet').includes('Scotia')&&t('sheet').includes('PSA')&&t('sheet').includes('Prepago de cuotas');
+ w.eval("closeSheet();renderMetas()");checks['lo que debes: fila en Plata']=t('metas').includes('Lo que debes');w.eval('S.aj.deudas=[]');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();
