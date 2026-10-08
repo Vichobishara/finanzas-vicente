@@ -137,7 +137,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['por pagar: muestra la deuda y el total']=t('deudas-c').includes('PSA')&&t('deudas-c').includes('$490.000')&&t('deudas-c').includes('La pagué');
  // Plata compacta: filas cortas que abren el detalle
  w.eval("S.aj.fondo={que:'iPhone Duo',meta:2100000,ahorrado:300000,mensual:0};S.aj.deudas=[{id:1,que:'PSA',monto:490000}];render()");
- checks['plata compacta: lo que tienes y debes, metas e impuestos en filas']=t('metas').includes('iPhone Duo')&&t('metas').includes('$300.000 de $2.100.000')&&t('metas').includes('Lo que debes')&&t('metas').includes('Tus metas')&&t('metas').includes('Impuestos');
+ checks['plata compacta: lo que tienes y debes, metas y herramientas en una fila']=t('metas').includes('iPhone Duo')&&t('metas').includes('$300.000 de $2.100.000')&&t('metas').includes('Lo que debes')&&t('metas').includes('Tus metas')&&t('metas').includes('Herramientas')&&(w.eval('openHerr()'),t('sheet').includes('Impuestos')&&t('sheet').includes('bono o comisión'))&&(w.eval('closeSheet()'),true);
  w.eval("verCard('deudas-c')");checks['plata compacta: la fila abre el detalle']=t('sheet').includes('La pagué');w.eval('closeSheet()');
  // Guía para ponerla en la pantalla de inicio
  w.eval('guiaInicio()');checks['guía inicio: pasos y no está en la tienda']=t('sheet').includes('Ponla en tu pantalla de inicio')&&t('sheet').includes('No la busques en la')&&d.querySelectorAll('#sheet .step').length>=3;w.eval('closeSheet()');
