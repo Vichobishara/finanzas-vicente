@@ -548,8 +548,7 @@ body:not(.ready) .mes-b .chev{display:none}
   <div class="card" id="fin"></div>
   <div id="metas"></div>
   <div hidden><div class="card" id="fondo-c"></div><div class="card" id="deudas-c"></div><div class="card" id="cobrar-c"></div><div class="card" id="apv-c"></div><div class="card" id="tax-c"></div></div>
-  <div class="sec-t">Herramientas</div>
-  <div class="card menu">
+  <div class="card menu" id="herr" hidden>
     <button class="crow" onclick="openPlata()"><div class="ic">📍</div><div class="cm"><b>Dónde poner cada peso</b><small>Cómo repartir lo que ahorras</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openBono()"><div class="ic">🎁</div><div class="cm"><b>¿Te llegó un bono o comisión?</b><small>Cuotas, tarjeta, deudas y el resto a Fintual</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openFin()"><div class="ic">💼</div><div class="cm"><b>Sueldos y ahorro real</b><small>Lo que te entra y lo que de verdad ahorraste</small></div><span class="chev">›</span></button>
@@ -1117,7 +1116,7 @@ function nextMove(){
   if(T&&T.dev>50000)return['🧾',`Abril ${+T.y+1}: pide la reliquidación`,`Te podrían devolver ≈ ${fmt(Math.round(T.dev/10000)*10000)} de impuestos`,'tax-c'];
   return['🛡','No te pases del presupuesto','Así el ahorro de fin de mes queda intacto','fin'];
 }
-function renderNext(){if(!S.V.esActual){$('next').innerHTML='';return}const[i,b,s,to]=nextMove();$('next').innerHTML=`<button class="next" onclick="${to==='fin'?`$('fin').scrollIntoView({behavior:'smooth',block:'center'})`:to==='debo'?'openDebo()':`verCard('${to}')`}"><i>${i}</i><div class="cm"><b>${b}</b><small>${s}</small></div><span class="chev">›</span></button>`}
+function renderNext(){if(!S.V.esActual){$('next').innerHTML='';return}const[i,b,s,to]=nextMove();if(to==='fin'){$('next').innerHTML='';return}$('next').innerHTML=`<button class="next" onclick="${to==='fin'?`$('fin').scrollIntoView({behavior:'smooth',block:'center'})`:to==='debo'?'openDebo()':`verCard('${to}')`}"><i>${i}</i><div class="cm"><b>${b}</b><small>${s}</small></div><span class="chev">›</span></button>`}
 
 // ---------- Plata: la meta, el plan de ahorro, el APV y los impuestos, todo a la vista ----------
 const ahorroDe=per=>S.ahorros.filter(a=>a.periodo===per).reduce((s,a)=>s+a.monto,0);
@@ -1215,11 +1214,13 @@ function renderMetas(){const el=$('metas');if(!el)return;const F=S.aj.fondo,D=DE
    +`</div><div class="sec-t">Tus metas</div><div class="card menu"><button class="crow" onclick="openCasa()"><div class="ic">🏠</div><div class="cm"><b>Independizarme</b><small>${K?`${fmt(K.ahorrado||0)} de ${fmt(kn)}${K.mensual?` · llegas en ${perL(addM(S.actual,Math.ceil(Math.max(0,kn-(K.ahorrado||0))/K.mensual)))}`:''}`:'Calcula cuánto necesitas para irte a vivir solo'}</small></div>${K?`<span class="mini"><i style="width:${Math.min(100,(K.ahorrado||0)/kn*100)}%"></i></span>`:''}<span class="chev">›</span></button>`
    +fila('fondo-c','🎧',F?F.que:'Fondo gadgets',F?`${fmt(F.ahorrado)} de ${fmt(F.meta)}`:'Junta para tu próximo gadget sin tocar el mes',
       F?`<span class="mini"><i style="width:${Math.min(100,F.ahorrado/F.meta*100)}%"></i></span>`:'')
-   +fila('apv-c','🎯',apvOk()?`APV ${new Date().getFullYear()}`:'APV: plata gratis del Estado',apvOk()?`${fmt(a)} de ${fmt(APV_ANUAL)}`:'Pendiente: abrirlo en Fintual')
-   +fila('tax-c','🧾','Impuestos',!T?'Anota tus liquidaciones':dev>50000?`El SII te debe ≈ ${fmt(dev)}`:'Al día')+'</div>';
+   +'</div>'+`<button class="crow card" style="padding:14px 18px;margin-top:4px;background:var(--card)" onclick="openHerr()"><div class="ic">🧰</div><div class="cm"><b>Herramientas</b><small>Bono o comisión, sueldos, impuestos${dev>50000?` (el SII te debe ≈ ${fmt(dev)})`:''}, APV, Fintual</small></div><span class="chev">›</span></button>`;
+  S.herrExtra=fila('tax-c','🧾','Impuestos',!T?'Anota tus liquidaciones':dev>50000?`El SII te debe ≈ ${fmt(dev)}`:'Al día')+fila('apv-c','🎯',apvOk()?`APV ${new Date().getFullYear()}`:'APV (opcional)',apvOk()?`${fmt(a)} de ${fmt(APV_ANUAL)}`:'El Estado pone 15%, pero queda para la jubilación');
   // Si la hoja de detalle está abierta, que muestre lo nuevo (ej: después de "La pagué")
   const v=document.querySelector('#sheet [data-vista]');if(v&&sheetOn())v.innerHTML=cardSin(v.dataset.vista)}
 
+// Herramientas de Plata (lo que se usa una vez al mes): una sola fila que abre esta hoja, para que Plata no sea infinita
+function openHerr(){openSheet(`<h3>🧰 Herramientas</h3><p>Lo que usas de vez en cuando: el día del sueldo, con una comisión o en abril.</p><div class="card menu">${$('herr').innerHTML}${S.herrExtra||''}</div>`)}
 function openPlata(){
   const apv=apvOk(),P0=PAT(),pat=P0.fintual+P0.cartas+P0.eth,alt=Math.round((P0.cartas+P0.eth)/pat*100);
   openSheet(`<h3>📍 Dónde poner cada peso</h3><p>El orden importa: primero lo que más plata te da. Cuando uno está listo, pasas al siguiente.</p>

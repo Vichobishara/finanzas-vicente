@@ -199,8 +199,9 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 7. **Simple primero, detalle a un toque.** Cada pestaña parte con la pregunta que responde (`tab-s`). Se muestra lo que
    importa y el resto queda tras "Ver…": Gastos muestra las 4 categorías que más pesan (+ las pasadas del tope) y "Ver las N
    categorías"; la barra de colores muestra 4 en la leyenda; Coach muestra solo los hábitos pendientes ("Ver los N que ya
-   cumples") y 2 consejos; Plata va en secciones (Lo que tienes y lo que debes · Tus metas · Herramientas) y "Por pagar" vive
-   dentro de "Lo que debes". Antes de agregar algo nuevo a una pestaña, ver qué se puede esconder.
+   cumples") y 2 consejos; Plata va en secciones (Lo que tienes y lo que debes · Tus metas) más una sola fila **Herramientas** (`openHerr`:
+   bono o comisión, dónde poner cada peso, sueldos, Fintual, patrimonio, impuestos y APV) y "Por pagar" vive dentro de
+   "Lo que debes"; el "próximo paso" solo aparece cuando hay algo concreto (impuestos). Antes de agregar algo nuevo a una pestaña, ver qué se puede esconder.
 
 ## Pendientes / ideas
 - [x] Seguridad: RLS con clave `x-app-key` (ver arriba). Si algún día hay más usuarios: Supabase Auth + RLS por usuario.
