@@ -111,7 +111,8 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  if(tb){w.CALLS=[];tb.click();await new Promise(r=>setTimeout(r,50));checks['deshacer borra el gasto']=w.CALLS.some(c=>c.m==='DELETE'&&c.u.includes('gastos?id=eq.'))}
  w.eval('openTx(1)');checks['fecha legible']=!/\d{4}-\d{2}-\d{2}/.test(t('sheet'));
  w.eval('openAvisos()');checks['avisos: explica y lista los push']=t('sheet').includes('Avisos')&&t('sheet').includes('Lunes 9:00');
- w.eval("S.aj.fintual_pausa={hasta:'2099-01-01'};render()");checks['pausa Fintual: sin nudge ni promesa de Fintual']=!t('nudges').includes('Fintual')&&!t('hero-w').includes('a Fintual')&&t('fin').includes('primero las tarjetas');
+ checks['hoy: pasado del mes dice por qué categoría']=/Más que nada por/.test(t('hero-w'))||w.eval('S.V.queda>=0');
+ w.eval("S.aj.fintual_pausa={hasta:'2099-01-01'};render()");checks['pausa Fintual: sin nudge ni promesa de Fintual']=!t('nudges').includes('Fintual')&&!t('hero-w').includes('a Fintual')&&t('fin').includes('Primero las tarjetas');
  w.eval("delete S.aj.fintual_pausa;render()");
  w.eval('closeSheet();openAll()');d.querySelector('#sheet .crow[onclick*="openCat"]').click();
  checks['hoja: ‹ aparece al entrar a una categoría']=!!d.querySelector('#sheet .bk')&&!t('sheet').includes('Toca una categoría');
