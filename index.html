@@ -296,6 +296,10 @@ body.ready .nav{display:grid}
 .nav button.on svg.i{stroke-width:2.4}
 
 .tab-t{font-size:28px;font-weight:800;letter-spacing:-.8px;margin:2px 0 16px}
+body[data-tab]:not([data-tab="hoy"]) .hdr h1{font-size:18px;letter-spacing:-.3px}
+body[data-tab]:not([data-tab="hoy"]) .avatar{width:38px;height:38px;font-size:15px;border-width:2px}
+body[data-tab]:not([data-tab="hoy"]) .hdr{margin-bottom:10px}
+.hdr h1{transition:font-size .25s}
 .tab-h{display:flex;justify-content:space-between;align-items:center;margin:2px 0 16px}.tab-h .tab-t{margin:0}
 .tab-h button{display:flex;align-items:center;gap:6px;border:none;background:var(--navy);color:#fff;font-size:14px;font-weight:700;padding:9px 15px 9px 11px;border-radius:99px;box-shadow:0 8px 18px -8px rgba(18,18,23,.5)}
 .tab-h button svg.i{width:18px;height:18px;stroke-width:2.6}.tab-h button:active{transform:scale(.95)}
@@ -378,7 +382,7 @@ body:not(.ready) .mes-b .chev{display:none}
 .tile{background:var(--bg3);border-radius:16px;padding:10px 12px;min-width:0}
 .tile small{display:block;font-size:11.5px;color:var(--sec);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile b{display:block;font-size:17px;font-weight:800;letter-spacing:-.4px;margin-top:2px;white-space:nowrap}
-.sheet .tile{background:#fff}.tile.bad{background:#FEF3F2}.tile.bad b{color:var(--red-d)}.tile.ok{background:#ECFDF3}.tile.ok b{color:var(--green-d)}
+.sheet .tile{background:#fff}.meta .tile{background:rgba(255,255,255,.08)}.meta .tile small{color:rgba(255,255,255,.6)}.meta .tile b{color:#fff}.meta .tiles{margin:14px 0 2px}.tile.bad{background:#FEF3F2}.tile.bad b{color:var(--red-d)}.tile.ok{background:#ECFDF3}.tile.ok b{color:var(--green-d)}
 .dia-h{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0 2px;font-size:12px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.04em}
 .dia-h{cursor:pointer}.dia-h:active{opacity:.6}
 .dia-h b{font-size:12.5px;color:var(--sec);font-weight:700;letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
@@ -773,7 +777,7 @@ function contar(k,v){const el=document.querySelector('#hero-w .h-amt'),h=documen
 function entrar(){if(!S.sk)return;S.sk=false;document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('enter');void t.offsetWidth;t.classList.add('enter')});setTimeout(()=>document.querySelectorAll('.tab').forEach(t=>t.classList.remove('enter')),900)}
 
 const TABS=['hoy','gastos','cuotas','plata','coach'];let tabAct='hoy';
-function tab(t){const dx=TABS.indexOf(t)>TABS.indexOf(tabAct)?'18px':'-18px',cambia=t!==tabAct;tabAct=t;
+function tab(t){document.body.dataset.tab=t;const dx=TABS.indexOf(t)>TABS.indexOf(tabAct)?'18px':'-18px',cambia=t!==tabAct;tabAct=t;
   document.querySelectorAll('.tab').forEach(x=>{x.hidden=x.dataset.tab!==t;x.classList.remove('tab-in');if(cambia&&!x.hidden){x.style.setProperty('--dx',dx);void x.offsetWidth;x.classList.add('tab-in');clearTimeout(x._t);x._t=setTimeout(()=>x.classList.remove('tab-in'),1100)}});document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));navPill();window.scrollTo(0,0)}
 // Barra "liquid glass": la píldora se desliza con rebote y se estira al moverse; se puede arrastrar con el dedo.
 function navPill(x){const n=$('nav'),p=$('nav-pill'),b=n&&n.querySelector('button.on');if(!p||!b||!b.offsetWidth)return;
@@ -1279,7 +1283,7 @@ function renderMetas(){const el=$('metas');if(!el)return;const F=S.aj.fondo,D=DE
   const K=S.aj.casa,kn=K?casaNecesitas(K):0;
   const C=caja();
   el.innerHTML=`<div class="sec-t">Lo que tienes y lo que debes</div><div class="card menu"><button class="crow" onclick="openCaja()"><div class="ic">🏦</div><div class="cm"><b>Tu caja</b><small>${C.monto===null?'Cuánto tienes en la cuenta y cuánto viene en la tarjeta':`${fmt(C.monto)} en la cuenta · próxima factura ≈ ${fmt(C.factura)}`}</small></div><span class="chev">›</span></button>`
-   +(()=>{const D=debo();return `<button class="crow" onclick="openDebo()"><div class="ic">🧾</div><div class="cm"><b>Lo que debes</b><small>${D.total?'Tarjetas, cuotas que faltan y deudas':'Nada: estás en cero 🙌'}</small></div>${D.total?`<b class="m-der">${fmt(D.total)}</b>`:''}<span class="chev">›</span></button>`})()
+   +(()=>{const D=debo();return `<button class="crow" onclick="openDebo()"><div class="ic">🧾</div><div class="cm"><b>Lo que debes</b><small>${D.total?'Para quedar en cero':'Nada: estás en cero 🙌'}</small></div>${D.total?`<b class="m-der">${fmt(D.total)}</b>`:''}<span class="chev">›</span></button>`})()
    +(()=>{const B=COB(),bt=B.reduce((s,x)=>s+x.monto,0);return fila('cobrar-c','📥','Por cobrar',B.length?B.map(x=>esc(x.que)).join(', '):'Plata que te deben: un reembolso, el IVA, una venta',bt?`<b class="m-der" style="color:var(--green-d)">${fmt(bt)}</b>`:'')})()
    +`</div><div class="sec-t">Tus metas</div><div class="card menu"><button class="crow" onclick="openCasa()"><div class="ic">🏠</div><div class="cm"><b>Independizarme</b><small>${K?`${fmt(K.ahorrado||0)} de ${fmt(kn)}${K.mensual?` · llegas en ${perL(addM(S.actual,Math.ceil(Math.max(0,kn-(K.ahorrado||0))/K.mensual)))}`:''}`:'Calcula cuánto necesitas para irte a vivir solo'}</small></div>${K?`<span class="mini"><i style="width:${Math.min(100,(K.ahorrado||0)/kn*100)}%"></i></span>`:''}<span class="chev">›</span></button>`
    +fila('fondo-c','🎧',F?F.que:'Fondo gadgets',F?`${fmt(F.ahorrado)} de ${fmt(F.meta)}`:'Junta para tu próximo gadget sin tocar el mes',
@@ -1344,7 +1348,7 @@ function renderMeta(){
   const parts=[['Fintual',p.fintual-col,'#FEC84B'],['Colchón',col,'#7CD4FD'],['Cartas',p.cartas,'#FB923C'],['ETH',p.eth,'#A48AFB']].filter(x=>x[1]>0);
   el.style.display='block';
   el.innerHTML=`<div class="t">🏆 Camino a tus primeros ${fmtM(meta)}</div><div class="v">${fmtM(tot)} <span style="font-size:14px;font-weight:600">de ${fmtM(meta)} · ${Math.floor(tot/meta*100)}%</span></div><div class="bar"><div style="width:${Math.min(100,tot/meta*100)}%"></div></div>
-  <small style="display:block;margin-top:10px">Ahorrando ${fmt(base)} al mes llegas a los <b>${Math.floor(r.e)} años</b> (${r.y}).${conBonos>base?` Invirtiendo la mitad de tus bonos, a los <b>${Math.floor(r2.e)}</b>.`:''}</small>
+  ${tiles([['Llegas a',`${Math.floor(r.e)} años`],['Al mes',kCLP(base)],conBonos>base&&Math.floor(r2.e)<Math.floor(r.e)?['Con bonos',`${Math.floor(r2.e)} años`]:['Te falta',fmtM(Math.max(0,meta-tot))]])}
   <div class="seg">${parts.map(([,v,c])=>`<div style="flex:${v};background:${c}"></div>`).join('')}</div><div class="legend">${parts.map(([n,v,c])=>`<span style="--c:${c}">${n} ${fmtM(v)}</span>`).join('')}</div>`;
 }
 function openMeta(){
