@@ -159,7 +159,7 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   (presupuesto − cuotas − gastos de días anteriores) / días hasta el 22. Es fijo durante el día. **El número grande siempre es lo que puedes
   gastar, nunca lo que te pasaste**: si te pasas hoy, dice "Desde mañana puedes gastar $X al día" y debajo, chico,
   "Hoy te pasaste por $Y"; si te pasas del mes, "Hasta el 22, solo lo básico: $X al día" (`basicoDia()` = tope de comida + transporte / 30,
-  para súper y metro; un $0 solo no le decía nada a Vicho). Tocar el número abre `openHeroInfo()`: "¿De dónde sale este número?"
+  para súper y metro; un $0 solo no le decía nada a Vicho). Ahí mismo dice **por qué**: "Más que nada por X (+$Y)" = la categoría que más se pasó de su tope (si es Casa, aclara que es lo de independizarte). Tocar el número abre `openHeroInfo()`: "¿De dónde sale este número?"
   con la cuenta (presupuesto − cuotas − gastado hasta ayer ÷ días − hoy).
 - En el recuadro de Hoy, en vez de una barra va **la semana** (`semanaHero`: L a D, ✓ = ese día no pasaste tu plata del día,
   ✕ = sí, hoy marcado; tocar un día abre `openDia`). Arriba: "Hola, Vicho · Mié 7 oct". Debajo va "Esta semana te quedan" (lun–dom, sin

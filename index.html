@@ -1042,7 +1042,9 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
   else if(queda<0){const gb=pers.filter(g=>g.fecha===H&&['comida','transporte'].includes(g.categoria_clave)).reduce((s,g)=>s+g.monto,0);
     cls='bad';lbl='Hasta el 22, solo lo básico';amt=`${fmt(basicoDia())}<span style="font-size:.4em;font-weight:600;opacity:.8"> al día</span>`;
     l1=`Te pasaste del mes por ${fmt(-queda)}`;l2=gb?`Hoy llevas ${fmt(gb)} en súper y metro${gb>basicoDia()?': ya pasaste el básico de hoy':''}`:'Súper y metro, nada más. Lo demás espera al 23.';
-    msg='<span>Lo que gastes ahora sale de tu ahorro. Toca el número para ver la cuenta.</span>';}
+    // Decir POR QUÉ se pasó: la categoría que más se pasó de su tope (Casa = lo de independizarse, no es "mal gasto").
+    const cul=Object.entries(tot).filter(([c])=>c!=='otros'&&S.techos[c]).map(([c,g])=>[c,g-S.techos[c]]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1])[0];
+    msg=cul?`<span>Más que nada por <b>${(CAT[cul[0]]||CAT.otros).n}</b> (+${kCLP(cul[1])})${cul[0]==='casa'?', lo de independizarte':''}. Lo que gastes ahora sale de tu ahorro.</span>`:'<span>Lo que gastes ahora sale de tu ahorro. Toca el número para ver la cuenta.</span>';}
   else if(diario<0){cls='warn';lbl='Desde mañana puedes gastar';amt=`${fmt(manana)}<span style="font-size:.4em;font-weight:600;opacity:.8"> al día</span>`;
     msg=`<span>No se pierde el mes: lo que te pasaste hoy lo repartí en los ${dias-1} días que quedan.</span>`;}
   else{
@@ -1120,7 +1122,7 @@ function habitos(){
   const libre=S.ppto-V.cuo,[y,m]=S.actual.split('-').map(Number),largo=Math.round((new Date(y,m-1,22)-new Date(y,m-2,22))/864e5),pas=(largo-V.dias+1)/largo,pg=libre>0?V.gast/libre:1;
   H.push({ok:V.queda>=0&&pg<=pas+.05,t:'Gastas al ritmo del mes',s:V.queda<0?`Te pasaste del mes por ${fmt(-V.queda)}`:`Llevas el ${Math.round(pg*100)}% de tu plata y va el ${Math.round(pas*100)}% del mes`});
   const over=Object.entries(V.tot).filter(([c,g])=>c!=='otros'&&g>0&&(S.techos[c]?g>S.techos[c]:c==='coleccionables')).map(([c])=>(CAT[c]||CAT.otros).n);
-  H.push({ok:!over.length,t:'Ninguna categoría sobre el tope',s:over.length?`Te pasaste en ${over.join(', ')}`:'Todas dentro de su tope',b:over.length?['Ver',"tab('gastos')"]:null});
+  H.push({ok:!over.length,t:'Ninguna categoría pasada',s:over.length?`Te pasaste en ${over.join(', ')}`:'Todas dentro de su tope',b:over.length?['Ver',"tab('gastos')"]:null});
   const nuevas=S.cuotas.filter(c=>!c.recurrente&&c.primer_periodo&&c.primer_periodo>=S.actual);
   H.push({ok:!nuevas.length,t:'Cero cuotas nuevas',s:nuevas.length?`Nueva: ${nuevas.map(c=>c.nombre).join(', ')}`:`Tus cuotas y fijos son el ${Math.round(V.cuo/S.ppto*100)}% del presupuesto`,b:nuevas.length?['Ver','openCuotas()']:null});
   const pv=addM(S.actual,-1),hecho=S.ahorros.filter(a=>a.periodo===pv).reduce((s,a)=>s+a.monto,0),espera=!hecho&&dd>=23&&dd<27;
@@ -1163,7 +1165,7 @@ function racha(){const[y,m]=S.actual.split('-').map(Number),cierre=new Date(y,m-
 function renderLogros(){const el=$('logros-c');if(!el)return;let rmax=0,sem=false;
   try{rmax=+localStorage.getItem('racha-max')||0;sem=Object.keys(localStorage).some(k=>k.startsWith('revision-'))}catch(e){}
   const ev=Object.values(S.aj.evitado||{}).reduce((s,v)=>s+(+v||0),0),K=S.aj.casa;
-  const L=[['🔥','7 días seguidos sin pasarte',rmax>=7,`Tu mejor racha: ${rmax} día${rmax===1?'':'s'}`],['🏆','30 días seguidos sin pasarte',rmax>=30,'Un mes entero con el número a raya'],
+  const L=[['🔥','7 días seguidos sin pasarte',rmax>=7,rmax?`Tu mejor racha: ${rmax} día${rmax===1?'':'s'}`:'Parte hoy: un día sin pasarte y llevas 1'],['🏆','30 días seguidos sin pasarte',rmax>=30,'Un mes entero con el número a raya'],
     ['💪','Te aguantaste $100.000',ev>=100000,`Llevas ${fmt(ev)} en compras que no hiciste`],['💰','Anotaste tu primer ahorro',S.ahorros.length>0,'Lo que de verdad mandaste a Fintual'],
     ['🗓','Cerraste una semana',sem,'La revisión de los domingos'],['🏠','Empezaste a juntar para irte',!!(K&&K.ahorrado>0),'Plata apartada para independizarte'],
     ['🧮','Cuadraste tu tarjeta',LS('cuadre-ok')==='1','Subiste la cartola y no se te escapó nada']];
@@ -1206,7 +1208,7 @@ function renderPlata(){
   const V=S.V,pv=addM(S.actual,-1),pvN=MESL[+pv.slice(5)-1],hecho=ahorroDe(pv);
   let h;
   if(!V.esActual)h=`<div class="card-h"><h2>📈 Ahorro de ${V.mes}</h2></div><div class="lead">Con lo que gastaste en ${V.mes} quedaban <b>${fmt(V.proy.libre)}</b> para ahorrar.</div>`;
-  else if(pausaFin())h=`<div class="card-h"><h2>💳 Este mes: primero las tarjetas</h2><span class="pill warn">Fintual en pausa</span></div>
+  else if(pausaFin())h=`<div class="card-h"><h2>💳 Primero las tarjetas</h2><span class="pill warn">Fintual en pausa</span></div>
     <div class="lead">Paga <b>todas</b> las tarjetas del mes pasado. Lo que te quede libre después lo vemos juntos. Fintual vuelve con el próximo sueldo.</div>`;
   else if(tocaMandar()){const s=sugAhorro();
     h=`<div class="card-h"><h2>💰 Toca mandar tu ahorro</h2><span class="pill warn">Pendiente</span></div>
@@ -1572,7 +1574,7 @@ function catRow(k){
   const V=S.V,s=V.tot[k]||0,t=S.techos[k]||0,c=CAT[k]||CAT.otros;
   const pc=t?Math.min(100,Math.round(s/t*100)):(s?100:0);
   const col=t&&s>t?'#F04438':t&&s>t*.8?'#F79009':'var(--navy)',tcol=t&&s>t?'var(--red-d)':t&&s>t*.8?'var(--amber-d)':'var(--text)';
-  const sub=!t?(s?'sin tope este mes':'bloqueado este mes 🚫'):s>t?`te pasaste por ${fmt(s-t)}`:`te quedan ${fmt(t-s)}`;
+  const sub=!t?(s?'sin tope este mes':'bloqueado este mes 🚫'):s>t?`te pasaste por ${fmt(s-t)}${k==='casa'?' · es para independizarte':''}`:`te quedan ${fmt(t-s)}`;
   return `<button class="crow" onclick="openCat('${k}')"><div class="ic">${c.ic}</div><div class="cm"><b>${c.n}</b><small>${sub}</small><div class="bar"><div style="width:${pc}%;background:${col}"></div></div></div><div class="ca" style="color:${tcol}">${fmt(s)}</div></button>`;
 }
 function txHtml(g,sinF){const c=CAT[g.categoria_clave]||CAT.otros;const d=g.fecha.slice(8,10)+'/'+g.fecha.slice(5,7);
