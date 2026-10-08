@@ -160,7 +160,9 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   gastar, nunca lo que te pasaste**: si te pasas hoy, dice "Desde mañana puedes gastar $X al día" y debajo, chico,
   "Hoy te pasaste por $Y"; si te pasas del mes, "Hasta el 22, solo lo básico: $X al día" (`basicoDia()` = tope de comida + transporte / 30,
   para súper y metro; un $0 solo no le decía nada a Vicho). Tocar el número abre `openHeroInfo()`: "¿De dónde sale este número?"
-  con la cuenta (presupuesto − cuotas − gastado hasta ayer ÷ días − hoy). Debajo va "Esta semana te quedan" (lun–dom, sin
+  con la cuenta (presupuesto − cuotas − gastado hasta ayer ÷ días − hoy).
+- En el recuadro de Hoy, en vez de una barra va **la semana** (`semanaHero`: L a D, ✓ = ese día no pasaste tu plata del día,
+  ✕ = sí, hoy marcado; tocar un día abre `openDia`). Arriba: "Hola, Vicho · Mié 7 oct". Debajo va "Esta semana te quedan" (lun–dom, sin
   pasar del 22) para las compras que no caben en un día.
 - Alertas (pop-up "Ojo, Vicho" al abrir la app o al anotar): te pasaste hoy / de la semana / del mes, categoría > 80% o
   sobre el tope, cartas bloqueadas y "vas gastando muy rápido" (% gastado > % del mes + 15). Cada una se muestra una vez

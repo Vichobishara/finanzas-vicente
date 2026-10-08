@@ -263,6 +263,9 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval("tab('hoy');openHeroInfo()");checks['hoy: al tocar el número se explica la cuenta']=t('sheet').includes('¿De dónde sale este número?')&&t('sheet').includes('Presupuesto del mes')&&t('sheet').includes('Cuotas y fijos');w.eval('closeSheet()');
  w.eval("S.pptoBak=S.ppto;S.ppto=100000;render()");checks['hoy: pasado del mes muestra lo básico al día, no $0']=t('hero-w').includes('solo lo básico')&&t('hero-w').includes('al día')&&!/\$0(?!\d|\.)/.test(t('hero-w'));
  w.eval('openHeroInfo()');checks['hoy: pasado del mes, la cuenta dice cuánto vas pasado']=t('sheet').includes('Vas pasado del mes por');w.eval('closeSheet();S.ppto=S.pptoBak;render()');
+ // Hoy: saludo con nombre y la semana (L a D) en el recuadro; tocar un día abre su detalle
+ w.eval("tab('hoy');render()");checks['hoy: la semana L a D en el recuadro']=d.querySelectorAll('#hero-w .wk button').length===7&&!!d.querySelector('#hero-w .wk .hoy');
+ d.querySelector('#hero-w .wk .hoy').click();checks['hoy: tocar un día abre su detalle']=t('sheet').includes('tu plata del día')||t('sheet').includes('Nada anotado');w.eval('closeSheet()');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();
