@@ -191,7 +191,8 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 1. La pestaña **Hoy** es una pantalla y dos botones: **Anotar gasto** y **¿Me alcanza?** (más los avisos y la tarjeta "Hoy anotaste" con los gastos del día, o "Nada anotado hoy"). Lo demás vive
    en la barra de abajo (5 pestañas iguales con ícono y nombre: Hoy, Gastos, Cuotas, Plata, Coach; anotar está en Hoy y en el
    botón "+ Anotar" de Gastos): **Cuotas** (cuánto se va al mes en cuotas y fijos,
-   la regla del 30% con la fecha en que bajas, "¿Puedo comprar algo en cuotas?" y cada cuota con cuántas quedan), **Gastos** (cómo vas vs. donde deberías ir hoy, pendientes, categorías, últimos gastos, cuotas,
+   un solo recuadro con lo que pagas al mes, la regla del 30%, lo que falta en total y los próximos 6 meses; "¿Puedo comprar algo
+   en cuotas?", "Todo lo que debes" y cada cuota en una fila corta; subir cartola / agregar a mano como botones chicos), **Gastos** (cómo vas vs. donde deberías ir hoy, pendientes, categorías, últimos gastos, cuotas,
    negocio, meses, presupuesto), **Plata** (camino a la meta, próximo movimiento, plan de ahorro del mes; fondo gadgets, por pagar, APV e
    impuestos como filas cortas que abren su detalle en una hoja; bono, sueldos y patrimonio en hojas) y **Coach** (hábitos del mes con puntaje y botón para
    resolver cada uno, Pregúntale a Claude, consejos con acción, avisos). Nada importante bajo el scroll de Hoy.

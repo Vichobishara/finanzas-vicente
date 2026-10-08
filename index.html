@@ -1622,15 +1622,26 @@ function cuotasHTML(){const per=S.periodo,Q=S.cuotas.map(c=>({...c,...infoCuota(
   <p class="fine" style="margin-top:10px">Con la cartola leo tus compras en cuotas y te muestro la lista para que revises antes de guardar.</p>`}
 function openCuotas(){openSheet(`<h3>💳 Tus cuotas</h3><p>Cuántas te quedan de cada una y cuándo se te libera la plata.</p>${cuotasHTML()}`)}
 // Pestaña Cuotas: cuánto se te va al mes, tu regla del 30% y el simulador antes de sumar otra.
-function renderCuotasTab(){const el=$('cuo-v');if(!el||!S.V)return;const V=S.V,pc=Math.round(V.cuo/S.ppto*100),ok=pc<30;
-  const prox=[1,2,3].map(i=>addM(S.periodo,i)).map(p=>({p,v:cuotasDe(p).reduce((s,c)=>s+c.monto_cuota,0)})),baja=prox.find(m=>Math.round(m.v/S.ppto*100)<30);
-  el.innerHTML=`<div class="card sum"><div class="k">Cuotas y fijos este mes</div><div class="v">${fmt(V.cuo)} <span>al mes</span></div>
+function renderCuotasTab(){const el=$('cuo-v');if(!el||!S.V)return;const V=S.V,pc=Math.round(V.cuo/S.ppto*100),ok=pc<30,per=S.periodo;
+  const prox=[1,2,3].map(i=>addM(per,i)).map(p=>({p,v:cuotasDe(p).reduce((s,c)=>s+c.monto_cuota,0)})),baja=prox.find(m=>Math.round(m.v/S.ppto*100)<30);
+  // Un solo recuadro: lo que pagas al mes, la regla del 30%, lo que falta en total y los próximos 6 meses
+  const Q=S.cuotas.map(c=>({...c,...infoCuota(c,per)})),cq=Q.filter(c=>!c.fijo&&!c.sin&&c.por>0).sort((a,b)=>a.fin<b.fin?-1:1),fijos=Q.filter(c=>c.fijo),sin=Q.filter(c=>c.sin);
+  const falta=cq.reduce((s,c)=>s+c.falta,0),libre=cq.length?cq[cq.length-1].fin:null;
+  const M=[...Array(6)].map((_,i)=>{const p=addM(per,i);return{p,v:cuotasDe(p).reduce((s,c)=>s+c.monto_cuota,0)}}),mx=Math.max(1,...M.map(m=>m.v));
+  const fila=c=>`<button class="cq" onclick="openCuota(${c.id})"><div class="t"><b>${esc(c.nombre)}</b><span>${fmt(c.monto_cuota)}</span></div>
+    <small>${c.parte?`Parte en ${perL(c.primer_periodo).toLowerCase()} · ${c.total_cuotas} cuotas`:`Cuota ${c.n} de ${c.total_cuotas} · ${c.quedan?`termina en ${perL(c.fin).toLowerCase()} · faltan ${fmt(c.falta)}`:'<b>¡última! 🎉</b>'}`}</small>
+    ${c.parte||c.total_cuotas>24?'':`<div class="pts">${[...Array(c.total_cuotas)].map((_,k)=>`<i class="${k<c.n-1?'p':k===c.n-1?'h':''}"></i>`).join('')}</div>`}</button>`;
+  el.innerHTML=`<div class="card sum"><div class="k">Pagas cada mes en cuotas y fijos</div><div class="v">${fmt(V.cuo)} <span>al mes</span></div>
     <div class="pace"><div style="width:${Math.min(100,pc)}%;background:${ok?'var(--green)':'var(--red)'}"></div><i style="left:30%"></i></div>
     <div class="pace-l"><span>La raya: tu regla del 30%</span><b style="color:${ok?'var(--green-d)':'var(--red-d)'}">${pc}% de tu presupuesto</b></div>
-    <div class="cmp">${ok?`🟢 Estás bajo el 30%: tienes espacio, pero cada cuota nueva te amarra meses.`:`🔴 Estás sobre el 30%: <b>cero cuotas nuevas</b>${baja?` hasta ${perL(baja.p).toLowerCase()}, cuando bajas al ${Math.round(baja.v/S.ppto*100)}%`:''}.`}</div></div>
-    <button class="crow" style="background:var(--card);border-radius:22px;padding:12px 16px;margin-bottom:12px;box-shadow:var(--sh)" onclick="openDebo()"><div class="ic">🧾</div><div class="cm"><b>Todo lo que debes: ${fmt(debo().total)}</b><small>Por tarjeta, qué es de este mes y qué es de compras viejas</small></div><span class="chev">›</span></button>
+    <div class="cmp">${ok?`🟢 Tienes espacio, pero cada cuota nueva te amarra meses.`:`🔴 <b>Cero cuotas nuevas</b>${baja?` hasta ${perL(baja.p).toLowerCase()}, cuando bajas al ${Math.round(baja.v/S.ppto*100)}%`:''}.`}${falta?` Te faltan <b>${fmt(falta)}</b> en total${libre?` y quedas libre en <b>${perL(libre).toLowerCase()}</b>`:''}.`:''}</div>
+    ${cq.length?`<div class="mes6" style="margin-top:12px">${M.map((m,i)=>`<div class="${i&&m.v<M[i-1].v?'b':''}"><em>${kCLP(m.v)}</em><i style="height:${Math.max(3,m.v/mx*62)}px"></i>${MESL[+m.p.slice(5)-1].slice(0,3)}</div>`).join('')}</div>`:''}</div>
     <button class="btn p" style="margin:0 0 14px" onclick="openCheck();setTimeout(()=>{const b=document.querySelectorAll('#nc-ch .chip')[3];if(b)b.click()},50)">🤔 ¿Puedo comprar algo en cuotas?</button>
-    ${cuotasHTML()}`}
+    <button class="crow" style="background:var(--card);border-radius:22px;padding:12px 16px;margin-bottom:14px;box-shadow:var(--sh)" onclick="openDebo()"><div class="ic">🧾</div><div class="cm"><b>Lo que debes</b><small>Para quedar en cero</small></div><b class="m-der">${fmt(debo().total)}</b><span class="chev">›</span></button>
+    ${cq.length?`<div class="sec-t">Tus cuotas <small style="font-weight:500;color:var(--sec);font-size:12.5px">· toca una para adelantarla</small></div><div class="card">${cq.map(fila).join('')}</div>`:`<div class="card"><div class="empty">No tienes compras en cuotas 🎉</div></div>`}
+    ${sin.length?`<div class="card"><div class="lead" style="padding-top:12px">Sin fecha de inicio: tócalas para decirme en qué cuota vas.</div>${sin.map(c=>`<button class="crow" onclick="openCuota(${c.id})"><div class="cm"><b>${esc(c.nombre)}</b><small>${c.total_cuotas} cuotas</small></div><div class="ca">${fmt(c.monto_cuota)}</div></button>`).join('')}</div>`:''}
+    ${fijos.length?`<div class="sec-t">Fijos todos los meses</div><div class="card">${fijos.map(c=>`<button class="crow" onclick="openCuota(${c.id})"><div class="cm"><b>${esc(c.nombre)}</b><small>Todos los meses</small></div><div class="ca">${fmt(c.monto_cuota)}</div></button>`).join('')}</div>`:''}
+    <div class="chips" style="justify-content:center;margin:4px 0 8px"><button class="chip" onclick="pickCartola()">📄 Subir cartola</button><button class="chip" onclick="openCuota()">✍️ Agregar a mano</button></div>`}
 // Cartola → función `cartola` (Claude lee el PDF o la foto) → revisas → se guardan en `cuotas`.
 // ---------- Cuadrar la tarjeta con la cartola: lee TODAS las compras (cartola, modo 'compras'), las compara con lo
 // anotado (mismo monto ±$1, fecha ±3 días) y ofrece agregar las que faltan. Las compras en cuotas se saltan: van en Cuotas. ----------
