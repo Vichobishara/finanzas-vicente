@@ -962,6 +962,11 @@ function alertas(){const V=S.V,A=[],per=S.actual,H=hoyISO();if(!V||!V.esActual)r
     if(!t||c==='otros')return;
     if(g>t)A.push({k:`cat-${c}-100-${per}`,ic:(CAT[c]||CAT.otros).ic,t:`${n}: te pasaste del tope`,b:`Llevas ${fmt(g)} de ${fmt(t)}. Hasta el 22, cero ${n.toLowerCase()}.`});
     else if(g>t*.8)A.push({k:`cat-${c}-80-${per}`,ic:(CAT[c]||CAT.otros).ic,t:`${n} va al ${Math.round(g/t*100)}%`,b:`Te quedan ${fmt(t-g)} para ${n.toLowerCase()} hasta el 22.`});});
+  // Compra rara (idea de Kane): cobro doble (mismo monto y comercio el mismo día) o compra muy por sobre lo normal en los últimos 2 días.
+  const P=S.gastos.filter(g=>!g.pulldex&&g.monto>0),ayer=ISOd(new Date(Date.now()-864e5)),prom=P.length?P.reduce((s,g)=>s+g.monto,0)/P.length:0;
+  P.filter(g=>g.fecha>=ayer).forEach(g=>{const dup=P.find(o=>o.id<g.id&&o.fecha===g.fecha&&o.monto===g.monto&&subK(o.descripcion)===subK(g.descripcion));
+    if(dup)A.unshift({k:'dup-'+g.id,ic:'👯',t:`¿Cobro doble? ${g.descripcion} ${fmt(g.monto)}`,b:'Hay dos iguales el mismo día. Si compraste una sola vez, revisa la cartola y bórralo (o reclama al banco).'});
+    else if(g.monto>=100000&&P.length>=8&&g.monto>prom*5)A.unshift({k:'rara-'+g.id,ic:'🕵️',t:`Compra grande: ${fmt(g.monto)} en ${g.descripcion}`,b:`Es ${Math.round(g.monto/prom)} veces lo que gastas normalmente por compra. ¿La hiciste tú? Si no, llama al banco al tiro y bloquea la tarjeta.`});});
   // Ritmo: gastar más rápido que el paso de los días (aviso temprano, antes de estar en rojo)
   const libre=S.ppto-V.cuo,[y,m]=per.split('-').map(Number),largo=Math.round((new Date(y,m-1,22)-new Date(y,m-2,22))/864e5),pas=(largo-V.dias+1)/largo;
   if(V.queda>=0&&libre>0&&V.gast/libre>pas+.15&&pas<.85)A.push({k:'ritmo-'+V.semIni,ic:'🏃',t:`Vas gastando muy rápido`,b:`Llevas el ${Math.round(V.gast/libre*100)}% de tu plata y va solo el ${Math.round(pas*100)}% del mes.`});
@@ -1691,6 +1696,7 @@ function renderCuotasTab(){const el=$('cuo-v');if(!el||!S.V)return;const V=S.V,p
     ${cq.length?`<div class="mes6" style="margin-top:12px">${M.map(m=>`<div class="${m.v<S.ppto*.3?'b':''}"><em>${kCLP(m.v)}</em><i style="height:${Math.max(3,m.v/mx*62)}px"></i>${MESL[+m.p.slice(5)-1].slice(0,3)}</div>`).join('')}</div><div class="pace-l" style="margin-top:6px"><span>Verde = bajo tu regla del 30%</span></div>`:''}</div>
     <button class="btn p" style="margin:0 0 14px" onclick="openCheck();setTimeout(()=>{const b=document.querySelectorAll('#nc-ch .chip')[3];if(b)b.click()},50)">🤔 ¿Puedo comprar algo en cuotas?</button>
     <button class="crow" style="background:var(--card);border-radius:22px;padding:12px 16px;margin-bottom:14px;box-shadow:var(--sh)" onclick="openDebo()"><div class="ic">🧾</div><div class="cm"><b>Lo que debes</b><small>Para quedar en cero</small></div><b class="m-der">${fmt(debo().total)}</b><span class="chev">›</span></button>
+    <button class="crow" style="background:var(--card);border-radius:22px;padding:12px 16px;margin-bottom:14px;box-shadow:var(--sh)" onclick="openCalendario()"><div class="ic">📅</div><div class="cm"><b>Lo que se cobra solo</b><small>Suscripciones, fijos y cierres, día por día</small></div><span class="chev">›</span></button>
     ${cq.length?`<div class="sec-t">Tus cuotas <small style="font-weight:500;color:var(--sec);font-size:12.5px">· toca una para adelantarla</small></div><div class="card">${cq.map(fila).join('')}</div>`:`<div class="card"><div class="empty">No tienes compras en cuotas 🎉</div></div>`}
     ${sin.length?`<div class="card"><div class="lead" style="padding-top:12px">Sin fecha de inicio: tócalas para decirme en qué cuota vas.</div>${sin.map(c=>`<button class="crow" onclick="openCuota(${c.id})"><div class="cm"><b>${esc(c.nombre)}</b><small>${c.total_cuotas} cuotas</small></div><div class="ca">${fmt(c.monto_cuota)}</div></button>`).join('')}</div>`:''}
     ${fijos.length?`<div class="sec-t">Fijos todos los meses</div><div class="card">${fijos.map(c=>`<button class="crow" onclick="openCuota(${c.id})"><div class="cm"><b>${esc(c.nombre)}</b><small>Todos los meses</small></div><div class="ca">${fmt(c.monto_cuota)}</div></button>`).join('')}</div>`:''}
@@ -1713,6 +1719,24 @@ async function openSubs(){const desde=ISOd(new Date(Date.now()-95*864e5));let G=
   <div class="card sum"><div class="k">Pagas al mes</div><div class="v">${fmt(tot)} <span>= ${fmt(tot*12)} al año</span></div>${ah?`<div class="lead" style="padding:4px 0 12px">💪 Ya te diste de baja de ${bajas.length}: te ahorras ${fmt(ah*12)} al año.</div>`:''}</div>
   ${L.length?`<div class="card">${L.map((x,i)=>`<div class="crow" style="cursor:default"><div class="ic">${x.fijo?'📌':'🔁'}</div><div class="cm"><b>${x.d}</b><small>${fmt(x.mes)} al mes · <b>${fmt(x.mes*12)}</b> al año${x.meses<2&&!x.fijo?' · visto 1 vez':''}</small></div><button class="chip" onclick="darBaja(${i})">La di de baja</button></div>`).join('')}</div>`:`<div class="lead">No encontré cobros fijos en los últimos 3 meses. Cuando algo quede en la categoría "Suscripciones", aparece aquí.</div>`}
   <p class="fine" style="margin-top:10px">Pregúntate por cada una: ¿la usé esta semana? Si no, date de baja hoy (no el mes que viene).</p>`)}
+// Calendario de cobros (idea de Kane): lo que se cobra solo en los próximos 30 días, por fecha.
+// Suscripciones = gastos "fijo" de los últimos 3 meses, el mismo día del mes que la última vez; + cuándo cierra cada tarjeta.
+async function openCalendario(){const desde=ISOd(new Date(Date.now()-95*864e5));let G=[];
+  try{G=await api(`gastos?select=descripcion,monto,fecha&categoria_clave=eq.fijo&estado=neq.ignorado&fecha=gte.${desde}&order=fecha.desc`)||[]}catch(e){}
+  const bajas=S.aj.bajas||[],M={},H=hoyISO(),hoy=new Date(H+'T12:00:00'),fin=new Date(hoy.getTime()+30*864e5),ev=[];
+  G.filter(g=>g.monto>0).forEach(g=>{const k=subK(g.descripcion);if(k&&!M[k]&&!bajas.some(b=>b.k===k))M[k]=g});
+  Object.values(M).forEach(g=>{const dd=+g.fecha.slice(8,10);for(let i=0;i<2;i++){const d=new Date(hoy.getFullYear(),hoy.getMonth()+i,1,12);d.setDate(Math.min(dd,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()));
+    if(d>=hoy&&d<=fin&&ISOd(d)>g.fecha){ev.push({f:ISOd(d),ic:'🔁',t:g.descripcion,m:g.monto});break}}});
+  const db=debo();[['bci',20],['scotiabank',22]].forEach(([k,dd])=>{const x=db.tarj.find(t=>t.k===k);for(let i=0;i<2;i++){const d=new Date(hoy.getFullYear(),hoy.getMonth()+i,dd,12);
+    if(d>=hoy&&d<=fin){ev.push({f:ISOd(d),ic:'💳',t:`Cierra ${TJ[k]}`,s:x?'Lo que llevas va a la próxima boleta':'',m:x?x.total:0,c:1});break}}});
+  ev.sort((a,b)=>a.f<b.f?-1:1);const fj=S.cuotas.filter(c=>c.recurrente&&!Object.keys(M).includes(subK(c.nombre)));
+  const tot=ev.filter(e=>!e.c).reduce((s,e)=>s+e.m,0)+fj.reduce((s,c)=>s+c.monto_cuota,0);
+  const dia=f=>{const d=new Date(f+'T12:00:00'),n=Math.round((d-hoy)/864e5);return n===0?'Hoy':n===1?'Mañana':`${['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][d.getDay()]} ${d.getDate()}`};
+  openSheet(`<h3>📅 Lo que se cobra solo</h3><p>Los próximos 30 días: suscripciones, fijos y cuándo cierra cada tarjeta. Para que nada te pille.</p>
+  <div class="card sum"><div class="k">Se cobra solo en 30 días</div><div class="v">${fmt(tot)}</div></div>
+  ${ev.length?`<div class="card">${ev.map(e=>`<div class="crow" style="cursor:default"><div class="ic">${e.ic}</div><div class="cm"><b>${esc(e.t)}</b><small>${dia(e.f)}${e.s?' · '+e.s:''}</small></div><b class="m-der" style="${e.c?'color:var(--sec)':''}">${e.m?fmt(e.m):''}</b></div>`).join('')}</div>`:''}
+  ${fj.length?`<div class="sec-t" style="margin-top:4px">Todos los meses, sin día fijo</div><div class="card">${fj.map(c=>`<div class="crow" style="cursor:default"><div class="ic">📌</div><div class="cm"><b>${esc(c.nombre)}</b><small>${TJ[c.tarjeta]||''}</small></div><b class="m-der">${fmt(c.monto_cuota)}</b></div>`).join('')}</div>`:''}
+  <button class="btn" style="background:var(--bg3);color:var(--text)" onclick="openSubs()">Ver suscripciones y dar de baja</button>`)}
 async function darBaja(i){const x=S.subs[i];if(!x||!confirm(`¿Te diste de baja de ${x.d}? Te ahorras ${fmt(x.mes*12)} al año.`))return;
   await saveAj('bajas',[...(S.aj.bajas||[]),{k:x.k,d:x.d,monto:x.mes,fecha:hoyISO()}],true);toast(`💪 ${fmt(x.mes*12)} al año que no se van`);openSubs()}
 

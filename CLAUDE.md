@@ -112,6 +112,10 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   → consejo: comprar / esperar 72 horas / no, con costo por uso a 2 años. Las respuestas se guardan en el deseo (`por`).
   A las 72 horas aparece en Hoy "Pasaron 3 días" → `openDeseo`: lo que dijiste ese día, si hoy te alcanza (o lo cubre el
   fondo) y "Ya no lo quiero" / "Sí, lo compro" / "Espérame 3 días más".
+- Ideas tomadas de Kane (kaneapp.cl), sin conectar bancos: Cuotas → **Lo que se cobra solo** (`openCalendario()`): próximos 30 días
+  día por día (suscripciones = gastos `fijo` de 3 meses en el mismo día del mes, cierres BCI 20 / Scotia 22 con lo que va a la boleta,
+  fijos recurrentes sin día). Alertas de **compra rara** en `alertas()`, primeras en la lista: cobro doble (mismo monto y comercio
+  el mismo día) y compra ≥ $100.000 que es > 5× el promedio por compra del mes (últimos 2 días).
 - Coach → **Widget en tu inicio**: script de Scriptable (`widgetJS`) con el código personal → `rpc/widget(token)`.
 
 - Plata → **Lo que debes** (`debo()`, `openDebo()`; también desde la pestaña Cuotas): total para quedar en cero = tarjetas de
