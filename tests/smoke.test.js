@@ -104,6 +104,9 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
   checks['gasto grande: te pasaste hoy y desde mañana']=w.eval('S.V').dias>1?t('hero-w').includes('Hoy te pasaste')&&t('hero-w').includes('Desde mañana puedes gastar')&&d.querySelector('#hero-w .h-amt').textContent.includes(w.eval('fmt(S.V.manana)')):true;
   checks['hero muestra la semana']=t('hero-w').includes('Esta semana');
   checks['hoy: botón No gasté cuando no hay nada anotado']=w.eval("S.gastos.some(g=>g.fecha===hoyISO()&&!g.pulldex)")||t('hoy-g').includes('No gasté');
+  {const g=w.eval('S.gastos.find(x=>!x.pulldex&&x.monto>0)');w.eval(`S.gastos.push({...S.gastos.find(x=>x.id===${g.id}),id:99999,fecha:hoyISO()});S.gastos.push({...S.gastos.find(x=>x.id===${g.id}),id:99998,fecha:hoyISO()})`);
+   checks['alertas: avisa cobro doble']=w.eval('alertas()').some(a=>a.k.startsWith('dup-'));w.eval('S.gastos=S.gastos.filter(x=>x.id<99998)');}
+  w.eval('openCalendario()');await new Promise(r=>setTimeout(r,50));checks['cuotas: calendario de lo que se cobra solo']=t('sheet').includes('Lo que se cobra solo');w.eval('closeSheet()');
   checks['hero corto: semana y hasta el 22, sin desglose']=t('hero-w').includes('Hasta el 22 (')&&!t('hero-w').includes('Plata del mes');
   w.eval('S.gastos.pop();render()');}
  w.eval('openAdd()');checks['anotar: sugerencias']=d.querySelectorAll('#sheet .sugs button').length>=5;
