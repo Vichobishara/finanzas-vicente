@@ -116,6 +116,10 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   día por día (suscripciones = gastos `fijo` de 3 meses en el mismo día del mes, cierres BCI 20 / Scotia 22 con lo que va a la boleta,
   fijos recurrentes sin día). Alertas de **compra rara** en `alertas()`, primeras en la lista: cobro doble (mismo monto y comercio
   el mismo día) y compra ≥ $100.000 que es > 5× el promedio por compra del mes (últimos 2 días).
+- **Resumen al vault "cerebro"** (`Vichobishara/cerebro-vicho`, Obsidian): `privado.finanzas_md()` arma en SQL un Markdown (mes, categorías,
+  cuotas, deudas, patrimonio, últimos 10 gastos; solo cuenta legado). `rpc/cerebro_md(token)` lo entrega si el token es el código personal
+  de Vicho. La GitHub Action `.github/workflows/finanzas.yml` del vault lo baja a las 7:57 y 17:57 (Santiago) a
+  `03 Áreas/Finanzas - cómo voy.md` (secreto `FINANZAS_TOKEN`). Si cambias columnas que usa, actualiza esa función.
 - Coach → **Widget en tu inicio**: script de Scriptable (`widgetJS`) con el código personal → `rpc/widget(token)`.
 
 - Plata → **Lo que debes** (`debo()`, `openDebo()`; también desde la pestaña Cuotas): total para quedar en cero = tarjetas de
