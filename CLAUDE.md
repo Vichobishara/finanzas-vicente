@@ -163,17 +163,23 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - Para cambiar la clave: recalcular el hash en `privado.autorizado()` y actualizar `secretos.app_key`.
 
 ## Lógica de negocio clave
-- "Hoy puedes gastar" = cupo del día − lo gastado hoy. Cupo del día = lo que quedaba al empezar el día
-  (presupuesto − cuotas − gastos de días anteriores) / días hasta el 22. Es fijo durante el día. **El número grande siempre es lo que puedes
-  gastar, nunca lo que te pasaste**: si te pasas hoy, dice "Desde mañana puedes gastar $X al día" y debajo, chico,
-  "Hoy te pasaste por $Y"; si te pasas del mes, "Hasta el 22, solo lo básico: $X al día" (`basicoDia()` = tope de comida + transporte / 30,
-  para súper y metro; un $0 solo no le decía nada a Vicho). Ahí mismo dice **por qué**: "Más que nada por X (+$Y)" = la categoría que más se pasó de su tope (si es Casa, aclara que es lo de independizarte). Tocar el número abre `openHeroInfo()`: "¿De dónde sale este número?"
-  con la cuenta (presupuesto − cuotas − gastado hasta ayer ÷ días − hoy).
-- Si vas bien, el mensaje del recuadro es **una misión concreta** ("Misión de hoy: no pasar de $X", + cero delivery si comida > 80%) con la racha que gana (Vicho es indeciso: una sola cosa que hacer). Sin gastos hoy, la tarjeta "Nada anotado hoy" tiene **No gasté** (`localStorage['cero-<fecha>']` → "Día sin gastos"), para separar un día sin gastos de un olvido.
-- En el recuadro de Hoy, en vez de una barra va **la semana** (`semanaHero`: L a D, ✓ = ese día no pasaste tu plata del día,
-  ✕ = sí, hoy marcado; tocar un día abre `openDia`). Arriba: "Hola, Vicho · Mié 7 oct". Debajo va "Esta semana te quedan" (lun–dom, sin
-  pasar del 22) para las compras que no caben en un día.
-- Alertas (pop-up "Ojo, Vicho" al abrir la app o al anotar): te pasaste hoy / de la semana / del mes, categoría > 80% o
+- **El número de Hoy es la SEMANA, no el día** (19-10-2026: el cupo diario no le funcionaba a Vicho, el gasto viene a saltos).
+  "Esta semana puedes gastar $X" = bolsillos de la semana (lun–dom, sin pasar del 22, prorrateados si la semana es corta) − lo gastado
+  en ellos esta semana (los gastos `fijo` no cuentan, se pagan solos). Plan en `ajustes.plan` {super, ofi_n, ofi_p, del_n, del_p, fijos}
+  (default súper $25k/semana, oficina 2 × $7k, 1 delivery de $20k, suscripciones $60k/mes; `PLAN()`, se ajusta en `editPlan()`).
+  Bolsillos (`semanaPlan()`): 🛒 súper, 🥗 oficina, 🛵 delivery (veces), 🚇 transporte (tope/4,33), 🎁 gustos = lo que sobra del mes
+  (presupuesto − cuotas − suscripciones − comida − transporte − gustos ya gastados) repartido en las semanas que quedan.
+  La comida se separa con `tipoComida()`: súper (Jumbo, Líder, OXXO…), delivery/salir (Rappi, sushi, ≥ $15.000) y el resto oficina/café.
+  Reglas: súper el domingo, oficina martes y jueves (`OFI_DIAS`), 1 delivery; los otros días comida de la casa. La misión del día (`misionHoy`)
+  sale de esas reglas. **El número grande nunca es lo que te pasaste**: si te pasas de la semana, "El lunes tu semana parte con $X" y
+  debajo "Esta semana te pasaste por $Y"; si te pasas del mes, "Hasta el 22, solo lo básico: $X esta semana" (súper + oficina + metro;
+  sin delivery ni gustos; si no queda, "Casa y metro") y **por qué**: "Más que nada por X (+$Y)". Tocar el número o un bolsillo abre
+  `openPlan()`: la semana por bolsillo (plan, gastaste, queda) y **el mes en orden**: 1) cuotas 2) suscripciones 3) comida 4) transporte
+  5) gustos = presupuesto; lo que sobra del sueldo → ahorro. Gastos → "Tu plan y presupuesto" abre lo mismo.
+  `S.V.cupoHoy/diario` siguen calculándose (racha, `privado.racha`, widget y avisos de la base todavía usan el cupo diario).
+- Sin gastos hoy, la tarjeta "Nada anotado hoy" tiene **No gasté** (`localStorage['cero-<fecha>']` → "Día sin gastos"), para separar un día sin gastos de un olvido.
+  Arriba: "Hola, Vicho · Mié 7 oct". Coach suma 3 hábitos de comida (1 delivery, oficina 2 veces, súper el domingo).
+- Alertas (pop-up "Ojo, Vicho" al abrir la app o al anotar): te pasaste de la semana / del mes, delivery de más en la semana, categoría > 80% o
   sobre el tope, cartas bloqueadas y "vas gastando muy rápido" (% gastado > % del mes + 15). Cada una se muestra una vez
   (por día, semana o mes) con `localStorage['alertas-vistas']`. La notificación del atajo Apple Pay trae la misma alerta:
   `anotar_atajo` le agrega `resumen_hoy(categoria)` (función interna, sin grant a anon).
@@ -205,7 +211,7 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
    negocio, meses, presupuesto), **Plata** (camino a la meta, próximo movimiento, plan de ahorro del mes; fondo gadgets, por pagar, APV e
    impuestos como filas cortas que abren su detalle en una hoja; bono, sueldos y patrimonio en hojas) y **Coach** (hábitos del mes con puntaje y botón para
    resolver cada uno, Pregúntale a Claude, consejos con acción, avisos). Nada importante bajo el scroll de Hoy.
-2. El número principal es "hoy puedes gastar", y su color (verde, amarillo, rojo) ES el semáforo.
+2. El número principal es "esta semana puedes gastar" (con sus bolsillos), y su color (verde, amarillo, rojo) ES el semáforo.
 3. Lenguaje chileno simple. Nada de jerga ("periodo", "cierre" → "hasta el 22").
 4. Anotar un gasto debe tomar menos de 3 segundos. La categoría es automática.
 5. Premiar el autocontrol ("te aguantaste $X") y mostrar el costo en 10 años de cada compra.

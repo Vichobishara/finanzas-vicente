@@ -49,7 +49,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  // Clave buena por link
  const {dom,heads}=await run('https://finanzas-vicente.vercel.app/#k=test123',true);
  const w=dom.window,d=w.document,t=id=>(d.getElementById(id)||{}).textContent||'';
- checks['alerta al abrir si te pasaste hoy']=t('sheet').includes('Ojo')&&t('sheet').includes('Hoy te pasaste');
+ checks['alerta al abrir si hay algo']=w.eval('alertas().length')?t('sheet').includes('Ojo'):!t('sheet').includes('Ojo');
  checks['la alerta no se repite']=w.eval('avisar()')===false;
  w.eval('closeSheet()');
  checks['link guarda la clave y limpia la URL']=w.localStorage.getItem('app-key')==='test123'&&!w.location.hash;
@@ -101,13 +101,13 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  // Cupo del día fijo: lo que gastas hoy lo baja; si te pasas, se reparte en los días que quedan
  {const V=w.eval('S.V');checks['cupo de hoy descuenta lo de hoy']=Math.round(V.cupoHoy-V.diario)===50000&&Math.round(V.cupoHoy*V.dias)===Math.round(V.queda+50000);
   w.eval("S.gastos.push({id:9,fecha:hoyISO(),descripcion:'Zapatillas',monto:Math.round(S.V.cupoHoy*10),categoria_clave:'otros',tarjeta:'scotiabank',periodo:S.actual,pulldex:false});render()");
-  checks['gasto grande: te pasaste hoy y desde mañana']=w.eval('S.V').dias>1?t('hero-w').includes('Hoy te pasaste')&&t('hero-w').includes('Desde mañana puedes gastar')&&d.querySelector('#hero-w .h-amt').textContent.includes(w.eval('fmt(S.V.manana)')):true;
-  checks['hero muestra la semana']=t('hero-w').includes('Esta semana');
+  checks['gasto grande: te pasaste de la semana y el lunes parte de nuevo']=w.eval('S.V.W.freno')?t('hero-w').includes('solo lo básico'):t('hero-w').includes('Esta semana te pasaste')&&t('hero-w').includes('El lunes tu semana parte con')&&d.querySelector('#hero-w .h-amt').textContent.includes(w.eval('fmt(S.V.W.prox)'));
+  checks['hero muestra la semana']=/[Ee]sta semana|solo lo básico/.test(t('hero-w'));
   checks['hoy: botón No gasté cuando no hay nada anotado']=w.eval("S.gastos.some(g=>g.fecha===hoyISO()&&!g.pulldex)")||t('hoy-g').includes('No gasté');
   {const g=w.eval('S.gastos.find(x=>!x.pulldex&&x.monto>0)');w.eval(`S.gastos.push({...S.gastos.find(x=>x.id===${g.id}),id:99999,fecha:hoyISO()});S.gastos.push({...S.gastos.find(x=>x.id===${g.id}),id:99998,fecha:hoyISO()})`);
    checks['alertas: avisa cobro doble']=w.eval('alertas()').some(a=>a.k.startsWith('dup-'));w.eval('S.gastos=S.gastos.filter(x=>x.id<99998)');}
   w.eval('openCalendario()');await new Promise(r=>setTimeout(r,50));checks['cuotas: calendario de lo que se cobra solo']=t('sheet').includes('Lo que se cobra solo');w.eval('closeSheet()');
-  checks['hero corto: semana y hasta el 22, sin desglose']=t('hero-w').includes('Hasta el 22 (')&&!t('hero-w').includes('Plata del mes');
+  checks['hero corto: semana y hasta el 22, sin desglose']=(w.eval('S.V.queda<0')||t('hero-w').includes('Hasta el 22 ('))&&!t('hero-w').includes('Plata del mes');
   w.eval('S.gastos.pop();render()');}
  w.eval('openAdd()');checks['anotar: sugerencias']=d.querySelectorAll('#sheet .sugs button').length>=5;
  d.getElementById('a-monto').value='$5.000';w.CALLS=[];await w.eval('saveAdd()');await new Promise(r=>setTimeout(r,1400));
@@ -264,13 +264,17 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval("S.aj.deudas=[{id:1,que:'PSA',monto:490000}];openDebo()");
  checks['lo que debes: total, tarjetas, cuotas que faltan y deudas']=t('sheet').includes('Lo que debes')&&t('sheet').includes('Tus tarjetas de este mes')&&t('sheet').includes('Scotia')&&t('sheet').includes('PSA')&&t('sheet').includes('Prepago de cuotas');
  w.eval("closeSheet();renderMetas()");checks['lo que debes: fila en Plata']=t('metas').includes('Lo que debes');w.eval('S.aj.deudas=[]');
- // Hoy: el número se explica al tocarlo; pasado del mes muestra lo básico al día en vez de $0
- w.eval("tab('hoy');openHeroInfo()");checks['hoy: al tocar el número se explica la cuenta']=t('sheet').includes('¿De dónde sale este número?')&&t('sheet').includes('Presupuesto del mes')&&t('sheet').includes('Cuotas y fijos');w.eval('closeSheet()');
- w.eval("S.pptoBak=S.ppto;S.ppto=100000;render()");checks['hoy: pasado del mes muestra lo básico al día, no $0']=t('hero-w').includes('solo lo básico')&&t('hero-w').includes('al día')&&!/\$0(?!\d|\.)/.test(t('hero-w'));
- w.eval('openHeroInfo()');checks['hoy: pasado del mes, la cuenta dice cuánto vas pasado']=t('sheet').includes('Vas pasado del mes por');w.eval('closeSheet();S.ppto=S.pptoBak;render()');
- // Hoy: saludo con nombre y la semana (L a D) en el recuadro; tocar un día abre su detalle
- w.eval("tab('hoy');render()");checks['hoy: la semana L a D en el recuadro']=d.querySelectorAll('#hero-w .wk button').length===7&&!!d.querySelector('#hero-w .wk .hoy');
- d.querySelector('#hero-w .wk .hoy').click();checks['hoy: tocar un día abre su detalle']=t('sheet').includes('tu plata del día')||t('sheet').includes('Nada anotado');w.eval('closeSheet()');
+ // Hoy: el número es la semana, en bolsillos (súper, oficina, delivery, gustos); tocarlo abre tu plan
+ w.eval("tab('hoy');render()");checks['hoy: la semana en 4 bolsillos']=d.querySelectorAll('#hero-w .bol button').length===4&&t('hero-w').includes('Súper')&&t('hero-w').includes('Delivery');
+ d.querySelector('#hero-w .bol button').click();checks['hoy: tocar un bolsillo abre tu plan']=t('sheet').includes('Tu plan')&&t('sheet').includes('Esta semana')&&t('sheet').includes('Tu mes, en orden')&&t('sheet').includes('Cuotas')&&t('sheet').includes('Gustos');w.eval('closeSheet()');
+ checks['plan: súper, delivery y oficina se reconocen']=w.eval("[tipoComida({descripcion:'Jumbo Oneclick',monto:30000}),tipoComida({descripcion:'NIU Sushi Rosario Sur',monto:12000}),tipoComida({descripcion:'Colombo Cafe',monto:6800}),tipoComida({descripcion:'Almuerzo',monto:35000})].join()")==='super,delivery,oficina,delivery';
+ {const f=w.eval('S.V.semIni');w.eval(`S.gastos.push({id:7001,fecha:'${f}',descripcion:'Rappi',monto:15000,categoria_clave:'comida',tarjeta:'scotiabank',periodo:S.actual,pulldex:false},{id:7002,fecha:'${f}',descripcion:'Uber Eats',monto:16000,categoria_clave:'comida',tarjeta:'scotiabank',periodo:S.actual,pulldex:false});render()`);
+  checks['plan: segundo delivery avisa y el hábito queda pendiente']=w.eval('S.V.W.nDel')>=2&&w.eval("alertas()").some(a=>a.k.startsWith('del-'))&&w.eval("habitos()").some(h=>/delivery a la semana/.test(h.t)&&h.ok===false);
+  w.eval('S.gastos=S.gastos.filter(x=>x.id<7000);render()');}
+ w.eval('editPlan()');d.getElementById('pl-s').value='$30.000';w.CALLS=[];await w.eval('savePlan()');checks['plan: se ajusta y se guarda en ajustes.plan']=w.CALLS.some(c=>c.m==='POST'&&c.u.includes('ajustes')&&c.b.includes('"plan"')&&c.b.includes('30000'))&&w.eval('PLAN().super')===30000;
+ // Pasado del mes: lo básico de la semana, nunca $0 solo
+ w.eval("S.pptoBak=S.ppto;S.ppto=100000;render()");checks['hoy: pasado del mes muestra lo básico de la semana']=t('hero-w').includes('solo lo básico')&&(t('hero-w').includes('esta semana')||t('hero-w').includes('Casa y metro'))&&!/\$0(?!\d|\.)/.test(t('hero-w'));
+ w.eval('openPlan()');checks['hoy: pasado del mes, el plan dice cuánto vas pasado']=t('sheet').includes('Te pasaste del mes por');w.eval('closeSheet();S.ppto=S.pptoBak;render()');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();

@@ -61,6 +61,11 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .wk button span{opacity:.8}.wk i{font-style:normal;font-size:13px;font-weight:800;height:16px;line-height:16px}
 .wk .mal i{opacity:.75}.wk .hoy{background:rgba(255,255,255,.32);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.7)}
 .wk .fut,.wk .fu{background:rgba(255,255,255,.07)}.wk .fu span{opacity:.35}.wk button:active{transform:scale(.94)}
+.bol{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:14px 0;position:relative}
+.bol button{border:none;background:rgba(255,255,255,.16);border-radius:14px;padding:7px 4px 8px;color:#fff;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:10.5px;font-weight:700;min-width:0}
+.bol button span{opacity:.82;white-space:nowrap}.bol b{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}.bol i{font-style:normal;font-size:16px;line-height:18px}
+.bol .mal{background:rgba(0,0,0,.18)}.bol .mal b{opacity:.85}.bol .hoy{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.75)}.bol button:active{transform:scale(.95)}
+.plan-t{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}.plan-t td,.plan-t th{padding:7px 0;border-bottom:1px solid var(--border);text-align:right}.plan-t th{color:var(--sec);font-weight:600;font-size:12px}.plan-t td:first-child,.plan-t th:first-child{text-align:left}.plan-t tr:last-child td{border:none}
 .h-msg svg.i{width:18px;height:18px;margin-top:1px}
 .h-msg{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.16);border:none;border-radius:18px;padding:11px 13px;font-size:13px;line-height:1.45;position:relative;z-index:1;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:16px 0}
@@ -577,7 +582,7 @@ body:not(.ready) .mes-b .chev{display:none}
     <button class="crow" onclick="openCuadrar()"><div class="ic" style="font-size:18px">🧮</div><div class="cm"><b>Cuadrar con la cartola</b><small>Sube la cartola y agrego lo que se te pasó anotar</small></div><span class="chev">›</span></button>
     <button class="crow" id="m-neg-b" onclick="openNeg()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 22V12h6v10"/></svg></div><div class="cm"><b>Negocio (PULLDEX)</b><small>Gastos y ventas: ¿gana o pierde plata?</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openMeses()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg></div><div class="cm"><b>Meses anteriores</b><small>Compara cómo te fue</small></div><span class="chev">›</span></button>
-    <button class="crow" onclick="editPpto()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></div><div class="cm"><b>Presupuesto del mes</b><small id="m-ppto">—</small></div><span class="chev">›</span></button>
+    <button class="crow" onclick="openPlan()"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></div><div class="cm"><b>Tu plan y presupuesto</b><small id="m-ppto">—</small></div><span class="chev">›</span></button>
   </div>
   </section>
 
@@ -955,8 +960,8 @@ async function _loadAll(){
 // Alertas: se muestran una sola vez (hoy: una vez al día, semana: una vez por semana, mes y categorías: una vez al mes).
 function alertas(){const V=S.V,A=[],per=S.actual,H=hoyISO();if(!V||!V.esActual)return A;
   if(V.queda<0)A.push({k:'mes-'+per,ic:'🔴',t:`Te pasaste del mes por ${fmt(-V.queda)}`,b:'Lo que gastes hasta el 22 sale de tu ahorro. Freno total: solo súper y transporte.'});
-  else if(V.diario<0)A.push({k:'hoy-'+H,ic:'🟠',t:`Hoy te pasaste por ${fmt(-V.diario)}`,b:`Tenías ${fmt(V.cupoHoy)} para hoy. Desde mañana tienes ${fmt(V.manana)} por día.`});
-  if(V.queda>=0&&V.semana<0)A.push({k:'sem-'+V.semIni,ic:'📅',t:`Esta semana te pasaste por ${fmt(-V.semana)}`,b:'Lo que queda de la semana: cocina en casa y nada de compras.'});
+  const W=V.W;if(W&&!W.freno&&W.queda<0)A.push({k:'sem-'+V.semIni,ic:'📅',t:`Esta semana te pasaste por ${fmt(-W.queda)}`,b:'Lo que queda de la semana: comida de la casa y nada de compras. El lunes parte de nuevo.'});
+  if(W&&W.nDel>W.delN)A.push({k:`del-${V.semIni}-${W.nDel}`,ic:'🛵',t:W.delN?`Delivery n° ${W.nDel} de la semana`:'Delivery en semana de freno',b:W.delN?`Tu plan es ${W.delN} a la semana. Desde ahora, comida de la casa hasta el lunes.`:'Te pasaste del mes: hasta el 22, comida de la casa.'});
   Object.entries(V.tot).forEach(([c,g])=>{const t=S.techos[c],n=(CAT[c]||CAT.otros).n;
     if(c==='coleccionables'&&!t&&g>0)A.push({k:`cat-${c}-0-${per}`,ic:'🃏',t:'Compraste cartas y estaban bloqueadas',b:`Llevas ${fmt(g)} en cartas este mes. Si era para PULLDEX, márcalo como negocio.`});
     if(!t||c==='otros')return;
@@ -988,28 +993,67 @@ async function loadPeriodo(){
 
 const SVG=d=>`<svg class="i" viewBox="0 0 24 24">${d}</svg>`;
 const HICO=(c,q)=>SVG(c==='ok'||(c===''&&q>=0)?'<circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/>':c==='bad'||c===''?'<path d="M7.9 2h8.2L22 7.9v8.2L16.1 22H7.9L2 16.1V7.9z"/><path d="M12 8v4M12 16h.01"/>':'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>');
-// La semana en el hero (L a D): ✓ los días que no pasaste tu plata del día, ✕ los que sí; tocar un día abre su detalle.
-function semanaHero(y,m){const H=hoyISO(),hoy=new Date(H+'T12:00:00'),lun=new Date(hoy);lun.setDate(hoy.getDate()-(hoy.getDay()+6)%7);
-  const ini=new Date(y,m-2,23,12),cie=new Date(y,m-1,22,12),largo=Math.round((cie-ini)/864e5)+1,ideal=Math.max(1,(S.ppto-S.V.cuo)/largo),by={};
-  S.gastos.filter(g=>!g.pulldex).forEach(g=>by[g.fecha]=(by[g.fecha]||0)+g.monto);
-  const ISO=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  return `<div class="wk">${['L','M','M','J','V','S','D'].map((l,i)=>{const d=new Date(lun);d.setDate(lun.getDate()+i);const f=ISO(d),v=by[f]||0,fuera=d<ini||d>cie,fut=f>H;
-    const k=fuera?'fu':fut?'fut':f===H?'hoy':v>ideal?'mal':'ok';
-    return `<button class="${k}" ${fuera||fut?'disabled':`onclick="event.stopPropagation();openDia('${f}')"`} aria-label="${l} ${d.getDate()}: ${fmt(v)}"><span>${l}</span><i>${k==='ok'?'✓':k==='mal'?'✕':k==='hoy'?(v>ideal?'✕':'•'):''}</i></button>`}).join('')}</div>`}
-// Lo básico al día cuando ya te pasaste: tope de comida + transporte repartido en 30 días (≈ $9.500 con tus topes).
-const basicoDia=()=>Math.round(((S.techos.comida||250000)+(S.techos.transporte||30000))/30/500)*500;
-// "¿De dónde sale este número?": la cuenta del hero con tus números, en palabras simples.
-function openHeroInfo(){const V=S.V;if(!V||!V.esActual)return;const ayer=V.gast-V.gastHoy,inicio=V.queda+V.gastHoy;
-  const r=(t,v,b,c)=>`<div class="row"${b?' style="border-top:1.5px solid var(--text)"':''}><span${b?' style="color:var(--text);font-weight:700"':''}>${t}</span><b style="${c?'color:'+c:''}">${v}</b></div>`;
-  openSheet(`<h3>¿De dónde sale este número?</h3><p>Tu presupuesto del mes, menos lo que ya está comprometido, repartido en los días que quedan hasta el 22.</p>
-  <div class="card">${r('Presupuesto del mes',fmt(S.ppto))}${r('− Cuotas y fijos (se pagan solos)',fmt(V.cuo))}${r('− Lo que gastaste hasta ayer',fmt(ayer))}
-   ${r('= Te quedaba al empezar hoy',fmt(inicio),1,inicio<0?'var(--red-d)':'')}
-   ${inicio>0?r(`÷ ${V.dias} día${V.dias>1?'s':''} hasta el 22`,'= '+fmt(V.cupoHoy)+' para hoy')+r('− Hoy gastaste',fmt(V.gastHoy))+r('= Hoy puedes gastar',fmt(Math.max(0,V.diario)),1,V.diario<0?'var(--red-d)':'var(--green-d)'):(V.gastHoy?r('− Hoy gastaste',fmt(V.gastHoy)):'')+r('= Vas pasado del mes por',fmt(-V.queda),1,'var(--red-d)')}</div>
-  ${inicio<=0?`<div class="cmp">🔴 Ya no queda plata del mes: te pasaste por <b>${fmt(-V.queda)}</b>. Por eso la app te muestra <b>lo básico al día (${fmt(basicoDia())})</b>: tu tope de comida y transporte repartido en el mes. Úsalo solo en súper y metro hasta el 22. El 23 parte un mes nuevo y el número vuelve.</div>`
-   :V.diario<0?`<div class="cmp">🟠 Hoy te pasaste por <b>${fmt(-V.diario)}</b>. No se pierde el mes: lo repartí en los días que quedan. Desde mañana tienes <b>${fmt(V.manana)}</b> al día.</div>`
-   :`<div class="cmp">🟢 Si hoy gastas menos, mañana el número sube. Si te pasas, baja para el resto de los días.</div>`}
-  <button class="btn p" onclick="closeSheet();tab('gastos')">Ver en qué se me fue</button>
-  <button class="btn" style="margin-top:8px;background:var(--bg3);color:var(--text)" onclick="closeSheet();tab('cuotas')">Ver mis cuotas</button>`)}
+// ---------- Plan semanal: el presupuesto en bolsillos ----------
+// El cupo del día no le funcionaba a Vicho (el gasto viene a saltos: un día súper, otro nada). Ahora el número es la SEMANA,
+// y la comida va en 3 bolsillos con reglas simples: súper el domingo, oficina martes y jueves, 1 delivery; los otros días, comida de la casa.
+// ajustes.plan {super, ofi_n, ofi_p, del_n, del_p, fijos}: súper/oficina/delivery por semana, suscripciones por mes.
+const PLAN=()=>({super:25000,ofi_n:2,ofi_p:7000,del_n:1,del_p:20000,fijos:60000,...(S.aj.plan||{})}),SEMS=52/12,OFI_DIAS=[2,4];
+function tipoComida(g){const d=(g.descripcion||'').toLowerCase();
+  if(/jumbo|l[ií]der|unimarc|tottus|santa isabel|acuenta|mayorista|oxxo|ok market|feria|verduler|carnicer|supermerc/.test(d))return'super';
+  if(/rappi|uber ?eats|pedidos ?ya|justo|didi|sushi|pizza|domino|burger|gastro|restor|cena|manarola|delivery/.test(d)||g.monto>=15000)return'delivery';
+  return'oficina'}
+// Plan del mes, en orden: cuotas → suscripciones → comida → transporte → gustos (lo que sobra). Suma = el presupuesto.
+function planMes(){const P=PLAN(),V=S.V,com=Math.round((P.super+P.ofi_n*P.ofi_p+P.del_n*P.del_p)*SEMS),tr=S.techos.transporte||30000;
+  return{P,com,tr,fijos:P.fijos,gustos:Math.max(0,S.ppto-V.cuo-P.fijos-com-tr)}}
+// La semana (lunes a domingo, sin pasar del 22): cuánto tiene cada bolsillo y cuánto queda. Pasado del mes: solo súper, oficina y metro.
+function semanaPlan(){const V=S.V,M=planMes(),P=M.P,f=V.Wd/7,freno=V.queda<0;
+  const pers=S.gastos.filter(g=>!g.pulldex),G=pers.filter(g=>g.fecha>=V.semIni&&g.fecha<=V.semFin);
+  const g={super:0,oficina:0,delivery:0,transporte:0,gustos:0},nDel=G.filter(x=>x.categoria_clave==='comida'&&tipoComida(x)==='delivery'&&x.monto>0).length;
+  G.forEach(x=>{const c=x.categoria_clave;if(c==='fijo')return;if(c==='comida')g[tipoComida(x)]+=x.monto;else if(c==='transporte')g.transporte+=x.monto;else g.gustos+=x.monto});
+  // Gustos: lo que queda de gustos del mes al empezar la semana, repartido en las semanas que faltan (si te pasas, la próxima tiene menos).
+  const gAntes=pers.filter(x=>x.fecha<V.semIni&&!['fijo','comida','transporte'].includes(x.categoria_clave)).reduce((s,x)=>s+x.monto,0);
+  const delN=freno?0:Math.round(P.del_n*f),pl={super:Math.round(P.super*f),oficina:Math.round(P.ofi_n*P.ofi_p*f),delivery:delN*P.del_p,transporte:Math.round(M.tr/SEMS*f),
+    gustos:freno?0:Math.max(0,Math.round((M.gustos-gAntes)*V.Wd/V.D0))};
+  const tot=Object.values(pl).reduce((s,v)=>s+v,0),gas=Object.values(g).reduce((s,v)=>s+v,0),q=k=>pl[k]-g[k];
+  const prox=Math.round(P.super+P.ofi_n*P.ofi_p+P.del_n*P.del_p+M.tr/SEMS+Math.max(0,M.gustos-gAntes-g.gustos)*7/Math.max(7,V.D0-V.Wd));
+  return{M,P,pl,g,tot,gas,queda:tot-gas,q,nDel,delN,ofiQ:Math.max(0,Math.floor(q('oficina')/P.ofi_p)),freno,prox,f}}
+function bolsillos(W){const dw=new Date().getDay(),B=[
+  ['🛒','Súper',W.q('super')<0?'−'+kCLP(-W.q('super')):kCLP(W.q('super')),W.q('super')<0,dw===0],
+  ['🥗','Oficina',`${W.ofiQ} de ${Math.round(W.P.ofi_n*W.f)||W.P.ofi_n}`,W.q('oficina')<0,OFI_DIAS.includes(dw)],
+  ['🛵','Delivery',W.freno?'No':`${Math.max(0,W.delN-W.nDel)} de ${W.delN}`,W.nDel>W.delN||W.q('delivery')<0,false],
+  ['🎁','Gustos',W.freno?'No':W.q('gustos')<0?'−'+kCLP(-W.q('gustos')):kCLP(W.q('gustos')),W.q('gustos')<0||W.freno,false]];
+  return`<div class="bol">${B.map(([i,t,v,mal,hoy])=>`<button class="${mal?'mal':''} ${hoy?'hoy':''}" onclick="event.stopPropagation();openPlan()" aria-label="${t}: ${v}"><i>${i}</i><b>${v}</b><span>${t}</span></button>`).join('')}</div>`}
+// La misión de hoy según el día (Vicho es indeciso: una sola cosa que hacer).
+function misionHoy(W){const dw=new Date().getDay(),P=W.P,del=Math.max(0,W.delN-W.nDel);let m;
+  if(dw===0)m=`<b>Hoy toca:</b> súper (hasta ${fmt(Math.max(0,W.q('super'))||P.super)}) y cocinar 3 almuerzos para la semana.`;
+  else if(OFI_DIAS.includes(dw)&&W.ofiQ>0)m=`<b>Hoy es día de oficina:</b> almuerzo hasta ${fmt(P.ofi_p)}. El café sale de aquí mismo.`;
+  else m=`<b>Hoy:</b> almuerzo de la casa.${[5,6].includes(dw)&&del?` Si quieres delivery, hoy o mañana: uno, hasta ${fmt(P.del_p)}.`:''}`;
+  if(W.nDel>=W.delN&&W.delN)m+=` El delivery de la semana ya está ✓.`;
+  return`<span>${m}</span>`}
+// Tu plan: la semana por bolsillo y el mes en orden. Se abre al tocar el número o un bolsillo.
+function openPlan(){const V=S.V;if(!V||!V.esActual){editPpto();return}const W=V.W,M=W.M,P=W.P;
+  const fila=(t,k)=>`<tr><td>${t}</td><td>${fmt(W.pl[k])}</td><td>${fmt(W.g[k])}</td><td style="color:${W.q(k)<0?'var(--red-d)':'var(--green-d)'};font-weight:700">${W.q(k)<0?'−'+fmt(-W.q(k)):fmt(W.q(k))}</td></tr>`;
+  const r=(n,t,v,sub)=>`<div class="row" style="align-items:flex-start"><span><b style="color:var(--text)">${n}. ${t}</b>${sub?`<br><small style="color:var(--sec)">${sub}</small>`:''}</span><b>${fmt(v)}</b></div>`;
+  openSheet(`<h3>📋 Tu plan</h3><p>${W.freno?`Te pasaste del mes por <b>${fmt(-V.queda)}</b>: hasta el 22 solo súper, oficina y metro.`:`El número de Hoy es <b>lo que te queda esta semana</b>. Cada lunes parte de nuevo.`}</p>
+  <div class="card"><div class="card-h"><h2>Esta semana</h2><span class="pill">${V.Wd<7?`${V.Wd} días`:'lun a dom'}</span></div>
+   <table class="plan-t"><tr><th></th><th>Plan</th><th>Gastaste</th><th>Queda</th></tr>${fila('🛒 Súper','super')}${fila('🥗 Oficina','oficina')}${fila(`🛵 Delivery (${W.nDel} de ${W.delN})`,'delivery')}${fila('🚇 Transporte','transporte')}${fila('🎁 Gustos','gustos')}
+   <tr><td><b>Total</b></td><td><b>${fmt(W.tot)}</b></td><td><b>${fmt(W.gas)}</b></td><td style="font-weight:800;color:${W.queda<0?'var(--red-d)':'var(--green-d)'}">${W.queda<0?'−'+fmt(-W.queda):fmt(W.queda)}</td></tr></table></div>
+  <div class="card"><div class="card-h"><h2>Tu mes, en orden</h2></div>
+   ${r(1,'Cuotas',V.cuo,'Se pagan solas. Cero cuotas nuevas.')}${r(2,'Suscripciones',M.fijos,'Apps, Apple, Claude…')}
+   ${r(3,'Comida',M.com,`Súper ${fmt(P.super)} el domingo · oficina ${P.ofi_n} veces de ${fmt(P.ofi_p)} (martes y jueves) · ${P.del_n} delivery de ${fmt(P.del_p)}. Los otros días, comida de la casa.`)}
+   ${r(4,'Transporte',M.tr,'Metro y micro.')}${r(5,'Gustos',M.gustos,`Ropa, salir, tech, casa: ~${fmt(Math.round(M.gustos/SEMS))} a la semana. Más de $30.000 → lista de deseos y 72 horas.`)}
+   <div class="row" style="border-top:1.5px solid var(--text)"><span style="color:var(--text);font-weight:700">= Presupuesto del mes</span><b>${fmt(S.ppto)}</b></div>
+   ${SUELDO>S.ppto?`<div class="row"><span>Lo que sobra del sueldo → ahorro</span><b style="color:var(--green-d)">${fmt(SUELDO-S.ppto)}</b></div>`:''}</div>
+  <button class="btn p" onclick="editPlan()">Ajustar el plan</button>
+  <button class="btn" style="margin-top:8px;background:var(--bg3);color:var(--text)" onclick="closeSheet();tab('gastos')">Ver en qué se me fue</button>`)}
+function editPlan(){const P=PLAN(),i=(id,t,v,n)=>`<label style="display:block;font-size:13px;color:var(--sec);margin:10px 0 4px">${t}</label><input id="${id}" class="amt-in" style="font-size:22px" inputmode="numeric" ${n?'':'oninput="fmtIn(this)"'} value="${n?v:'$'+v.toLocaleString('es-CL')}">`;
+  openSheet(`<h3>Ajustar el plan</h3><p>Lo que sobre después de cuotas, suscripciones, comida y transporte queda para gustos.</p>
+  ${i('pl-s','Súper a la semana',P.super)}${i('pl-on','Almuerzos en la oficina a la semana',P.ofi_n,1)}${i('pl-op','Cuánto cuesta un almuerzo en la oficina',P.ofi_p)}
+  ${i('pl-dn','Deliveries a la semana',P.del_n,1)}${i('pl-dp','Tope por delivery',P.del_p)}${i('pl-f','Suscripciones al mes',P.fijos)}
+  <button class="btn p" style="margin-top:14px" onclick="savePlan()">Guardar</button><button class="btn" style="margin-top:8px;background:var(--bg3);color:var(--text)" onclick="editPpto()">Cambiar el presupuesto del mes</button>`)}
+async function savePlan(){const n=id=>Math.max(0,Math.round(+(($(id).value||'').replace(/\D/g,''))||0));
+  const p={super:n('pl-s'),ofi_n:n('pl-on'),ofi_p:n('pl-op'),del_n:n('pl-dn'),del_p:n('pl-dp'),fijos:n('pl-f')};
+  await saveAj('plan',p,true);closeSheet();toast('✅ Plan guardado');render()}
 function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase():'🙂';
   // Negocio (PULLDEX) solo para quien tiene reglas o gastos de negocio
   $('m-neg-b').style.display=S.reglas.some(r=>r.negocio)||(S.gastos||[]).some(g=>g.pulldex)?'':'none';
@@ -1035,32 +1079,27 @@ function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase
   const gastSem=pers.filter(g=>g.fecha>=ISO(w0)).reduce((s,g)=>s+g.monto,0),D0=Math.max(1,Math.round((cierre-w0)/864e5)+1),Wd=Math.round((w1-w0)/864e5)+1;
   const semana=(queda+gastSem)*Wd/D0-gastSem,diasSem=Math.round((w1-hoy)/864e5)+1;
   const base=esActual?Math.max(total,S.ppto):total,libre=Math.max(0,SUELDO-base),fin=Math.round(libre/2);
-  S.V={tot,items,ptot,nt,neg,mes,pvL,CQ,cuo,gast,total,queda,dias,esActual,diario,cupoHoy,gastHoy,manana,semana,semIni:ISO(w0),proy:{base,libre,fin,col:libre-fin,over:total>S.ppto}};
+  S.V={tot,items,ptot,nt,neg,mes,pvL,CQ,cuo,gast,total,queda,dias,esActual,diario,cupoHoy,gastHoy,manana,semana,semIni:ISO(w0),semFin:ISO(w1),Wd,D0,proy:{base,libre,fin,col:libre-fin,over:total>S.ppto}};
+  const W=esActual?semanaPlan():null;S.V.W=W;
 
   $('mes-t').textContent=mes;$('greet').textContent=esActual?`${nm?`Hola, ${nm} · `:''}${fechaHoy().replace(/^(\S{3})\S*/,'$1')}`:rangoL(S.periodo);
   $('viendo').innerHTML=esActual?'':`<div class="nudge"><div>👀 Estás viendo <b>${perL(S.periodo)}</b></div><button onclick="setPer(S.actual)">Volver a hoy</button></div>`;
 
   let cls,lbl,amt,l1,msg,l2=`Incluye ${fmt(cuo)} de cuotas y fijos`;
   if(!esActual){cls='';lbl=queda>=0?`Te sobró en ${mes}`:`Te pasaste en ${mes}`;amt=fmt(Math.abs(queda));l1=`Gastaste ${fmt(total)} de ${fmt(S.ppto)}`;msg=queda>=0?'<span>Mes cerrado en positivo.</span>':'<span>Mes cerrado en rojo. Que no se repita.</span>';}
-  // El número grande siempre es lo que PUEDES gastar (nunca lo que te pasaste): lo pasado va en una línea aparte.
-  // Pasado del mes: en vez de un $0 que no dice nada, un número útil: cuánto al día SOLO para lo básico (súper y metro).
-  else if(queda<0){const gb=pers.filter(g=>g.fecha===H&&['comida','transporte'].includes(g.categoria_clave)).reduce((s,g)=>s+g.monto,0);
-    cls='bad';lbl='Hasta el 22, solo lo básico';amt=`${fmt(basicoDia())}<span style="font-size:.4em;font-weight:600;opacity:.8"> al día</span>`;
-    l1=`Te pasaste del mes por ${fmt(-queda)}`;l2=gb?`Hoy llevas ${fmt(gb)} en súper y metro${gb>basicoDia()?': ya pasaste el básico de hoy':''}`:'Súper y metro, nada más. Lo demás espera al 23.';
+  // El número grande es lo que te queda ESTA SEMANA (nunca lo que te pasaste). Pasado del mes: lo básico de la semana.
+  else if(W.freno){cls='bad';lbl='Hasta el 22, solo lo básico';const bq=W.q('super')+W.q('oficina')+W.q('transporte');
+    amt=bq>0?`${fmt(bq)}<span style="font-size:.4em;font-weight:600;opacity:.8;letter-spacing:0"> esta semana</span>`:'<span style="font-size:.6em">Casa y metro</span>';l1=`Te pasaste del mes por ${fmt(-queda)}`;l2='Súper, oficina y metro. Cero delivery y gustos hasta el 23.';
     // Decir POR QUÉ se pasó: la categoría que más se pasó de su tope (Casa = lo de independizarse, no es "mal gasto").
     const cul=Object.entries(tot).filter(([c])=>c!=='otros'&&S.techos[c]).map(([c,g])=>[c,g-S.techos[c]]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1])[0];
-    msg=cul?`<span>Más que nada por <b>${(CAT[cul[0]]||CAT.otros).n}</b> (+${kCLP(cul[1])})${cul[0]==='casa'?', lo de independizarte':''}. Lo que gastes ahora sale de tu ahorro.</span>`:'<span>Lo que gastes ahora sale de tu ahorro. Toca el número para ver la cuenta.</span>';}
-  else if(diario<0){cls='warn';lbl='Desde mañana puedes gastar';amt=`${fmt(manana)}<span style="font-size:.4em;font-weight:600;opacity:.8"> al día</span>`;
-    msg=`<span>No se pierde el mes: lo que te pasaste hoy lo repartí en los ${dias-1} días que quedan.</span>`;}
-  else{
-    lbl='Hoy puedes gastar';amt=fmt(diario);
-    if(com>tc*.8){cls='warn';msg=`<span><b>Misión de hoy:</b> no pasar de ${fmt(cupoHoy)} y cero delivery (comida va al ${Math.round(com/tc*100)}%).</span>`;}
-    else if(cupoHoy<15000){cls='warn';msg='<span>Margen justo. Cocina en casa y posterga cualquier compra.</span>';}
-    // Una sola misión concreta para hoy (Vicho es indeciso): el tope del día y lo que gana si lo cumple.
-    else{cls='ok';const r0=racha();msg=`<span><b>Misión de hoy:</b> no pasar de ${fmt(cupoHoy)}. ${r0>=1?`Si lo logras, llevas ${r0+1} días seguidos 🔥`:'Si lo logras, partes tu racha 🔥'}${pausaFin()?'':` y fin de mes van <b>${fmt(fin)}</b> a Fintual`}.</span>`;}
-  }
-  const rch=esActual?racha():0;$('hero-w').innerHTML=`<div class="hero ${cls}" onclick="${esActual?'openHeroInfo()':''}" style="${esActual?'cursor:pointer':''}"><div class="h-lbl">${lbl}${esActual?' <span style="opacity:.7;font-weight:500">ⓘ</span>':''}${rch>=2?`<span class="racha">🔥 ${rch} días</span>`:''}</div><div class="h-amt">${amt}</div>${esActual&&queda>=0?`${gastHoy>0&&diario>=0?`<div class="h-l2" style="margin:-6px 0 10px">De ${fmt(cupoHoy)} para hoy, ya usaste ${fmt(gastHoy)}</div>`:diario<0?`<div class="h-l2" style="margin:-6px 0 10px">Hoy te pasaste por <b>${fmt(-diario)}</b> (tenías ${fmt(cupoHoy)})</div>`:''}<div class="h-sum"><div class="t" style="border:none;margin:0 0 6px;padding:0"><span>${semana>=0?`Esta semana${diasSem>1?` <small style="opacity:.75;font-weight:500;white-space:nowrap">(${diasSem} días)</small>`:''}`:'Esta semana te pasaste por'}</span><span>${fmt(Math.abs(semana))}</span></div><div class="t" onclick="event.stopPropagation();tab('gastos')" style="cursor:pointer"><span>Hasta el 22 <small style="opacity:.75;font-weight:500;white-space:nowrap">(${dias} días)</small></span><span>${fmt(queda)}</span></div></div>`:`<div class="h-l1">${l1}</div><div class="h-l2">${l2}</div>`}${esActual?semanaHero(y,m):`<div class="h-bar"><div style="width:${p}%"></div></div>`}<div class="h-msg">${HICO(cls,queda)}${msg}</div></div>`;
-  contar(lbl+S.periodo,esActual&&queda>=0&&diario>=0?diario:null);
+    msg=cul?`<span>Más que nada por <b>${(CAT[cul[0]]||CAT.otros).n}</b> (+${kCLP(cul[1])})${cul[0]==='casa'?', lo de independizarte':''}. Lo que gastes ahora sale de tu ahorro.</span>`:'<span>Lo que gastes ahora sale de tu ahorro. Toca el número para ver tu plan.</span>';}
+  else if(W.queda<0){cls='bad';lbl='El lunes tu semana parte con';amt=fmt(W.prox);l1=`Esta semana te pasaste por ${fmt(-W.queda)}`;l2='Lo que queda de la semana: comida de la casa.';
+    msg=`<span>No se pierde el mes: lo que te pasaste en gustos se descuenta de las próximas semanas.</span>`;}
+  else{lbl='Esta semana puedes gastar';amt=fmt(W.queda);
+    cls=W.queda<W.tot*.2||W.q('super')<0||W.q('oficina')<0||W.nDel>W.delN?'warn':'ok';msg=misionHoy(W);}
+  const rch=esActual?racha():0,diasL=n=>`<small style="opacity:.75;font-weight:500;white-space:nowrap">(${n} día${n>1?'s':''})</small>`;
+  $('hero-w').innerHTML=`<div class="hero ${cls}" onclick="${esActual?'openPlan()':''}" style="${esActual?'cursor:pointer':''}"><div class="h-lbl">${lbl}${esActual?' <span style="opacity:.7;font-weight:500">ⓘ</span>':''}${rch>=2?`<span class="racha">🔥 ${rch} días</span>`:''}</div><div class="h-amt">${amt}</div>${esActual&&!W.freno&&W.queda>=0?`<div class="h-l2" style="margin:-6px 0 4px">${W.gas?`De ${fmt(W.tot)} para la semana, ya usaste ${fmt(W.gas)}`:`Tu semana: ${fmt(W.tot)}`} ${diasL(diasSem)}</div>`:esActual?`<div class="h-l1">${l1}</div><div class="h-l2">${l2}</div>`:`<div class="h-l1">${l1}</div><div class="h-l2">${l2}</div>`}${esActual?bolsillos(W):`<div class="h-bar"><div style="width:${p}%"></div></div>`}${esActual&&queda>=0?`<div class="h-sum"><div class="t" onclick="event.stopPropagation();tab('gastos')" style="cursor:pointer;margin:0 0 12px"><span>Hasta el 22 ${diasL(dias)}</span><span>${fmt(queda)}</span></div></div>`:''}<div class="h-msg">${HICO(cls,queda)}${msg}</div></div>`;
+  contar(lbl+S.periodo,esActual&&W&&!W.freno&&W.queda>=0?W.queda:null);
 
   const ev=getEv();$('win').innerHTML=esActual&&ev?`<div class="win">💪 Este mes te aguantaste ${fmt(ev)} en compras</div>`:'';
 
@@ -1129,6 +1168,10 @@ function habitos(){
   H.push({ok:!pend,t:'Todo ordenado',s:pend?`${pend} gasto${pend>1?'s':''} esperando que me digas qué ${pend>1?'son':'es'}`:'Cada gasto tiene su categoría',b:pend?['Ordenar',nr?'openRev()':"openCat('otros')"]:null});
   const libre=S.ppto-V.cuo,[y,m]=S.actual.split('-').map(Number),largo=Math.round((new Date(y,m-1,22)-new Date(y,m-2,22))/864e5),pas=(largo-V.dias+1)/largo,pg=libre>0?V.gast/libre:1;
   H.push({ok:V.queda>=0&&pg<=pas+.05,t:'Gastas al ritmo del mes',s:V.queda<0?`Te pasaste del mes por ${fmt(-V.queda)}`:`Llevas el ${Math.round(pg*100)}% de tu plata y va el ${Math.round(pas*100)}% del mes`});
+  if(V.W){const W=V.W,sp=W.g.super;
+    H.push({ok:W.nDel<=W.delN,t:`${W.P.del_n} delivery a la semana, máximo`,s:`Esta semana: ${W.nDel} de ${W.delN}`});
+    H.push({ok:W.q('oficina')>=0,t:`Oficina ${W.P.ofi_n} veces (martes y jueves)`,s:`Esta semana: ${fmt(W.g.oficina)} de ${fmt(W.pl.oficina)}. Los otros días llevas almuerzo`});
+    H.push({ok:sp>0?W.q('super')>=0:null,t:'Súper el domingo, y cocinar 3 almuerzos',s:sp>0?`Esta semana: ${fmt(sp)} de ${fmt(W.pl.super)}`:'Esta semana todavía no hay súper'});}
   const over=Object.entries(V.tot).filter(([c,g])=>c!=='otros'&&g>0&&(S.techos[c]?g>S.techos[c]:c==='coleccionables')).map(([c])=>(CAT[c]||CAT.otros).n);
   H.push({ok:!over.length,t:'Ninguna categoría pasada',s:over.length?`Te pasaste en ${over.join(', ')}`:'Todas dentro de su tope',b:over.length?['Ver',"tab('gastos')"]:null});
   const nuevas=S.cuotas.filter(c=>!c.recurrente&&c.primer_periodo&&c.primer_periodo>=S.actual);
@@ -1157,8 +1200,8 @@ function openRevision(){const V=S.V,l=semanaDe(),dom=ISOd(new Date(new Date(l+'T
     ${paso(!no,'Gastos con categoría',no?`${no} sin categoría`:'Todo ordenado',`<button onclick="openCat('otros')">Ordenar</button>`)}
     ${paso(!ds,'Lista de deseos al día',ds?`${ds} esperando tu decisión (ya pasaron 72 horas)`:'Nada que decidir',`<button onclick="closeSheet();tab('coach')">Decidir</button>`)}
   </div>
-  <div class="card sum"><div class="k">Para la próxima semana</div><div class="v">${V.esActual?(V.queda>=0?`${fmt(V.manana)} <span>por día</span>`:`Freno total`):'—'}</div>
-    <div class="lead" style="padding:4px 0 12px">${V.esActual?(V.queda>=0?`Te quedan ${fmt(V.queda)} hasta el 22.`:`Vas ${fmt(-V.queda)} pasado del mes: solo súper y transporte.`):''}${ev?` 💪 Este mes te aguantaste ${fmt(ev)}.`:''}</div></div>
+  <div class="card sum"><div class="k">Para la próxima semana</div><div class="v">${V.esActual?(V.queda>=0?`${fmt(V.W.prox)} <span>a la semana</span>`:`Freno total`):'—'}</div>
+    <div class="lead" style="padding:4px 0 12px">${V.esActual?(V.queda>=0?`Súper el domingo, oficina ${V.W.P.ofi_n} veces, ${V.W.P.del_n} delivery. Te quedan ${fmt(V.queda)} hasta el 22.`:`Vas ${fmt(-V.queda)} pasado del mes: solo súper y transporte.`):''}${ev?` 💪 Este mes te aguantaste ${fmt(ev)}.`:''}</div></div>
   <button class="btn p" onclick="cerrarSemana()">${nr||no||ds?'Cerrar igual':'Listo, semana cerrada ✅'}</button>`)}
 function cerrarSemana(){LS('revision-'+semanaDe(),'1');closeSheet();toast('✅ Semana cerrada. El lunes parte limpio');render()}
 
@@ -2166,7 +2209,7 @@ async function saveAdd(){
     const g=r[0],c=CAT[g.categoria_clave]||CAT.otros;closeSheet();
     // Siempre vuelve al mes de hoy (antes saltaba al mes siguiente si la tarjeta ya había cerrado).
     S.periodo=S.actual;await loadAll();
-    toast(g.pulldex?`✅ ${fmt(monto)} anotado como negocio`:g.periodo!==S.actual?`✅ ${c.ic} ${fmt(monto)} · va en la boleta de ${MESL[+g.periodo.slice(5)-1]}`:`✅ ${c.ic} ${fmt(monto)} · ${S.V.diario>=0?`hoy te quedan ${fmt(S.V.diario)}`:`desde mañana ${fmt(S.V.manana)} al día`}`,['Deshacer',()=>undoAdd(g.id)]);
+    toast(g.pulldex?`✅ ${fmt(monto)} anotado como negocio`:g.periodo!==S.actual?`✅ ${c.ic} ${fmt(monto)} · va en la boleta de ${MESL[+g.periodo.slice(5)-1]}`:`✅ ${c.ic} ${fmt(monto)} · ${S.V.W.queda>=0?`esta semana te quedan ${fmt(S.V.W.queda)}`:`esta semana te pasaste por ${fmt(-S.V.W.queda)}`}`,['Deshacer',()=>undoAdd(g.id)]);
     if(g.categoria_clave==='otros'&&g.periodo===S.actual&&!sheetOn())setTimeout(()=>openTx(g.id),400);
   }catch(e){toast('❌ No se pudo guardar');console.error(e)}
 }
@@ -2198,16 +2241,16 @@ function evalCheck(){
   $('chk-btns').style.display='block';
   const t=S.techos[cat]||0,s=V.tot[cat]||0,catN=cat!=='otros'&&CAT[cat]?CAT[cat].n:null;
   const X=x,nc=S.nc||1,mc=Math.round(X/nc);x=nc>1?mc:X;const PL=nc>1?planCuotas(mc,nc):null;const cuoP=Math.round(V.cuo/S.ppto*100),cuoP2=Math.round((V.cuo+mc)/S.ppto*100);
-  const q2=V.queda-x,d2=V.dias>1?q2/(V.dias-1):q2,dd=Math.max(1,V.cupoHoy),eq=String(Math.round(x/dd*10)/10).replace('.',','),fin2=Math.round(Math.max(0,SUELDO-Math.max(V.total+x,S.ppto))/2);
+  const W=V.W||{queda:0,tot:1},q2=V.queda-x,ww=Math.max(1,W.tot),eq=String(Math.round(x/ww*10)/10).replace('.',','),fin2=Math.round(Math.max(0,SUELDO-Math.max(V.total+x,S.ppto))/2);
   let c,h,b;
   if(neg){c='neg';h='🧩 Es para el negocio';b=`No toca tu presupuesto personal, pero son ${fmt(x)} que tienen que volver con ventas.`}
   else if(cat==='coleccionables'&&!t){c='bad';h='🚫 No. Cartas bloqueadas este mes';b=`Este mes los coleccionables personales tienen tope $0. Si es para PULLDEX, escribe "pulldex" en la descripción.`}
   else if(nc>1&&cuoP>=30&&!(X>=500000&&PL&&PL.sobre<=3&&PL.fin30)){c='bad';h='🔴 No: cero cuotas nuevas';b=`Ya tienes ${fmt(V.cuo)} al mes amarrados en cuotas y fijos (${cuoP}% de tu presupuesto). Con esta quedarías en ${cuoP2}%${PL&&PL.sobre>3?` y seguirías sobre el 30% por ${PL.sobre} meses`:''}. Si no te alcanza al contado, no te alcanza.`}
   else if(nc>1&&cuoP>=30){c='warn';h='🟡 Se puede, con una condición';b=`Tus cuotas quedan sobre el 30% solo ${PL.sobre} mes${PL.sobre>1?'es':''} y después bajan (${perL(PL.fin30).toLowerCase()}: ${PL.fin30P}%). <b>Condición: ninguna otra cuota hasta ${perL(PL.fin30).toLowerCase()}.</b> Vale solo si son sin interés.`}
   else if(q2<0){c='bad';h='🔴 No te alcanza';b=`Te pasarías del mes por ${fmt(-q2)} y eso sale de tu ahorro: a Fintual irían ${fmt(fin2)} en vez de ${fmt(V.proy.fin)}.`}
-  else if(x<=Math.max(0,V.diario)){c='ok';h='✅ Sí, te alcanza';b=`Después de esto, hoy te quedarían ${fmt(V.diario-x)}. Fintual sigue intacto.`}
-  else if(catN&&t&&s+x>t){c='warn';h=`⚠️ Te alcanza, pero te pasas en ${catN}`;b=`Quedarías ${fmt(s+x-t)} sobre el tope de ${catN}. Son ${eq} días de tu plata diaria: desde mañana tendrías ${fmt(d2)} al día (hoy partiste con ${fmt(V.cupoHoy)}).`}
-  else{c='warn';h='⚠️ Te alcanza, pero te aprieta';b=`Son <b>${eq} días</b> de tu plata diaria${x<=V.semana?', pero cabe en lo que te queda esta semana':''}. Desde mañana tendrías ${fmt(d2)} al día (hoy partiste con ${fmt(V.cupoHoy)}).`}
+  else if(catN&&t&&s+x>t){c='warn';h=`⚠️ Te alcanza, pero te pasas en ${catN}`;b=`Quedarías ${fmt(s+x-t)} sobre el tope de ${catN}. ${x<=W.queda?`Cabe en tu semana: te quedarían ${fmt(W.queda-x)}.`:`Es ${eq} semana${eq==='1'?'':'s'} de tu plata: lo que pase de esta semana se descuenta de las próximas.`}`}
+  else if(x<=Math.max(0,W.queda)){c='ok';h='✅ Sí, te alcanza';b=`Después de esto, esta semana te quedarían ${fmt(W.queda-x)}. Fintual sigue intacto.`}
+  else{c='warn';h='⚠️ Te alcanza, pero te aprieta';b=`No cabe en tu semana (te quedan ${fmt(Math.max(0,W.queda))}): es <b>${eq} semana${eq==='1'?'':'s'}</b> de tu plata. Lo que pase se descuenta de las próximas semanas.`}
   if(nc>1&&!(c==='bad'&&cuoP>=30))b+=`<br>💳 ${nc} cuotas de ${fmt(mc)}: te amarras hasta ${perL(addM(PL.pp,nc-1)).toLowerCase()}.`;
   if(PL)b+=PL.html;
   {const K=S.aj.casa;if(!neg&&K&&K.mensual>0&&X>=20000){const sem=Math.round(X/K.mensual*4.3);if(sem>=1)b+=`<br>🏠 Te atrasa la mudanza ~${sem} semana${sem>1?'s':''}.`}}
@@ -2240,7 +2283,8 @@ function planCuotas(mc,nc){const hoy=hoyISO(),pp=addM(periodoDe(hoy,S.card),1),N
   return{pp,M,sobre,fin30:f?f.per:null,fin30P:f?f.p:null,html}}
 function ctxIA(){const V=S.V,ks=Object.keys(CAT);
   return{hoy:hoyISO(),dias_hasta_el_22:V.dias,presupuesto:S.ppto,cuotas_y_fijos_total:V.cuo,cuotas_pct_presupuesto:Math.round(V.cuo/S.ppto*100),
-    cuotas_y_fijos:V.CQ.map(c=>({nombre:c.nombre,monto:c.monto_cuota,detalle:c.label})),ya_gastaste:V.gast,te_quedan:V.queda,diario:Math.round(V.diario),
+    cuotas_y_fijos:V.CQ.map(c=>({nombre:c.nombre,monto:c.monto_cuota,detalle:c.label})),ya_gastaste:V.gast,te_quedan:V.queda,
+    semana:V.W?{te_queda:V.W.queda,plan_semana:V.W.tot,bolsillos:Object.fromEntries(Object.keys(V.W.pl).map(k=>[k,{plan:V.W.pl[k],gastado:V.W.g[k]}])),deliveries:`${V.W.nDel} de ${V.W.delN}`,reglas:'súper el domingo, oficina martes y jueves, 1 delivery a la semana, los otros días comida de la casa'}:null,
     categorias:ks.filter(k=>V.tot[k]||S.techos[k]).map(k=>({categoria:CAT[k].n,gastado:V.tot[k]||0,tope:S.techos[k]||null,mes_pasado:V.ptot[k]||0})),
     ultimos_gastos:S.gastos.filter(g=>!g.pulldex).slice(0,25).map(g=>({fecha:g.fecha,que:g.descripcion,monto:g.monto,categoria:(CAT[g.categoria_clave]||CAT.otros).n})),
     te_aguantaste_este_mes:getEv(),sueldo:SUELDO,a_fintual_si_te_mantienes:V.proy.fin,patrimonio:S.aj.patrimonio||null,
@@ -2297,7 +2341,7 @@ async function hacerAccion(id){const a=(S.acc||{})[id],el=$(id);if(!a||!el)retur
   try{if(a.tipo==='anotar_gasto'){await api('gastos',{m:'POST',b:{fecha:hoyISO(),descripcion:a.descripcion||'Gasto',monto:a.monto,tarjeta:S.card,fuente:'app'}});await loadAll()}
     else await saveAj('deseos',[{id:Date.now(),que:a.descripcion||'Algo que quiero',monto:a.monto,desde:new Date().toISOString(),estado:'espera'},...DES()].slice(0,40),true);
     el.innerHTML=`<b>✅ ${a.tipo==='anotar_gasto'?`Anotado: ${fmt(a.monto)} · ${a.descripcion}`:`En tu lista: ${a.descripcion}. En 72 horas te pregunto`}</b>`;
-    if(a.tipo==='anotar_gasto'&&S.V.esActual)el.insertAdjacentHTML('beforeend',`<small>${S.V.diario>=0?`Hoy te quedan ${fmt(S.V.diario)}`:`Hoy te pasaste por ${fmt(-S.V.diario)}`}</small>`)}
+    if(a.tipo==='anotar_gasto'&&S.V.esActual)el.insertAdjacentHTML('beforeend',`<small>${S.V.W.queda>=0?`Esta semana te quedan ${fmt(S.V.W.queda)}`:`Esta semana te pasaste por ${fmt(-S.V.W.queda)}`}</small>`)}
   catch(e){console.error(e);el.querySelectorAll('button').forEach(b=>b.disabled=false);toast('❌ No se pudo, intenta de nuevo')}}
 
 async function callIA(q,datos,hist){try{const r=await fetch(SB+'/functions/v1/consejo',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json','x-app-key':getKey()},body:JSON.stringify({pregunta:q,datos,historial:hist})});
