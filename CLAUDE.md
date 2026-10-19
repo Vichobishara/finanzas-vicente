@@ -217,7 +217,7 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
    bono o comisión, dónde poner cada peso, sueldos, Fintual, patrimonio, impuestos y APV) y "Por pagar" vive dentro de
    "Lo que debes"; el "próximo paso" solo aparece cuando hay algo concreto (impuestos). Antes de agregar algo nuevo a una pestaña, ver qué se puede esconder.
 8. **Números en casillas, no en frases.** Los totales se muestran con `tiles()` (etiqueta corta + número compacto con `kCLP`,
-   estado ok/bad con color): Gastos (gastos · cuotas · te pasaste/te quedan), Cuotas (te falta · libre en · otra cuota),
+   estado ok/bad con color): Gastos (gastos · cuotas · te pasaste/te quedan; si hay negocio, otra fila `negBolsillo()`: negocio neto · de tu bolsillo = personal + negocio · tu sueldo, que abre Ver todos en Negocio), Cuotas (te falta · libre en · otra cuota),
    Lo que debes (tarjetas · cuotas · deudas), meta en Plata (llegas a · al mes · te falta). Fuera de Hoy el encabezado se achica
    (`body[data-tab]`): el título grande es el de la pestaña. Colores de categoría = paleta validada para daltonismo (`SEG`: comida azul,
    casa naranjo, suscripciones aqua, ropa amarillo, ocio rosado, tech violeta; el resto gris "Otros"); no usar rojo ni verde

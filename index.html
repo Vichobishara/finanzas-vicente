@@ -1112,7 +1112,7 @@ function renderGastos(){
     const pg=S.prev.filter(g=>g.fecha<=c).reduce((s,g)=>s+g.monto,0),d=V.gast-pg;
     if(pg>0)cmp=`<div class="cmp">${d>0?'📈':'📉'} A esta altura de ${V.pvL} llevabas ${fmt(pg)}. Este mes vas <b style="color:${d>0?'var(--red-d)':'var(--green-d)'}">${fmt(Math.abs(d))} ${d>0?'más arriba':'más abajo'}</b>.</div>`}
   $('g-res').innerHTML=`<div class="card sum"><div class="k">${V.esActual?`Llevas gastado en ${V.mes} (hasta el 22)`:`Gastaste en ${V.mes}`}</div><div class="v">${fmt(V.total)} <span>de ${fmt(S.ppto)}</span></div>
-    ${tiles([['Gastos',kCLP(V.gast)],['Cuotas',kCLP(V.cuo)],V.queda<0?['Te pasaste',kCLP(-V.queda),'bad']:['Te quedan',kCLP(V.queda),'ok']])}
+    ${tiles([['Gastos',kCLP(V.gast)],['Cuotas',kCLP(V.cuo)],V.queda<0?['Te pasaste',kCLP(-V.queda),'bad']:['Te quedan',kCLP(V.queda),'ok']])}${negBolsillo()}
     <div class="pace"><div style="width:${Math.min(100,pc)}%;background:${col}"></div>${V.esActual?`<i style="left:${Math.min(100,ideal)}%"></i>`:''}</div>
     <div class="pace-l"><span>${V.esActual?`La raya: donde deberías ir hoy (${ideal}%)`:`${fmt(V.cuo)} fueron cuotas y fijos`}</span><b style="color:${col}">${pc}%</b></div>${segCats()}${cmp}</div>${diaADia(ini,cierre,largo,hoy)}`;
   const nr=(S.revisar||[]).length,no=(V.items.otros||[]).length;
@@ -1613,7 +1613,7 @@ async function saveVenta(){const m=val('v-monto');if(!m){toast('Pon el monto');r
 function openMovs(k){S.mv={q:'',k:k||''};const ks=[...KS,'otros'].filter(c=>S.gastos.some(g=>g.categoria_clave===c));
   openSheet(`<h3>Todos los gastos</h3><p>${perL(S.periodo)} · toca uno para editarlo, devolverlo o borrarlo.</p>
   <div class="srch">${SVG('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>')}<input id="mv-q" placeholder="Buscar (ej: jumbo, uber)" autocomplete="off" oninput="S.mv.q=this.value;mvPinta()"></div>
-  <div class="fchips" id="mv-c"><button class="chip ${!S.mv.k?'on':''}" data-k="" onclick="mvCat(this)">Todo</button>${ks.map(c=>`<button class="chip ${S.mv.k===c?'on':''}" data-k="${c}" onclick="mvCat(this)">${(CAT[c]||CAT.otros).ic} ${(CAT[c]||CAT.otros).n}</button>`).join('')}${S.gastos.some(g=>g.pulldex)?`<button class="chip" data-k="neg" onclick="mvCat(this)">🧩 Negocio</button>`:''}</div>
+  <div class="fchips" id="mv-c"><button class="chip ${!S.mv.k?'on':''}" data-k="" onclick="mvCat(this)">Todo</button>${ks.map(c=>`<button class="chip ${S.mv.k===c?'on':''}" data-k="${c}" onclick="mvCat(this)">${(CAT[c]||CAT.otros).ic} ${(CAT[c]||CAT.otros).n}</button>`).join('')}${S.gastos.some(g=>g.pulldex)?`<button class="chip ${S.mv.k==='neg'?'on':''}" data-k="neg" onclick="mvCat(this)">🧩 Negocio</button>`:''}</div>
   <div id="mv-t" class="lead" style="padding:6px 2px 0"></div><div class="card" id="mv-l"></div>`);mvPinta()}
 function mvCat(b){S.mv.k=b.dataset.k;b.parentNode.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));mvPinta()}
 function mvPinta(){const q=(S.mv.q||'').trim().toLowerCase(),k=S.mv.k;
@@ -1640,6 +1640,10 @@ function openDia(f){const L=S.gastos.filter(g=>g.fecha===f),P=L.filter(g=>!g.pul
 // daltonismo: comida, casa, suscripciones, ropa, ocio, tech); el resto va junto como "Otros" y las cuotas al final.
 const SEG=['comida','casa','fijo','ropa','ocio','tech'];
 // Casillas de números: etiqueta chica + número grande (estado opcional: ok / bad)
+// Negocio (PULLDEX) no entra al presupuesto, pero sale del mismo bolsillo: se muestra aparte, debajo de "Llevas gastado".
+function negBolsillo(){const N=S.gastos.filter(g=>g.pulldex&&(g.estado||'ok')==='ok');if(!N.length)return'';
+  const neg=N.reduce((s,g)=>s+g.monto,0),tot=S.V.total+neg;
+  return `<div onclick="openMovs('neg')" style="cursor:pointer">${tiles([[neg<0?'🧩 Negocio ganó':'🧩 Negocio',kCLP(Math.abs(neg)),neg<0?'ok':''],['De tu bolsillo',kCLP(tot),tot>SUELDO?'bad':''],['Tu sueldo',kCLP(SUELDO)]])}</div>`}
 const tiles=L=>`<div class="tiles">${L.map(([l,v,c])=>`<div class="tile ${c||''}"><small>${l}</small><b>${v}</b></div>`).join('')}</div>`;
 function segCats(){const V=S.V,t=V.tot,E=SEG.filter(k=>t[k]>0).map(k=>[CAT[k].n,t[k],CAT[k].c]),ot=Object.entries(t).filter(([k,v])=>v>0&&!SEG.includes(k)).reduce((s,[,v])=>s+v,0);
   if(ot)E.push(['Otros',ot,'#A3A3AE']);if(V.cuo)E.push(['Cuotas y fijos',V.cuo,'#52514e']);if(!E.length)return'';

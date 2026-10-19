@@ -244,6 +244,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  // Todos los gastos: buscar y agrupar por día
  w.eval('openMovs()');d.getElementById('mv-q').value='jumbo';w.eval("S.mv.q='jumbo';mvPinta()");
  checks['todos los gastos: buscar con total y días']=t('mv-l').includes('Jumbo')&&t('mv-t').includes('1 gasto')&&t('mv-l').includes('Hoy');w.eval('closeSheet()');
+ checks['gastos: negocio aparte y total de tu bolsillo']=t('g-res').includes('Negocio ganó')&&t('g-res').includes('De tu bolsillo')&&t('g-res').includes('Tu sueldo');
  checks['gastos: día a día y barra por categoría']=t('g-res').includes('Día a día')&&!!d.querySelector('#g-res .cats-seg');
  // Decidir: 3 preguntas y consejo; a los 3 días aparece en Hoy
  w.eval('openCheck()');d.getElementById('a-monto').value='$54.000';d.getElementById('a-desc').value='lentes';w.eval("evalCheck();dqSel('nec','q');dqSel('par','s');dqSel('uso',1)");
