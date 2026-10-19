@@ -513,6 +513,28 @@ body:not(.ready) .mes-b .chev{display:none}
 .gu .chat .bub.el{animation:gu .4s .5s both}
 
 /* ---------- Modo oscuro: sigue al iPhone. Mismos componentes, colores propios (no un "invertir") ---------- */
+/* ---------- Estilo v2 (19-10-2026): barra flotante oscura con píldora, recuadro tipo tarjeta, dona en Gastos ---------- */
+.nav{display:none;grid-template-columns:none;width:min(calc(100% - 28px),400px);padding:6px;background:#121217;border:none;border-radius:99px;box-shadow:0 18px 40px -12px rgba(18,18,23,.55);-webkit-backdrop-filter:none;backdrop-filter:none}
+body.ready .nav{display:flex}
+.nav button,.nav button.on{width:auto;flex:1 1 0;flex-direction:row;height:52px;gap:7px;padding:0;font-size:14px;font-weight:700;color:rgba(255,255,255,.55)}
+.nav button span{display:none}.nav button svg.i{width:22px;height:22px}
+.nav button.on{flex:0 0 auto;padding:0 18px 0 14px;color:#121217}
+.nav button.on span{display:inline;line-height:1;animation:navIn .35s}
+.nav-pill{height:52px;top:6px;background:#fff;box-shadow:0 6px 16px -6px rgba(0,0,0,.45)}
+.nav i,.nav button.on i{border-color:#121217;top:5px;left:calc(50% + 5px);right:auto}.nav button.on i{left:auto;right:-2px;top:-2px}
+.hero{border-radius:32px;padding:22px 22px 18px}
+.hero:before{content:'';position:absolute;pointer-events:none;width:260px;height:260px;border-radius:50%;border:38px solid rgba(255,255,255,.07);right:-120px;bottom:-140px}
+.h-amt{font-size:48px;white-space:nowrap}
+.h-lbl{letter-spacing:.1px}
+.act{border-radius:22px}
+.card{border-radius:26px}
+.dona{display:grid;grid-template-columns:132px 1fr;gap:16px;align-items:center;margin:16px 0 6px}
+.dona svg{width:132px;height:132px;transform:rotate(-90deg)}
+.dona .c{position:relative}.dona .c div{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.dona .c small{font-size:11px;color:var(--sec);font-weight:600}.dona .c b{font-size:17px;font-weight:800;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
+.dona ul{list-style:none;display:flex;flex-direction:column;gap:7px;font-size:13px;min-width:0}
+.dona li{display:flex;align-items:center;gap:8px;min-width:0}.dona li i{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--c)}
+.dona li span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--sec)}.dona li b{font-variant-numeric:tabular-nums;font-weight:700}
 @media (prefers-color-scheme: dark){
 :root{color-scheme:dark;--bg:#0B0B0F;--bg2:#16161B;--bg3:#24242C;--card:#16161B;--border:#2A2A33;--text:#F4F4F7;--sec:#A3A3AE;--hint:#6E6E7A;
   --ac:#F4F4F7;--ac-d:#F4F4F7;--ac-t:#2A2A33;--navy:#26262E;--green-d:#47CD89;--red-d:#F97066;--amber-d:#FDB022;--sh:0 1px 2px rgba(0,0,0,.4),0 10px 30px -12px rgba(0,0,0,.6)}
@@ -534,7 +556,7 @@ body:not(.ready) .mes-b .chev{display:none}
 .pill.bad,.tile.bad,.verdict.bad,.btn.d,.lg-msg.mal{background:rgba(240,68,56,.14);border-color:rgba(240,68,56,.3)}
 .verdict.neg{background:rgba(122,90,248,.16);border-color:rgba(122,90,248,.35)}.verdict.neg .vt{color:#BDB4FE}
 .nav{background:rgba(22,22,27,.94);border-color:rgba(255,255,255,.08);box-shadow:0 14px 34px -10px rgba(0,0,0,.6)}
-.nav-pill{background:rgba(255,255,255,.1)}.nav button.on{color:var(--text)}.nav i{border-color:var(--card)}
+.nav{background:#1C1C22;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 18px 40px -12px rgba(0,0,0,.7)}.nav-pill{background:#F4F4F7}.nav button.on{color:#121217}.nav i{border-color:#1C1C22}
 .sk{background:linear-gradient(90deg,#1E1E25 30%,#2A2A33 50%,#1E1E25 70%);background-size:300% 100%}
 .ia-a{background:var(--bg3)}.ia-q{background:#F4F4F7;color:#121217}
 .toast{background:#F4F4F7;color:#121217}.toast button{background:rgba(18,18,23,.12);color:#121217}
@@ -1686,8 +1708,13 @@ const SEG=['comida','casa','fijo','ropa','ocio','tech'];
 const tiles=L=>`<div class="tiles">${L.map(([l,v,c])=>`<div class="tile ${c||''}"><small>${l}</small><b>${v}</b></div>`).join('')}</div>`;
 function segCats(){const V=S.V,t=V.tot,E=SEG.filter(k=>t[k]>0).map(k=>[CAT[k].n,t[k],CAT[k].c]),ot=Object.entries(t).filter(([k,v])=>v>0&&!SEG.includes(k)).reduce((s,[,v])=>s+v,0);
   if(ot)E.push(['Otros',ot,'#A3A3AE']);if(V.cuo)E.push(['Cuotas y fijos',V.cuo,'#52514e']);if(!E.length)return'';
-  return `<div class="cats-seg">${E.map(([n,v,c])=>`<div style="flex:${v};background:${c}" title="${n}: ${fmt(v)}"></div>`).join('')}</div>
-  <div class="cats-l">${E.map(([n,v,c])=>`<span style="--c:${c}">${n} ${kCLP(v)}</span>`).join('')}</div>`}
+  // Dona (como las apps de banco): cada categoría un arco, el total al centro; la leyenda muestra las 4 que más pesan + el resto.
+  const T=E.reduce((s,x)=>s+x[1],0),R=52,L=2*Math.PI*R,gap=E.length>1?3:0;let o=0;
+  const arcs=E.map(([n,v,c])=>{const l=Math.max(0,v/T*L-gap),a=`<circle cx="66" cy="66" r="${R}" fill="none" stroke="${c}" stroke-width="16" stroke-linecap="butt" stroke-dasharray="${l} ${L-l}" stroke-dashoffset="${-o}"><title>${n}: ${fmt(v)}</title></circle>`;o+=v/T*L;return a}).join('');
+  const ord=[...E].sort((a,b)=>b[1]-a[1]),ver=ord.slice(0,4),resto=ord.slice(4).reduce((s,x)=>s+x[1],0);
+  return `<div class="dona"><div class="c"><svg viewBox="0 0 132 132">${arcs}</svg><div><small>Total</small><b>${kCLP(T)}</b></div></div>
+  <ul>${ver.map(([n,v,c])=>`<li style="--c:${c}"><i></i><span>${n}</span><b>${kCLP(v)}</b></li>`).join('')}${resto?`<li style="--c:var(--hint)"><i></i><span>${ord.length-4} más</span><b>${kCLP(resto)}</b></li>`:''}</ul></div>
+  <div class="cats-seg" style="display:none">${E.map(([n,v,c])=>`<div style="flex:${v};background:${c}"></div>`).join('')}</div>`}
 // Día a día: cuánto gastaste cada día vs. lo que podías gastar por día (la línea verde).
 function diaADia(ini,cierre,largo,hoy){const V=S.V,by={},ISO=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   S.gastos.filter(g=>!g.pulldex).forEach(g=>by[g.fecha]=(by[g.fecha]||0)+g.monto);

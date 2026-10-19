@@ -106,7 +106,7 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   y "NOMBRE 01/12" (lo que se cobra cada mes). Si cuota × N = precio, son sin interés.
 - Gasto → **Devolví algo**: baja el monto (deja "· devolución $X" en la descripción); si devolvió todo queda `ignorado`.
 - Anotar gasto muestra en qué categoría cae mientras escribes (`aCat`) y se puede cambiar; si la cambias, se aprende la regla.
-- Gastos: barra de colores por categoría, gráfico **Día a día** (cada día vs. lo que podías gastar por día), listas agrupadas
+- Gastos: dona por categoría (`segCats()`: total al centro, leyenda con las 4 que más pesan + "N más"), gráfico **Día a día** (cada día vs. lo que podías gastar por día), listas agrupadas
   por día con su total (tocar el gráfico o el encabezado de un día abre `openDia`: sus gastos vs. la plata del día), y "Ver todos" con buscador y filtro por categoría.
 - **Decidir compras** (¿Me alcanza?): 3 preguntas (¿lo necesitas o lo quieres?, ¿tienes algo parecido?, ¿cuántas veces al mes?)
   → consejo: comprar / esperar 72 horas / no, con costo por uso a 2 años. Las respuestas se guardan en el deseo (`por`).
@@ -204,7 +204,7 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 
 ## Principios de UX (no negociables)
 1. La pestaña **Hoy** es una pantalla y dos botones: **Anotar gasto** y **¿Me alcanza?** (más los avisos y la tarjeta "Hoy anotaste" con los gastos del día, o "Nada anotado hoy"). Lo demás vive
-   en la barra de abajo (5 pestañas iguales con ícono y nombre: Hoy, Gastos, Cuotas, Plata, Coach; anotar está en Hoy y en el
+   en la barra de abajo (barra flotante oscura con 5 pestañas: Hoy, Gastos, Cuotas, Plata, Coach; la activa es una píldora blanca con ícono y nombre, las otras solo ícono; anotar está en Hoy y en el
    botón "+ Anotar" de Gastos): **Cuotas** (cuánto se va al mes en cuotas y fijos,
    un solo recuadro con lo que pagas al mes, la regla del 30%, lo que falta en total y los próximos 6 meses; (gráfico de 6 meses: verde = bajo la regla del 30%) "¿Puedo comprar algo
    en cuotas?", "Lo que debes" y cada cuota en una fila corta; subir cartola / agregar a mano como botones chicos), **Gastos** (cómo vas vs. donde deberías ir hoy, pendientes, categorías, últimos gastos, cuotas,
