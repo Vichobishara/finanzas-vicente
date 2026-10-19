@@ -228,7 +228,12 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
    (`body[data-tab]`): el título grande es el de la pestaña. Colores de categoría = paleta validada para daltonismo (`SEG`: comida azul,
    casa naranjo, suscripciones aqua, ropa amarillo, ocio rosado, tech violeta; el resto gris "Otros"); no usar rojo ni verde
    de estado para categorías. Gráficos: barras ≤ 24px con punta redondeada y base recta, línea de referencia continua.
-9. **Modo oscuro** sigue al iPhone (`@media (prefers-color-scheme: dark)` al final del CSS): redefine las variables de color y los
+9. **Sin cajas ni emojis** (19-10-2026, Vicho: "sácale todo lo de vibe code", referencias = apps de banco tipo Revolut/Pillar):
+   solo el recuadro de Hoy es una tarjeta. Lo demás son secciones con título (`.card` sin fondo ni sombra) y filas sueltas sobre el fondo,
+   con íconos de línea en círculos (`ICO`, `icoCat(k)` con el color de la categoría al 15%). Los bolsillos del hero son círculos con
+   ícono (como Send / Receive). Avisos (`.nudge`) = filas con botón de borde. `desemoji()` (MutationObserver) cambia los `.ic` con emoji
+   por íconos de línea (`EMO`) y quita el emoji del inicio de avisos, títulos de hojas y botones: no agregues emojis nuevos a la interfaz.
+10. **Modo oscuro** sigue al iPhone (`@media (prefers-color-scheme: dark)` al final del CSS): redefine las variables de color y los
    pocos componentes con blanco fijo (botones principales pasan a claros con texto oscuro). Todo color nuevo va como variable
    o con su versión oscura en ese bloque. Coach no cuenta el APV como pendiente (es opcional para Vicho; si lo abre, suma como logro).
 

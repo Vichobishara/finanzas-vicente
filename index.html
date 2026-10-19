@@ -535,11 +535,45 @@ body.ready .nav{display:flex}
 .dona ul{list-style:none;display:flex;flex-direction:column;gap:7px;font-size:13px;min-width:0}
 .dona li{display:flex;align-items:center;gap:8px;min-width:0}.dona li i{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--c)}
 .dona li span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--sec)}.dona li b{font-variant-numeric:tabular-nums;font-weight:700}
+/* ---------- Estilo v3: sin cajas. Secciones con título y filas sueltas sobre el fondo; solo el recuadro de Hoy es una tarjeta ---------- */
+:root{--bg:#F6F6F8;--card:#F6F6F8}
+.card{background:none;box-shadow:none;border-radius:0;padding:0;margin-bottom:30px}
+.card-h{padding:4px 0 6px}.card-h h2{font-size:19px;letter-spacing:-.5px}
+.card-h button{background:none;padding:6px 0;color:var(--sec);font-size:13.5px}
+.crow,.row,.hab,.lever{border-bottom:none}
+.crow{padding:11px 0}
+.ic{width:46px;height:46px;background:var(--bg2);box-shadow:0 1px 2px rgba(18,18,23,.06)}
+.ico{background:color-mix(in srgb,var(--c,#8E8E99) 15%,transparent);color:var(--c,var(--sec));box-shadow:none}.ico svg.i{width:21px;height:21px}
+.crow .bar{height:4px;margin-top:7px}
+.nudge{background:none;box-shadow:none;border-radius:0;padding:12px 0;margin:0;border-bottom:1px solid var(--border)}
+.nudge:last-child{border-bottom:none}
+.nudge button{background:none;color:var(--text);border:1.5px solid var(--text);padding:7px 13px}
+#nudges{margin-top:4px}
+.tip{background:none;box-shadow:none;border-radius:0;padding:12px 0;margin:0}
+.win{background:none;padding:4px 0;text-align:left;border-radius:0}
+.tiles{gap:0;margin:14px 0 6px}
+.tile,.sheet .tile{background:none;border-radius:0;padding:0 12px;border-left:1px solid var(--border)}.tile:first-child{border-left:none;padding-left:0}
+.tile b{font-size:19px}
+.cmp{background:none;padding:0;border-radius:0;margin-top:14px}
+.sum{padding:0}
+.hero{box-shadow:0 22px 40px -22px rgba(18,18,23,.55)}.hero.ok,.hero.warn,.hero.bad{box-shadow:0 22px 40px -22px rgba(18,18,23,.45)}
+.h-msg{background:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0;padding:12px 0 0;border-top:1px solid rgba(255,255,255,.25)}
+.bol{gap:4px;margin:16px 0 14px}
+.bol button,.bol .mal{background:none;padding:0;gap:3px}
+.bol i{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+.bol i svg.i{width:22px;height:22px}
+.bol .mal i{background:rgba(0,0,0,.2)}.bol .hoy i{background:#fff;color:#121217}.bol .hoy{box-shadow:none}
+.act.s{background:var(--bg2)}
+.tile.bad,.tile.ok{background:none!important}
+.sheet .card{background:none!important;box-shadow:none!important;padding:0!important}
+.next{background:none!important;box-shadow:none!important;padding-left:0!important;padding-right:0!important}
+.ia{background:none!important;box-shadow:none!important;padding:0!important}
+.avatar{border:none;box-shadow:none}
 @media (prefers-color-scheme: dark){
-:root{color-scheme:dark;--bg:#0B0B0F;--bg2:#16161B;--bg3:#24242C;--card:#16161B;--border:#2A2A33;--text:#F4F4F7;--sec:#A3A3AE;--hint:#6E6E7A;
+:root{color-scheme:dark;--bg:#0B0B0F;--bg2:#1C1C22;--bg3:#24242C;--card:#0B0B0F;--border:#2A2A33;--text:#F4F4F7;--sec:#A3A3AE;--hint:#6E6E7A;
   --ac:#F4F4F7;--ac-d:#F4F4F7;--ac-t:#2A2A33;--navy:#26262E;--green-d:#47CD89;--red-d:#F97066;--amber-d:#FDB022;--sh:0 1px 2px rgba(0,0,0,.4),0 10px 30px -12px rgba(0,0,0,.6)}
 .avatar{border-color:var(--bg)}
-.act.p,.btn.p,.cal,.tab-h button,.nudge button,.hab button,.tip .go{background:#F4F4F7;color:#121217}
+.act.p,.btn.p,.cal,.tab-h button,.hab button,.tip .go{background:#F4F4F7;color:#121217}.nudge button{background:none;color:var(--text);border-color:var(--text)}
 .act.p i{background:#121217;color:#F4F4F7}
 .btn.p[style*="bg3"]{background:var(--bg3)!important;color:var(--text)!important}
 .chip,.sugs button{background:var(--card);border-color:var(--border);color:var(--text)}
@@ -638,7 +672,7 @@ body.ready .nav{display:flex}
   <div id="coach-hab"></div>
   <div class="card" id="deseos-c"></div>
   <div class="card" id="logros-c"></div>
-  <div class="card ia"><h4>🤖 Pregúntale a Claude</h4><p>Con tus números, tus cuotas, tu fondo y tus deudas. Pregunta como le hablarías a un amigo.</p>
+  <div class="card ia"><h4>Pregúntale a Claude</h4><p>Con tus números, tus cuotas, tu fondo y tus deudas. Pregunta como le hablarías a un amigo.</p>
     <button class="btn p" style="margin:4px 0 14px" onclick="openChat()">Abrir el chat</button>
   </div>
   <h3 class="sec-t" id="m-tips">Consejos con tus números</h3>
@@ -692,6 +726,51 @@ const CAT={
  casa:{n:'Casa',ic:'🏠',c:'#eb6834'}, ropa:{n:'Ropa',ic:'👕',c:'#eda100'},
  otros:{n:'Sin categoría',ic:'❓',c:'#A3A3AE'}
 };
+// Íconos de línea por categoría (estilo apps de banco: círculo con el color de la categoría, sin emojis).
+const ICO={comida:'<path d="M3 2v7a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6a2 2 0 0 0 2 2h3zm0 0v7"/>',
+ fijo:'<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+ tech:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/>',
+ casa:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+ ropa:'<path d="M20.4 6.6 16 4a4 4 0 0 1-8 0L3.6 6.6a1 1 0 0 0-.4 1.3l1.5 3a1 1 0 0 0 1.3.4L7 11v9a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-9l1 .3a1 1 0 0 0 1.3-.4l1.5-3a1 1 0 0 0-.4-1.3z"/>',
+ transporte:'<rect x="4" y="3" width="16" height="15" rx="3"/><path d="M4 11h16M8 21v-3M16 21v-3"/>',
+ salud:'<path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/>',
+ ocio:'<rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4M8 10v4M15 13h.01M18 11h.01"/>',
+ coleccionables:'<rect x="7" y="3" width="12" height="16" rx="2"/><path d="M5 7v12a2 2 0 0 0 2 2h9"/>',
+ viajes:'<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>',
+ otros:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+ super:'<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 1.9-1.5L21 8H6"/>',
+ oficina:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>',
+ delivery:'<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/>',
+ gustos:'<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/>'};
+const icoCat=k=>{const c=(CAT[k]||CAT.otros).c,gris=c==='#A3A3AE';return`<div class="ic ico" style="${gris?'':`--c:${c}`}">${SVG(ICO[k]||ICO.otros)}</div>`};
+// Sin emojis en la interfaz (Vicho: "sácale todo lo de vibe code"): los íconos .ic con emoji pasan a íconos de línea y el emoji
+// al inicio de avisos, títulos de hojas y notas se quita. Corre sobre todo lo que se dibuja (MutationObserver, una vez por cuadro).
+const EMO={'🧾':'<path d="M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2z"/><path d="M8 9h8M8 13h6"/>',
+ '🔗':'<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+ '🧩':'<path d="M12 2 2 7l10 5 10-5z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/>',
+ '📥':'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.1z"/>',
+ '📍':'<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+ '📅':'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+ '💳':'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+ '🏦':'<path d="M3 21h18M5 21V10M19 21V10M9 21V10M15 21V10M2 10 12 3l10 7z"/>',
+ '🧮':'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h8"/>',
+ '💰':'<circle cx="12" cy="12" r="9"/><path d="M14.5 9a2.5 2 0 0 0-2.5-1.5c-1.5 0-2.5.8-2.5 2s1 1.7 2.5 2 2.5.8 2.5 2-1 2-2.5 2A2.5 2 0 0 1 9.5 15M12 6v1.5M12 16.5V18"/>',
+ '👥':'<circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1M16 3.5a4 4 0 0 1 0 7.5M22 21v-1a6 6 0 0 0-4-5.6"/>',
+ '📱':'<rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/>',
+ '📈':'<path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>'};
+Object.assign(EMO,{'📌':EMO['📍'],'🗓':EMO['📅'],'🧰':ICO.oficina,'💼':ICO.oficina,'🛍':ICO.tech,'🏠':ICO.casa,'🎁':ICO.gustos,'🔁':ICO.fijo,'🍽':ICO.comida,
+ '🃏':ICO.coleccionables,'🎮':ICO.ocio,'🚇':ICO.transporte,'💈':ICO.salud,'✈':ICO.viajes,'👕':ICO.ropa,'❓':ICO.otros});
+const EMO_RE=/^\s*[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}][️‍⃣\p{Extended_Pictographic}]*\s*/u;
+function desemoji(root){if(!root||!root.querySelectorAll)return;
+  root.querySelectorAll('.ic:not(.ico)').forEach(el=>{const t=el.textContent.trim();if(el.children.length||!t||!EMO_RE.test(t))return;
+    el.innerHTML=SVG(EMO[t.replace(/️/g,'')]||ICO.otros);el.classList.add('ico');el.style.fontSize=''});
+  root.querySelectorAll('.nudge>div:first-child,.cmp,.win,.sheet h3,.card-h h2,.sec-t,.tip .cm2,.lever>div').forEach(el=>{
+    const w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())&&!n.nodeValue.trim());
+    if(n&&EMO_RE.test(n.nodeValue))n.nodeValue=n.nodeValue.replace(EMO_RE,'')});
+  root.querySelectorAll('.btn,.sheet button,.tab button').forEach(el=>{const w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())&&!n.nodeValue.trim());
+    if(n&&EMO_RE.test(n.nodeValue)&&n.nodeValue.replace(EMO_RE,'').trim())n.nodeValue=n.nodeValue.replace(EMO_RE,'')});
+  root.querySelectorAll('.tip>i,.lever>i').forEach(el=>{if(EMO_RE.test(el.textContent))el.style.display='none'})}
+{let pend=0;new MutationObserver(()=>{if(pend)return;pend=1;requestAnimationFrame(()=>{pend=0;desemoji(document.body)})}).observe(document.documentElement,{childList:true,subtree:true})}
 const TJ={scotiabank:'Scotia',bci:'BCI',santander:'Santander',efectivo:'Efectivo',otro:'Transferencia'};
 const CORTE={scotiabank:22,bci:20};
 // Orden en que se muestran las categorías (Casa: lo de independizarse; cuenta para la meta Independizarme)
@@ -1040,11 +1119,11 @@ function semanaPlan(){const V=S.V,M=planMes(),P=M.P,f=V.Wd/7,freno=V.queda<0;
   const prox=Math.round(P.super+P.ofi_n*P.ofi_p+P.del_n*P.del_p+M.tr/SEMS+Math.max(0,M.gustos-gAntes-g.gustos)*7/Math.max(7,V.D0-V.Wd));
   return{M,P,pl,g,tot,gas,queda:tot-gas,q,nDel,delN,ofiQ:Math.max(0,Math.floor(q('oficina')/P.ofi_p)),freno,prox,f}}
 function bolsillos(W){const dw=new Date().getDay(),B=[
-  ['🛒','Súper',W.q('super')<0?'−'+kCLP(-W.q('super')):kCLP(W.q('super')),W.q('super')<0,dw===0],
-  ['🥗','Oficina',`${W.ofiQ} de ${Math.round(W.P.ofi_n*W.f)||W.P.ofi_n}`,W.q('oficina')<0,OFI_DIAS.includes(dw)],
-  ['🛵','Delivery',W.freno?'No':`${Math.max(0,W.delN-W.nDel)} de ${W.delN}`,W.nDel>W.delN||W.q('delivery')<0,false],
-  ['🎁','Gustos',W.freno?'No':W.q('gustos')<0?'−'+kCLP(-W.q('gustos')):kCLP(W.q('gustos')),W.q('gustos')<0||W.freno,false]];
-  return`<div class="bol">${B.map(([i,t,v,mal,hoy])=>`<button class="${mal?'mal':''} ${hoy?'hoy':''}" onclick="event.stopPropagation();openPlan()" aria-label="${t}: ${v}"><i>${i}</i><b>${v}</b><span>${t}</span></button>`).join('')}</div>`}
+  ['super','Súper',W.q('super')<0?'−'+kCLP(-W.q('super')):kCLP(W.q('super')),W.q('super')<0,dw===0],
+  ['oficina','Oficina',`${W.ofiQ} de ${Math.round(W.P.ofi_n*W.f)||W.P.ofi_n}`,W.q('oficina')<0,OFI_DIAS.includes(dw)],
+  ['delivery','Delivery',W.freno?'No':`${Math.max(0,W.delN-W.nDel)} de ${W.delN}`,W.nDel>W.delN||W.q('delivery')<0,false],
+  ['gustos','Gustos',W.freno?'No':W.q('gustos')<0?'−'+kCLP(-W.q('gustos')):kCLP(W.q('gustos')),W.q('gustos')<0||W.freno,false]];
+  return`<div class="bol">${B.map(([i,t,v,mal,hoy])=>`<button class="${mal?'mal':''} ${hoy?'hoy':''}" onclick="event.stopPropagation();openPlan()" aria-label="${t}: ${v}"><i>${SVG(ICO[i])}</i><b>${v}</b><span>${t}</span></button>`).join('')}</div>`}
 // La misión de hoy según el día (Vicho es indeciso: una sola cosa que hacer).
 function misionHoy(W){const dw=new Date().getDay(),P=W.P,del=Math.max(0,W.delN-W.nDel);let m;
   if(dw===0)m=`<b>Hoy toca:</b> súper (hasta ${fmt(Math.max(0,W.q('super'))||P.super)}) y cocinar 3 almuerzos para la semana.`;
@@ -1056,9 +1135,9 @@ function misionHoy(W){const dw=new Date().getDay(),P=W.P,del=Math.max(0,W.delN-W
 function openPlan(){const V=S.V;if(!V||!V.esActual){editPpto();return}const W=V.W,M=W.M,P=W.P;
   const fila=(t,k)=>`<tr><td>${t}</td><td>${fmt(W.pl[k])}</td><td>${fmt(W.g[k])}</td><td style="color:${W.q(k)<0?'var(--red-d)':'var(--green-d)'};font-weight:700">${W.q(k)<0?'−'+fmt(-W.q(k)):fmt(W.q(k))}</td></tr>`;
   const r=(n,t,v,sub)=>`<div class="row" style="align-items:flex-start"><span><b style="color:var(--text)">${n}. ${t}</b>${sub?`<br><small style="color:var(--sec)">${sub}</small>`:''}</span><b>${fmt(v)}</b></div>`;
-  openSheet(`<h3>📋 Tu plan</h3><p>${W.freno?`Te pasaste del mes por <b>${fmt(-V.queda)}</b>: hasta el 22 solo súper, oficina y metro.`:`El número de Hoy es <b>lo que te queda esta semana</b>. Cada lunes parte de nuevo.`}</p>
+  openSheet(`<h3>Tu plan</h3><p>${W.freno?`Te pasaste del mes por <b>${fmt(-V.queda)}</b>: hasta el 22 solo súper, oficina y metro.`:`El número de Hoy es <b>lo que te queda esta semana</b>. Cada lunes parte de nuevo.`}</p>
   <div class="card"><div class="card-h"><h2>Esta semana</h2><span class="pill">${V.Wd<7?`${V.Wd} días`:'lun a dom'}</span></div>
-   <table class="plan-t"><tr><th></th><th>Plan</th><th>Gastaste</th><th>Queda</th></tr>${fila('🛒 Súper','super')}${fila('🥗 Oficina','oficina')}${fila(`🛵 Delivery (${W.nDel} de ${W.delN})`,'delivery')}${fila('🚇 Transporte','transporte')}${fila('🎁 Gustos','gustos')}
+   <table class="plan-t"><tr><th></th><th>Plan</th><th>Gastaste</th><th>Queda</th></tr>${fila('Súper','super')}${fila('Oficina','oficina')}${fila(`Delivery${W.delN?` (${W.nDel} de ${W.delN})`:''}`,'delivery')}${fila('Transporte','transporte')}${fila('Gustos','gustos')}
    <tr><td><b>Total</b></td><td><b>${fmt(W.tot)}</b></td><td><b>${fmt(W.gas)}</b></td><td style="font-weight:800;color:${W.queda<0?'var(--red-d)':'var(--green-d)'}">${W.queda<0?'−'+fmt(-W.queda):fmt(W.queda)}</td></tr></table></div>
   <div class="card"><div class="card-h"><h2>Tu mes, en orden</h2></div>
    ${r(1,'Cuotas',V.cuo,'Se pagan solas. Cero cuotas nuevas.')}${r(2,'Suscripciones',M.fijos,'Apps, Apple, Claude…')}
@@ -1076,7 +1155,7 @@ function editPlan(){const P=PLAN(),i=(id,t,v,n)=>`<label style="display:block;fo
 async function savePlan(){const n=id=>Math.max(0,Math.round(+(($(id).value||'').replace(/\D/g,''))||0));
   const p={super:n('pl-s'),ofi_n:n('pl-on'),ofi_p:n('pl-op'),del_n:n('pl-dn'),del_p:n('pl-dp'),fijos:n('pl-f')};
   await saveAj('plan',p,true);closeSheet();toast('✅ Plan guardado');render()}
-function render(){const nm=NOMBRE();$('avatar').textContent=nm?nm[0].toUpperCase():'🙂';
+function render(){const nm=NOMBRE();$('avatar').innerHTML=nm?esc(nm[0].toUpperCase()):SVG('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>');
   // Negocio (PULLDEX) solo para quien tiene reglas o gastos de negocio
   $('m-neg-b').style.display=S.reglas.some(r=>r.negocio)||(S.gastos||[]).some(g=>g.pulldex)?'':'none';
 
@@ -1363,7 +1442,7 @@ function renderMetas(){const el=$('metas');if(!el)return;const F=S.aj.fondo,D=DE
    +`</div><div class="sec-t">Tus metas</div><div class="card menu"><button class="crow" onclick="openCasa()"><div class="ic">🏠</div><div class="cm"><b>Independizarme</b><small>${K?`${fmt(K.ahorrado||0)} de ${fmt(kn)}${K.mensual?` · llegas en ${perL(addM(S.actual,Math.ceil(Math.max(0,kn-(K.ahorrado||0))/K.mensual)))}`:''}`:'Calcula cuánto necesitas para irte a vivir solo'}</small></div>${K?`<span class="mini"><i style="width:${Math.min(100,(K.ahorrado||0)/kn*100)}%"></i></span>`:''}<span class="chev">›</span></button>`
    +fila('fondo-c','🎧',F?F.que:'Fondo gadgets',F?`${fmt(F.ahorrado)} de ${fmt(F.meta)}`:'Junta para tu próximo gadget sin tocar el mes',
       F?`<span class="mini"><i style="width:${Math.min(100,F.ahorrado/F.meta*100)}%"></i></span>`:'')
-   +'</div>'+`<button class="crow card" style="padding:14px 18px;margin-top:4px;background:var(--card)" onclick="openHerr()"><div class="ic">🧰</div><div class="cm"><b>Herramientas</b><small>Bono o comisión, sueldos, impuestos${dev>50000?` (el SII te debe ≈ ${fmt(dev)})`:''}, APV, Fintual</small></div><span class="chev">›</span></button>`;
+   +'</div>'+`<button class="crow" style="margin-top:4px" onclick="openHerr()"><div class="ic">🧰</div><div class="cm"><b>Herramientas</b><small>Bono o comisión, sueldos, impuestos${dev>50000?` (el SII te debe ≈ ${fmt(dev)})`:''}, APV, Fintual</small></div><span class="chev">›</span></button>`;
   S.herrExtra=fila('tax-c','🧾','Impuestos',!T?'Anota tus liquidaciones':dev>50000?`El SII te debe ≈ ${fmt(dev)}`:'Al día')+fila('apv-c','🎯',apvOk()?`APV ${new Date().getFullYear()}`:'APV (opcional)',apvOk()?`${fmt(a)} de ${fmt(APV_ANUAL)}`:'El Estado pone 15%, pero queda para la jubilación');
   // Si la hoja de detalle está abierta, que muestre lo nuevo (ej: después de "La pagué")
   const v=document.querySelector('#sheet [data-vista]');if(v&&sheetOn())v.innerHTML=cardSin(v.dataset.vista)}
@@ -1422,7 +1501,7 @@ function renderMeta(){
   const p=PAT(),col=p.colchon||0,tot=p.fintual+p.eth+p.cartas,meta=PERF().meta,{base,conBonos}=aportes(),r=proyMeta(meta,base),r2=proyMeta(meta,conBonos);
   const parts=[['Fintual',p.fintual-col,'#FEC84B'],['Colchón',col,'#7CD4FD'],['Cartas',p.cartas,'#FB923C'],['ETH',p.eth,'#A48AFB']].filter(x=>x[1]>0);
   el.style.display='block';
-  el.innerHTML=`<div class="t">🏆 Camino a tus primeros ${fmtM(meta)}</div><div class="v">${fmtM(tot)} <span style="font-size:14px;font-weight:600">de ${fmtM(meta)} · ${Math.floor(tot/meta*100)}%</span></div><div class="bar"><div style="width:${Math.min(100,tot/meta*100)}%"></div></div>
+  el.innerHTML=`<div class="t">Camino a tus primeros ${fmtM(meta)}</div><div class="v">${fmtM(tot)} <span style="font-size:14px;font-weight:600">de ${fmtM(meta)} · ${Math.floor(tot/meta*100)}%</span></div><div class="bar"><div style="width:${Math.min(100,tot/meta*100)}%"></div></div>
   ${tiles([['Llegas a',`${Math.floor(r.e)} años`],['Al mes',kCLP(base)],conBonos>base&&Math.floor(r2.e)<Math.floor(r.e)?['Con bonos',`${Math.floor(r2.e)} años`]:['Te falta',fmtM(Math.max(0,meta-tot))]])}
   <div class="seg">${parts.map(([,v,c])=>`<div style="flex:${v};background:${c}"></div>`).join('')}</div><div class="legend">${parts.map(([n,v,c])=>`<span style="--c:${c}">${n} ${fmtM(v)}</span>`).join('')}</div>`;
 }
@@ -1648,10 +1727,10 @@ function catRow(k){
   const pc=t?Math.min(100,Math.round(s/t*100)):(s?100:0);
   const col=t&&s>t?'#F04438':t&&s>t*.8?'#F79009':'var(--navy)',tcol=t&&s>t?'var(--red-d)':t&&s>t*.8?'var(--amber-d)':'var(--text)';
   const sub=!t?(s?'sin tope este mes':'bloqueado este mes 🚫'):s>t?`te pasaste por ${fmt(s-t)}${k==='casa'?' · es para independizarte':''}`:`te quedan ${fmt(t-s)}`;
-  return `<button class="crow" onclick="openCat('${k}')"><div class="ic">${c.ic}</div><div class="cm"><b>${c.n}</b><small>${sub}</small><div class="bar"><div style="width:${pc}%;background:${col}"></div></div></div><div class="ca" style="color:${tcol}">${fmt(s)}</div></button>`;
+  return `<button class="crow" onclick="openCat('${k}')">${icoCat(k)}<div class="cm"><b>${c.n}</b><small>${sub}</small><div class="bar"><div style="width:${pc}%;background:${col}"></div></div></div><div class="ca" style="color:${tcol}">${fmt(s)}</div></button>`;
 }
 function txHtml(g,sinF){const c=CAT[g.categoria_clave]||CAT.otros;const d=g.fecha.slice(8,10)+'/'+g.fecha.slice(5,7);
-  return `<button class="crow" onclick="openTx(${g.id})"><div class="ic">${c.ic}</div><div class="cm"><b>${g.descripcion}</b><small>${TJ[g.tarjeta]||g.tarjeta}${sinF?'':' · '+d}${g.pulldex?' · negocio':''}</small></div><div class="ca" style="color:${g.monto<0?'var(--green-d)':'var(--text)'}">${fmt(-g.monto)}</div></button>`}
+  return `<button class="crow" onclick="openTx(${g.id})">${icoCat(g.categoria_clave)}<div class="cm"><b>${g.descripcion}</b><small>${TJ[g.tarjeta]||g.tarjeta}${sinF?'':' · '+d}${g.pulldex?' · negocio':''}</small></div><div class="ca" style="color:${g.monto<0?'var(--green-d)':'var(--text)'}">${fmt(-g.monto)}</div></button>`}
 
 function openAll(){
   const V=S.V,ks=KS.filter(k=>V.tot[k]||S.techos[k]);
@@ -1765,8 +1844,8 @@ function renderCuotasTab(){const el=$('cuo-v');if(!el||!S.V)return;const V=S.V,p
     ${tiles([['Te falta',kCLP(falta)],['Libre en',libre?MES[+libre.slice(5)-1]+' '+libre.slice(2,4):'—'],ok?['Otra cuota','Puedes','ok']:['Otra cuota',baja?'En '+MES[+baja.p.slice(5)-1].toLowerCase():'No','bad']])}
     ${cq.length?`<div class="mes6" style="margin-top:12px">${M.map(m=>`<div class="${m.v<S.ppto*.3?'b':''}"><em>${kCLP(m.v)}</em><i style="height:${Math.max(3,m.v/mx*62)}px"></i>${MESL[+m.p.slice(5)-1].slice(0,3)}</div>`).join('')}</div><div class="pace-l" style="margin-top:6px"><span>Verde = bajo tu regla del 30%</span></div>`:''}</div>
     <button class="btn p" style="margin:0 0 14px" onclick="openCheck();setTimeout(()=>{const b=document.querySelectorAll('#nc-ch .chip')[3];if(b)b.click()},50)">🤔 ¿Puedo comprar algo en cuotas?</button>
-    <button class="crow" style="background:var(--card);border-radius:22px;padding:12px 16px;margin-bottom:14px;box-shadow:var(--sh)" onclick="openDebo()"><div class="ic">🧾</div><div class="cm"><b>Lo que debes</b><small>Para quedar en cero</small></div><b class="m-der">${fmt(debo().total)}</b><span class="chev">›</span></button>
-    <button class="crow" style="background:var(--card);border-radius:22px;padding:12px 16px;margin-bottom:14px;box-shadow:var(--sh)" onclick="openCalendario()"><div class="ic">📅</div><div class="cm"><b>Lo que se cobra solo</b><small>Suscripciones, fijos y cierres, día por día</small></div><span class="chev">›</span></button>
+    <button class="crow"  onclick="openDebo()"><div class="ic">🧾</div><div class="cm"><b>Lo que debes</b><small>Para quedar en cero</small></div><b class="m-der">${fmt(debo().total)}</b><span class="chev">›</span></button>
+    <button class="crow"  onclick="openCalendario()"><div class="ic">📅</div><div class="cm"><b>Lo que se cobra solo</b><small>Suscripciones, fijos y cierres, día por día</small></div><span class="chev">›</span></button>
     ${cq.length?`<div class="sec-t">Tus cuotas <small style="font-weight:500;color:var(--sec);font-size:12.5px">· toca una para adelantarla</small></div><div class="card">${cq.map(fila).join('')}</div>`:`<div class="card"><div class="empty">No tienes compras en cuotas 🎉</div></div>`}
     ${sin.length?`<div class="card"><div class="lead" style="padding-top:12px">Sin fecha de inicio: tócalas para decirme en qué cuota vas.</div>${sin.map(c=>`<button class="crow" onclick="openCuota(${c.id})"><div class="cm"><b>${esc(c.nombre)}</b><small>${c.total_cuotas} cuotas</small></div><div class="ca">${fmt(c.monto_cuota)}</div></button>`).join('')}</div>`:''}
     ${fijos.length?`<div class="sec-t">Fijos todos los meses</div><div class="card">${fijos.map(c=>`<button class="crow" onclick="openCuota(${c.id})"><div class="cm"><b>${esc(c.nombre)}</b><small>Todos los meses</small></div><div class="ca">${fmt(c.monto_cuota)}</div></button>`).join('')}</div>`:''}
