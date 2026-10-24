@@ -115,6 +115,7 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .step .n.ok{background:var(--green);color:#fff}
 .step b{font-size:14px;font-weight:600;display:block;margin-bottom:3px}
 .step small{font-size:12.5px;color:var(--sec);line-height:1.5;display:block}
+.step small b{display:inline;font-size:inherit;margin:0;color:var(--text)}
 .fine{font-size:11px!important;color:var(--hint)!important;line-height:1.5}
 .meta{padding:20px;border-radius:26px;margin-bottom:14px;background:linear-gradient(160deg,#2A2A33,var(--navy));color:#fff;border:none;width:100%;text-align:left;box-shadow:0 14px 30px -14px rgba(18,18,23,.6);position:relative;overflow:hidden}
 .meta:after{content:'';position:absolute;width:180px;height:180px;border-radius:50%;border:30px solid rgba(255,255,255,.05);top:-80px;right:-60px;pointer-events:none}
@@ -311,7 +312,7 @@ body[data-tab]:not([data-tab="hoy"]) .hdr{margin-bottom:10px}
 .tab-s{font-size:13.5px;color:var(--sec);margin:-8px 0 14px}
 body.ready .app{padding-bottom:calc(110px + var(--safe-b))}
 body.ready .toast{bottom:calc(84px + max(14px,var(--safe-b)))}
-.toast{position:fixed;bottom:calc(30px + var(--safe-b));left:50%;transform:translate(-50%,10px);background:var(--navy);color:#fff;padding:13px 20px;border-radius:99px;font-size:14px;font-weight:500;opacity:0;transition:.25s;z-index:200;white-space:nowrap;pointer-events:none;display:flex;align-items:center;gap:12px;box-shadow:0 12px 30px -8px rgba(18,18,23,.5)}
+.toast{position:fixed;bottom:calc(30px + var(--safe-b));left:50%;transform:translate(-50%,10px);background:var(--navy);color:#fff;padding:13px 20px;border-radius:22px;font-size:14px;font-weight:500;opacity:0;transition:.25s;z-index:200;white-space:normal;width:max-content;max-width:calc(100vw - 32px);text-align:center;line-height:1.35;pointer-events:none;display:flex;align-items:center;gap:12px;box-shadow:0 12px 30px -8px rgba(18,18,23,.5)}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 .toast.act{white-space:normal;max-width:calc(100vw - 24px);width:max-content;line-height:1.35}
 .toast.on.act{pointer-events:auto}
@@ -907,7 +908,7 @@ function navPill(x){const n=$('nav'),p=$('nav-pill'),b=n&&n.querySelector('butto
 const LS=(k,v)=>{try{return v===undefined?localStorage.getItem(k):v===null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){return null}};
 const G_SVG=`<svg class="gi" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>`,FACE_SVG=`<svg class="i" viewBox="0 0 24 24"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3M9 9v1M15 9v1M12 9v4h-1M9 16c1.7 1.3 4.3 1.3 6 0"/></svg>`;
 function lock(msg,tipo){document.body.classList.remove('ready');tab('hoy');$('hero-w').innerHTML='';
-  const fidPrimero=LS('fid-no')!=='1',nom=LS('nombre'),L=$('login');
+  const nom=LS('nombre'),fidPrimero=LS('fid-no')!=='1'&&(!!nom||LS('fid-ok')==='1'),L=$('login');
   const bFid=`<button id="fid-btn" class="lg-b ${fidPrimero?'p':'s'}" onclick="faceId()">${FACE_SVG}<span>Entrar con Face ID</span></button>`,
         bG=`<button id="g-btn" class="lg-b ${fidPrimero?'s':'p'}" onclick="google()">${G_SVG}<span>Continuar con Google</span></button>`;
   L.innerHTML=`<div class="lg-top"><img class="lg-logo" src="/apple-touch-icon.png" alt=""><h1>${nom?`Hola de nuevo,<br>${nom} 👋`:'Tu plata,<br>en orden.'}</h1>
@@ -998,7 +999,11 @@ async function bvGuardar(){const p=val('bv-ppto');if(p<100000)return toast('Pon 
     if(F.length)await api('cuotas',{m:'POST',b:F});
     if(BV.aho)await saveAj('patrimonio',{fintual:BV.aho,colchon:0,cartas:0,eth:0,fecha:hoyISO()},true);
     if(BV.deu)await saveAj('deudas',[{id:Date.now(),que:'Tarjetas (lo que debías al empezar)',monto:BV.deu,desde:hoyISO(),nota:'Págalo antes de cualquier gusto'}],true);
-    await saveAj('perfil',{nombre:BV.nombre,sueldo:BV.sueldo,nacimiento:y+'-06-30',meta:100000000,ppto:p,dia_pago:BV.dia,caja:BV.caja||0},true);
+    // Plan semanal (bolsillos de Hoy) a su escala: los montos por defecto son los de Vicho (~$670.000 de día a día).
+    // Suscripciones en 0: las de la bienvenida ya quedaron como fijos mensuales (cuotas recurrentes).
+    const dd=Math.max(100000,p-Object.values(BV.fijos).reduce((s,x)=>s+x,0)-(BV.cuo||0)),e=dd/670000,r5=x=>Math.max(1000,Math.round(x*e/1000)*1000);
+    await saveAj('plan',{super:r5(25000),ofi_n:2,ofi_p:r5(7000),del_n:1,del_p:r5(20000),fijos:0},true);
+    await saveAj('perfil',{nombre:BV.nombre,sueldo:BV.sueldo,nacimiento:y+'-06-30',meta:100000000,ppto:p,dia_pago:BV.dia,caja:BV.caja||0,creado:hoyISO()},true);
     toast(`🎉 Listo, ${BV.nombre}. Tu app está armada`);await loadAll();
     setTimeout(()=>BV.cdet==='cartola'&&BV.cuo?openCuotas():armaApp(),900);
   }catch(e){console.error(e);toast('❌ No se guardó. Revisa tu internet e intenta de nuevo');bvResumen()}}
@@ -1040,7 +1045,7 @@ async function _loadAll(){
     ]);
     if(!ok)return lock('Esa clave no funciona. Revisa que esté bien copiada.','mal');
     S.aj={};(aj||[]).forEach(a=>S.aj[a.clave]=a.valor);S.ahorros=ahorros||[];
-    api('rpc/atajo_url',{m:'POST',b:{}}).then(u=>ATAJO_URL=typeof u==='string'?u:'').catch(()=>{});api('rpc/es_admin',{m:'POST',b:{}}).then(v=>{S.admin=v===true;renderCoach()}).catch(()=>{});
+    api('rpc/atajo_url',{m:'POST',b:{}}).then(u=>ATAJO_URL=typeof u==='string'&&u?u:ATAJO_ICLOUD).catch(()=>{ATAJO_URL=ATAJO_ICLOUD});api('rpc/es_admin',{m:'POST',b:{}}).then(v=>{S.admin=v===true;renderCoach()}).catch(()=>{});
     SUELDO=PERF().sueldo||SUELDO;
     cats.forEach(c=>S.techos[c.clave]=c.techo);
     S.cuotas=cuotas;S.pptos={};pptos.forEach(p=>S.pptos[p.periodo]=p.monto);
@@ -1307,7 +1312,7 @@ function openRevision(){const V=S.V,l=semanaDe(),dom=ISOd(new Date(new Date(l+'T
 function cerrarSemana(){LS('revision-'+semanaDe(),'1');closeSheet();toast('✅ Semana cerrada. El lunes parte limpio');render()}
 
 // ---------- Racha: días seguidos sin pasarte del cupo del día (misma regla que privado.racha en la base) ----------
-function racha(){const[y,m]=S.actual.split('-').map(Number),cierre=new Date(y,m-1,22,12),ini=new Date(y,m-2,23,12),base=S.ppto-S.V.cuo;
+function racha(){const[y,m]=S.actual.split('-').map(Number),cierre=new Date(y,m-1,22,12),c0=PERF().creado,ini=new Date(Math.max(new Date(y,m-2,23,12),c0?new Date(c0+'T12:00:00'):0)),base=S.ppto-S.V.cuo;
   const G=S.gastos.filter(g=>!g.pulldex&&(g.estado||'ok')==='ok');let n=0;const d=new Date();d.setHours(12,0,0,0);
   while(d>=ini&&n<62){const f=ISOd(d);let antes=0,ese=0;G.forEach(g=>{if(g.fecha<f)antes+=g.monto;else if(g.fecha===f)ese+=g.monto});
     if(ese>(base-antes)/Math.max(1,Math.round((cierre-d)/864e5)+1))break;n++;d.setDate(d.getDate()-1)}
@@ -1541,6 +1546,8 @@ function icsEvt(uid,start,title,desc,rrule){return['BEGIN:VEVENT','UID:'+uid+'@f
 // Parte 2 es la automatización Transacción → atajo: iOS no deja crearla desde afuera, así que se guía con un iPhone dibujado.
 // El link de iCloud del atajo vive en secretos.atajo_url (rpc/atajo_url): se cambia sin publicar la app.
 // El código es cuentas.token_atajo de cada persona (rpc/mi_token_atajo). La cuenta de Vicho no usa código (atajo sin token).
+// ATAJO_ICLOUD: respaldo del link si secretos.atajo_url está vacío (se pega aquí cuando Vicho comparta el atajo maestro).
+const ATAJO_ICLOUD='';
 let ATAJO_URL='';
 const apConectado=()=>S.gastos.some(g=>g.fuente==='atajo');
 const fone=(tt,body,tabs)=>`<div class="fone"><div class="scr"><div class="di"></div><div class="sb"><span>9:41</span><svg viewBox="0 0 46 11" width="38" height="9" fill="#fff"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/><path d="M25 3.2a7.5 7.5 0 0 1 9.5 0l-1.3 1.4a5.6 5.6 0 0 0-6.9 0zM26.9 5.9a4.6 4.6 0 0 1 5.7 0l-2.85 3.1z"/><rect x="37" y="1" width="8" height="9" rx="2.2" fill="none" stroke="#fff" stroke-opacity=".5"/><rect x="38.4" y="2.4" width="5.2" height="6.2" rx="1.2"/></svg></div><div class="tt">${tt}</div>${body}${tabs?`<div class="tabs">${tabs}</div>`:''}</div></div>`;
@@ -1577,7 +1584,7 @@ function guiaAP(i){const g=GUIA_AP[i],N=GUIA_AP.length;
   // Entre pasos se repinta la misma hoja (sin apilar cada paso en el ‹ de las hojas)
   if(sheetOn()&&$('sheet').querySelector('.gu'))pintaSheet(h,0);else openSheet(h)}
 async function guiaAPInstalar(){
-  if(!ATAJO_URL){toast('El atajo todavía no está listo para instalar: sigue la guía y lo terminas después');return guiaAP(2)}
+  if(!ATAJO_URL)return guiaAPManual();
   // Safari (iOS) solo deja copiar dentro del toque: ClipboardItem recibe la promesa del código.
   const cod=api('rpc/mi_token_atajo',{m:'POST',b:{}}).then(c=>new Blob([c||''],{type:'text/plain'}));
   try{await navigator.clipboard.write([new ClipboardItem({'text/plain':cod})]);toast('Código copiado')}
@@ -1668,6 +1675,21 @@ function armaApp(){const P=armaPasos(),n=P.filter(p=>p.ok).length;
   <div class="card">${P.map((p,i)=>`<div class="hab"><div class="ck ${p.ok?'ok':''}">${p.ok?'✓':i+1}</div><div class="cm"><b>${p.t}</b><small>${p.s}</small></div>${p.ok?'':`<button onclick="${p.a}" ${P.findIndex(x=>!x.ok)===i?'':'style="background:var(--bg2);color:var(--text);border:1px solid var(--border)"'}>Hacer</button>`}</div>`).join('')}</div>
   <button class="lg-link" style="display:block;margin:8px auto 0" onclick="LS('arma-cerrado',hoyISO());closeSheet()">Lo termino después</button>`)}
 
+// Sin link de iCloud: la persona arma el atajo dentro de la automatización, con botones para copiar cada dato (5 min).
+// Mismo atajo que docs/atajo_apple_pay.md, más el campo token (su código) para que la compra caiga en SU cuenta.
+let TOK_AP='';
+async function guiaAPManual(){try{TOK_AP=await api('rpc/mi_token_atajo',{m:'POST',b:{}})||''}catch(e){}
+  const URL_AP=SB+'/rest/v1/rpc/anotar_atajo',cp=(t,l)=>`<button class="chip" style="margin:6px 6px 0 0" onclick="copiarTxt(${JSON.stringify(t).replace(/"/g,'&quot;')},'${l} copiado')">Copiar ${l}</button>`;
+  const st=(n,t,s,x)=>`<div class="step"><div class="n">${n}</div><div><b>${t}</b><small>${s}</small>${x||''}</div></div>`;
+  openSheet(`<h3>Arma el atajo (5 min)</h3><p>Lo armas una vez dentro de la automatización. Cada dato tiene su botón para copiar: no tienes que escribir nada largo.</p>
+  ${st(1,'Atajos → Automatización → +','Elige <b>Transacción</b>, marca tus tarjetas de Apple Pay y elige <b>Ejecutar inmediatamente</b>. Toca <b>Siguiente</b> → <b>Nuevo atajo en blanco</b>.','<button class="chip" style="margin-top:6px" onclick="location.href=\'shortcuts://\'">Abrir Atajos</button>')}
+  ${st(2,'Agrega “Obtener contenido de URL”','Búscala abajo en “Buscar acciones”. Toca la URL de ejemplo y pega:',cp(URL_AP,'URL'))}
+  ${st(3,'Toca la flechita › de esa acción','<b>Método:</b> POST. En <b>Encabezados</b> agrega 3 (toca “Añadir nuevo encabezado”):<br>• <b>apikey</b> → pega la llave<br>• <b>Authorization</b> → pega “Bearer…”<br>• <b>Content-Type</b> → escribe <b>application/json</b>',cp(KEY,'llave')+cp('Bearer '+KEY,'Bearer…'))}
+  ${st(4,'Cuerpo de la solicitud: JSON, 3 campos de Texto','• <b>monto_txt</b> → toca el valor → <b>Entrada del atajo</b> → tócala otra vez → <b>Cantidad</b><br>• <b>comercio</b> → <b>Entrada del atajo</b> → <b>Comercio</b><br>• <b>token</b> → pega tu código',TOK_AP?cp(TOK_AP,'mi código'):'<small style="display:block;color:var(--red)">No pude traer tu código: revisa tu internet y vuelve a abrir esta guía.</small>')}
+  ${st(5,'Agrega “Mostrar notificación”','En el texto elige la variable <b>Contenido de la URL</b>. Toca <b>OK</b> arriba a la derecha. ¡Listo!')}
+  <div class="lead"><b>Ojo:</b> Cantidad y Comercio tienen que salir de <b>Entrada del atajo</b>. Si no, llegan vacíos.</div>
+  <button class="btn p" onclick="guiaAP(${GUIA_AP.length-1})">Ya lo armé</button>`)}
+async function copiarTxt(t,ok){try{await navigator.clipboard.writeText(t);toast('✅ '+ok)}catch(e){toast('No pude copiar. Mantén el dedo y copia a mano')}}
 function guiaAPFin(){closeSheet();toast(apConectado()?'✅ Apple Pay conectado':'Cuando pagues con Apple Pay, el gasto aparece solo')}
 function openAvisos(){
   const y=new Date().getFullYear(),ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Finanzas Vicho//ES',
