@@ -37,11 +37,13 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  // Vuelta de Google: cuenta que no está invitada
  {const {dom}=await run('https://finanzas-vicente.vercel.app/#access_token=tok-otro',true);const w=dom.window;
   checks['Google: cuenta no invitada no entra']=!w.localStorage.getItem('app-key')&&w.document.getElementById('login').textContent.includes('Pídele acceso a Vicho');}
- // Pantalla de entrada: Face ID primero; si este aparato no tiene Face ID, Google primero
+ // Pantalla de entrada: aparato nuevo → Google primero; si ya entró antes → Face ID primero
  {const {dom}=await run('https://finanzas-vicente.vercel.app/',true);const d=dom.window.document,b=[...d.querySelectorAll('#login .lg-b')];
-  checks['entrada: pantalla completa con Face ID primero']=d.getElementById('login').classList.contains('on')&&b[0].id==='fid-btn'&&b[0].classList.contains('p');
-  dom.window.localStorage.setItem('fid-no','1');dom.window.eval('lock()');const b2=[...d.querySelectorAll('#login .lg-b')];
-  checks['entrada: sin Face ID en el aparato, Google va primero']=b2[0].id==='g-btn'&&b2[0].classList.contains('p');
+  checks['entrada: aparato nuevo, Google primero']=d.getElementById('login').classList.contains('on')&&b[0].id==='g-btn'&&b[0].classList.contains('p');
+  dom.window.localStorage.setItem('nombre','Vicho');dom.window.eval('lock()');const b2=[...d.querySelectorAll('#login .lg-b')];
+  checks['entrada: si ya entró antes, Face ID primero']=b2[0].id==='fid-btn'&&b2[0].classList.contains('p');
+  dom.window.localStorage.setItem('fid-no','1');dom.window.eval('lock()');const b3=[...d.querySelectorAll('#login .lg-b')];
+  checks['entrada: sin Face ID en el aparato, Google va primero']=b3[0].id==='g-btn'&&b3[0].classList.contains('p');
   dom.window.localStorage.setItem('nombre','Vicente');dom.window.eval("lock('Esa clave no funciona','mal')");
   checks['entrada: saluda por nombre y muestra el error']=d.getElementById('login').textContent.includes('Hola de nuevo')&&!!d.querySelector('#login .lg-msg.mal');}
  // Clave mala
@@ -165,7 +167,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  {const c=d.getElementById('chat');checks['chat: con teclado queda arriba del teclado']=c.classList.contains('kb')&&c.style.top==='256px'&&c.style.height==='388px';}
  w.eval('closeChat()');
  w.eval('closeSheet()');d.querySelector('[onclick="guiaAP(0)"]').click();checks['guía Apple Pay abre en Coach']=t('sheet').includes('anotadas solas');
- d.querySelector('#sheet .gu .btn').click();d.querySelector('#sheet .gu .btn').click();checks['guía Apple Pay avanza sin apilar ‹ (vista previa sin link)']=t('sheet').includes('Paso 2 de 8')&&!!d.querySelector('#sheet .tap')&&!d.querySelector('#sheet .bk');
+ d.querySelector('#sheet .gu .btn').click();w.eval('guiaAP(2)');checks['guía Apple Pay avanza sin apilar ‹ (vista previa sin link)']=t('sheet').includes('Paso 2 de 8')&&!!d.querySelector('#sheet .tap')&&!d.querySelector('#sheet .bk');
  d.querySelector('#sheet .gu .alt').click();checks['guía Apple Pay: atrás']=t('sheet').includes('Paso 1 de 8');
  w.eval('closeSheet()');
  // Invitar: solo aparece para la cuenta de Vicho
@@ -275,6 +277,9 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  // Pasado del mes: lo básico de la semana, nunca $0 solo
  w.eval("S.pptoBak=S.ppto;S.ppto=100000;render()");checks['hoy: pasado del mes muestra lo básico de la semana']=t('hero-w').includes('solo lo básico')&&(t('hero-w').includes('esta semana')||t('hero-w').includes('Casa y metro'))&&!/\$0(?!\d|\.)/.test(t('hero-w'));
  w.eval('openPlan()');checks['hoy: pasado del mes, el plan dice cuánto vas pasado']=t('sheet').includes('Te pasaste del mes por');w.eval('closeSheet();S.ppto=S.pptoBak;render()');
+ // Apple Pay sin link de iCloud: guía para armar el atajo a mano, con su código
+ await w.eval("ATAJO_URL='';guiaAPInstalar()");await new Promise(r=>setTimeout(r,50));
+ checks['apple pay sin link: guía para armarlo con botones de copiar']=t('sheet').includes('Arma el atajo')&&t('sheet').includes('Copiar URL')&&t('sheet').includes('Copiar mi código')&&t('sheet').includes('Entrada del atajo');w.eval('closeSheet()');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();

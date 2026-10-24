@@ -80,6 +80,11 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   `perfil` {nombre, sueldo, nacimiento, meta, ppto, dia_pago, caja} y escala los topes de categorías. Después, "Arma tu app".
 - Presupuesto de un mes sin fila en `presupuestos`: `perfil.ppto` → último mes guardado → $1.000.000 (JS `S.ppto` y
   `privado.ppto_de(per)` en la base, usada por estado_mes y los avisos).
+- **Pasarle la app a alguien:** `docs/para_amigos.md` (pasos de Vicho, mensaje de WhatsApp, qué ve la persona, Apple Pay).
+  La bienvenida guarda `perfil.creado` (la racha no cuenta días antes) y `ajustes.plan` a la escala de la persona
+  (montos de Vicho × día a día / $670.000, suscripciones en 0 porque ya son fijos). En un aparato nuevo el candado muestra Google primero.
+- Apple Pay sin link de iCloud (`secretos.atajo_url` vacío y `const ATAJO_ICLOUD` vacío): `guiaAPManual()` guía a armar el
+  atajo dentro de la automatización con botones para copiar URL, llave, Bearer y el código (`rpc/mi_token_atajo`).
 - Para invitar a alguien: Coach → **Invitar a alguien** (solo la cuenta de Vicho: `rpc/es_admin`, `rpc/invitados`,
   `rpc/invitar(p_email, p_quitar)`), que maneja `secretos.google_emails`.
 - Coach → **Conecta Apple Pay**: guía que copia el código de la persona (`rpc/mi_token_atajo`) y abre el atajo de iCloud
