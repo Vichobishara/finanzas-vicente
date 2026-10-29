@@ -634,6 +634,7 @@ body.ready .nav{display:flex}
     <div class="card-h"><h2>Últimos gastos</h2><button onclick="openMovs()" id="m-movs">Ver todos</button></div>
     <div id="g-ult"></div>
   </div>
+  <div id="g-dia"></div>
   <div class="card menu">
     <button class="crow" onclick="openSubs()"><div class="ic" style="font-size:18px">🔁</div><div class="cm"><b>Suscripciones</b><small>Todo lo que pagas cada mes, y cuánto es al año</small></div><span class="chev">›</span></button>
     <button class="crow" onclick="openCuadrar()"><div class="ic" style="font-size:18px">🧮</div><div class="cm"><b>Cuadrar con la cartola</b><small>Sube la cartola y agrego lo que se te pasó anotar</small></div><span class="chev">›</span></button>
@@ -671,13 +672,13 @@ body.ready .nav{display:flex}
   <h2 class="tab-t">Coach</h2>
   <p class="tab-s">¿Qué hago este mes para mejorar?</p>
   <div id="coach-hab"></div>
-  <div class="card" id="deseos-c"></div>
-  <div class="card" id="logros-c"></div>
   <div class="card ia"><h4>Pregúntale a Claude</h4><p>Con tus números, tus cuotas, tu fondo y tus deudas. Pregunta como le hablarías a un amigo.</p>
     <button class="btn p" style="margin:4px 0 14px" onclick="openChat()">Abrir el chat</button>
   </div>
   <h3 class="sec-t" id="m-tips">Consejos con tus números</h3>
   <div id="coach"></div>
+  <div class="card" id="deseos-c"></div>
+  <div class="card" id="logros-c"></div>
   <div class="sec-t">Ajustes y extras</div>
   <div class="card menu" style="margin-top:6px">
     <button class="crow" onclick="openRevision()"><div class="ic" style="font-size:18px">🗓</div><div class="cm"><b>Revisión de la semana</b><small>2 minutos los domingos: cierras la semana ordenado</small></div><span class="chev">›</span></button>
@@ -1259,7 +1260,8 @@ function renderGastos(){
   $('g-res').innerHTML=`<div class="card sum"><div class="k">${V.esActual?`Llevas gastado en ${V.mes} (hasta el 22)`:`Gastaste en ${V.mes}`}</div><div class="v">${fmt(V.total)} <span>de ${fmt(S.ppto)}</span></div>
     ${tiles([['Gastos',kCLP(V.gast)],['Cuotas',kCLP(V.cuo)],V.queda<0?['Te pasaste',kCLP(-V.queda),'bad']:['Te quedan',kCLP(V.queda),'ok']])}
     <div class="pace"><div style="width:${Math.min(100,pc)}%;background:${col}"></div>${V.esActual?`<i style="left:${Math.min(100,ideal)}%"></i>`:''}</div>
-    <div class="pace-l"><span>${V.esActual?`La raya: donde deberías ir hoy (${ideal}%)`:`${fmt(V.cuo)} fueron cuotas y fijos`}</span><b style="color:${col}">${pc}%</b></div>${segCats()}${cmp}</div>${diaADia(ini,cierre,largo,hoy)}`;
+    <div class="pace-l"><span>${V.esActual?`La raya: donde deberías ir hoy (${ideal}%)`:`${fmt(V.cuo)} fueron cuotas y fijos`}</span><b style="color:${col}">${pc}%</b></div>${segCats()}${cmp}</div>`;
+  $('g-dia').innerHTML=diaADia(ini,cierre,largo,hoy);
   const nr=(S.revisar||[]).length,no=(V.items.otros||[]).length;
   $('g-pend').innerHTML=(nr?`<div class="nudge"><div>🔁 <b>${nr} transferencia${nr>1?'s':''} por revisar</b> · no cuentan hasta que me digas</div><button onclick="openRev()">Revisar</button></div>`:'')+(no?`<div class="nudge"><div>❓ <b>${no} gasto${no>1?'s':''} sin categoría</b></div><button onclick="openCat('otros')">Ordenar</button></div>`:'');
   $('g-ult').innerHTML=porDia(S.gastos.slice(0,4))||'<div class="empty">Aún no hay gastos este mes 🎉</div>';

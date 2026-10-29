@@ -226,7 +226,7 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
    categorías"; la barra de colores muestra 4 en la leyenda; Coach muestra solo los hábitos pendientes ("Ver los N que ya
    cumples") y 2 consejos; Plata va en secciones (Lo que tienes y lo que debes · Tus metas) más una sola fila **Herramientas** (`openHerr`:
    bono o comisión, dónde poner cada peso, sueldos, Fintual, patrimonio, impuestos y APV) y "Por pagar" vive dentro de
-   "Lo que debes"; el "próximo paso" solo aparece cuando hay algo concreto (impuestos). Antes de agregar algo nuevo a una pestaña, ver qué se puede esconder.
+   "Lo que debes"; el "próximo paso" solo aparece cuando hay algo concreto (impuestos). Antes de agregar algo nuevo a una pestaña, ver qué se puede esconder. Orden de Gastos: resumen → pendientes → En qué se te va → Últimos gastos → Día a día (`#g-dia`) → filas. Orden de Coach: hábitos → Pregúntale a Claude → consejos → deseos → logros → ajustes.
 8. **Números en casillas, no en frases.** Los totales se muestran con `tiles()` (etiqueta corta + número compacto con `kCLP`,
    estado ok/bad con color): Gastos (gastos · cuotas · te pasaste/te quedan), Cuotas (te falta · libre en · otra cuota),
    Lo que debes (tarjetas · cuotas · deudas), meta en Plata (llegas a · al mes · te falta). Fuera de Hoy el encabezado se achica
