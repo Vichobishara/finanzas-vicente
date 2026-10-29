@@ -2029,8 +2029,11 @@ const DEU=()=>S.aj.deudas||[];
 // ---------- Tu caja: lo que hay en la cuenta (perfil.caja, se anota a mano) vs. lo que viene en la próxima factura. ----------
 // La caja NO suma al presupuesto: paga el efectivo y las transferencias hasta el sueldo. Sobre el mínimo (perfil.caja_min) → plan o fondo.
 const TARJ=['scotiabank','bci','santander'];
-function caja(){const P=PERF(),cq=cuotasDe(S.actual).filter(c=>!c.recurrente),q=cq.reduce((s,c)=>s+c.monto_cuota,0);
-  const g=(S.periodo===S.actual?S.gastos:[]).filter(x=>!x.pulldex&&TARJ.includes(x.tarjeta)).reduce((s,x)=>s+x.monto,0);
+// perfil.pagado {tarjeta: fecha}: hasta ese día la tarjeta quedó en cero (ej. la pagaste completa con una comisión).
+// Esas compras siguen contando en el presupuesto del mes, pero ya no vienen en la próxima factura.
+const pagadaHasta=x=>((PERF().pagado||{})[x.tarjeta]||'')>=x.fecha;
+function caja(){const P=PERF(),cq=cuotasDe(S.actual).filter(c=>!c.recurrente&&TARJ.includes(c.tarjeta)),q=cq.reduce((s,c)=>s+c.monto_cuota,0);
+  const g=(S.periodo===S.actual?S.gastos:[]).filter(x=>!x.pulldex&&TARJ.includes(x.tarjeta)&&!pagadaHasta(x)).reduce((s,x)=>s+x.monto,0);
   const desp=cuotasDe(S.actual).filter(c=>!c.recurrente).reduce((s,c)=>s+(c.restante||0),0);
   const fin=cq.map(c=>c.fin).filter(Boolean).sort().pop()||null;
   return{monto:typeof P.caja==='number'?P.caja:null,fecha:P.caja_fecha||null,min:P.caja_min||300000,compras:g,cuotas:q,factura:g+q,desp,fin,cq}}
@@ -2051,7 +2054,7 @@ function openCaja(){const C=caja(),sobra=C.monto===null?0:C.monto-C.min,dd=C.fec
 // Para no enredarse con los números de la tarjeta: qué parte es de este mes y qué parte es de compras viejas.
 function debo(){const per=S.actual,G=(S.periodo===per?S.gastos:[]),CQ=cuotasDe(per).filter(c=>!c.recurrente),FJ=cuotasDe(per).filter(c=>c.recurrente);
   const T={};const t=k=>T[k]=T[k]||{compras:0,neg:0,cuotas:0,fijos:0,lista:[]};
-  G.filter(g=>TARJ.includes(g.tarjeta)).forEach(g=>{const x=t(g.tarjeta);x.compras+=g.monto;if(g.pulldex)x.neg+=g.monto});
+  G.filter(g=>TARJ.includes(g.tarjeta)&&!pagadaHasta(g)).forEach(g=>{const x=t(g.tarjeta);x.compras+=g.monto;if(g.pulldex)x.neg+=g.monto});
   CQ.forEach(c=>{const k=TARJ.includes(c.tarjeta)?c.tarjeta:'otro';const x=t(k);x.cuotas+=c.monto_cuota;x.lista.push(c)});
   FJ.filter(c=>TARJ.includes(c.tarjeta)).forEach(c=>{t(c.tarjeta).fijos+=c.monto_cuota});
   const tarj=Object.entries(T).map(([k,x])=>({k,...x,total:x.compras+x.cuotas+x.fijos})).filter(x=>x.total>0).sort((a,b)=>b.total-a.total);
