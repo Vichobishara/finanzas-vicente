@@ -280,6 +280,10 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  // Apple Pay sin link de iCloud: guía para armar el atajo a mano, con su código
  await w.eval("ATAJO_URL='';guiaAPInstalar()");await new Promise(r=>setTimeout(r,50));
  checks['apple pay sin link: guía para armarlo con botones de copiar']=t('sheet').includes('Arma el atajo')&&t('sheet').includes('Copiar URL')&&t('sheet').includes('Copiar mi código')&&t('sheet').includes('Entrada del atajo');w.eval('closeSheet()');
+ // Tarjeta pagada hasta una fecha: esas compras ya no vienen en la próxima factura (pero siguen en el presupuesto)
+ {const c0=w.eval('caja().compras'),gast0=w.eval('S.V.gast');w.eval("S.aj.perfil={...S.aj.perfil,pagado:{scotiabank:'2099-01-01',bci:'2099-01-01',santander:'2099-01-01'}}");
+  checks['tarjeta pagada: sale de la factura, no del presupuesto']=w.eval('caja().compras')===0&&c0>0&&w.eval('S.V.gast')===gast0;
+  w.eval("delete S.aj.perfil.pagado");}
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();

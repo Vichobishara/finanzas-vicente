@@ -134,6 +134,9 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   Muestra la próxima factura estimada = compras con tarjeta del mes (scotiabank/bci/santander) + cuotas no recurrentes del mes,
   y las cuotas que quedan después. **La caja no suma al presupuesto**: paga efectivo/transferencias hasta el sueldo; lo que pase
   del mínimo el día antes del sueldo va al plan o al fondo. `ctxIA()` manda `caja` al chat.
+  `perfil.pagado` {tarjeta: fecha}: la tarjeta quedó en cero hasta ese día (ej. pagada completa con la comisión); esas compras
+  salen de la próxima factura (`caja()`, `debo()`) pero siguen contando en el presupuesto del mes. Las cuotas con tarjeta `otro`
+  (ej. Papá – iPhone) no van en la factura.
 
 ## Fintual conectado (30-09-2026)
 - Plata → **Conectar Fintual**: la persona pone correo y contraseña de Fintual UNA vez. La edge function `fintual` llama
