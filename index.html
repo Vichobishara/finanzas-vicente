@@ -2539,7 +2539,8 @@ function editPpto(){openSheet(`<h3>⚙️ Presupuesto de ${S.V.mes}</h3><p>Todo 
 async function savePpto(){const monto=val('e-ppto');if(monto<100000){toast('Pon un presupuesto de al menos $100.000');return}try{await api('presupuestos',{m:'POST',h:{Prefer:'resolution=merge-duplicates'},b:{periodo:S.periodo,monto}});if(S.periodo===S.actual)await saveAj('perfil',{...PERF(),ppto:monto},true);closeSheet();toast('✅ Presupuesto actualizado');loadAll()}catch(e){toast('❌ Error')}}
 async function loadIngresos(){try{const all=await api('ingresos?order=fecha.asc');const b={};all.forEach(i=>{const k=i.fecha.slice(0,7);b[k]=(b[k]||0)+i.monto});S.ing=b;
   const y=String(new Date().getFullYear()),rows=all.filter(i=>i.fecha.startsWith(y)&&i.base_tributable);
-  if(rows.length){const meses=new Set(rows.map(r=>r.fecha.slice(0,7))).size,last=rows[rows.length-1].base_tributable,rest=Math.max(0,12-meses);
+  // Los meses que faltan se proyectan con un mes normal (el más bajo de los últimos 3), no con uno de comisión.
+  if(rows.length){const meses=new Set(rows.map(r=>r.fecha.slice(0,7))).size,last=Math.min(...rows.slice(-3).map(r=>r.base_tributable)),rest=Math.max(0,12-meses);
     const baseAnual=rows.reduce((s,r)=>s+r.base_tributable,0)+last*rest,pagado=rows.reduce((s,r)=>s+(r.impuesto||0),0)+impMes(last)*rest,debido=impAnual(baseAnual);
     S.tax={y,pagado,debido,dev:Math.max(0,pagado-debido),baseAnual,marg:TR.find(([l])=>last/UTM<=l)[1],abril:rows.find(r=>r.fecha.slice(5,7)==='04')};}
   if(S.V.mes)renderPlata();}catch(e){console.error(e)}}
