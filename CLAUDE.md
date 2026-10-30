@@ -40,7 +40,7 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   transferencia (match ILIKE más largo). Transferencias a cuentas propias no se importan (filtro en el script).
 - Función `anotar_atajo(monto_txt, comercio)`: la llama el atajo de iOS vía `/rest/v1/rpc/anotar_atajo`; limpia el
   monto ("$12.990", "CLP 12.990") e inserta el gasto Scotia con fuente `atajo`.
-- `categorias` (clave, nombre, techo, color): comida 250k, fijo 200k, tech 100k, casa 100k, ropa 50k, transporte 30k,
+- `categorias` (clave, nombre, techo, color): comida 400k, fijo 200k, tech 100k, casa 100k, ropa 50k, transporte 30k,
   salud 60k, ocio 70k, coleccionables 0 (bloqueado), viajes, otros. **Casa** = lo de independizarse (electrodomésticos,
   muebles, IKEA/Sodimac): todo lo comprado en Casa (`S.casaComp`, todos los meses) se descuenta de "amoblar" en la meta
   Independizarme. **Ropa** existe para que la ropa no caiga en tech. Orden en la app: `KS` en index.html.
@@ -174,7 +174,8 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - **El número de Hoy es la SEMANA, no el día** (19-10-2026: el cupo diario no le funcionaba a Vicho, el gasto viene a saltos).
   "Esta semana puedes gastar $X" = bolsillos de la semana (lun–dom, sin pasar del 22, prorrateados si la semana es corta) − lo gastado
   en ellos esta semana (los gastos `fijo` no cuentan, se pagan solos). Plan en `ajustes.plan` {super, ofi_n, ofi_p, del_n, del_p, fijos}
-  (default súper $25k/semana, oficina 2 × $7k, 1 delivery de $20k, suscripciones $60k/mes; `PLAN()`, se ajusta en `editPlan()`).
+  (default súper $40k/semana, oficina 2 × $7k, 1 salida a comer de $35k, suscripciones $60k/mes; `PLAN()`, se ajusta en `editPlan()`).
+  El bolsillo `delivery` se muestra como **Salir** (delivery, restorán o cita: lo que no es súper ni oficina; 30-10-2026, Vicho quiere saber cuánto tiene para una cita).
   Bolsillos (`semanaPlan()`): 🛒 súper, 🥗 oficina, 🛵 delivery (veces), 🚇 transporte (tope/4,33), 🎁 gustos = lo que sobra del mes
   (presupuesto − cuotas − suscripciones − comida − transporte − gustos ya gastados) repartido en las semanas que quedan.
   La comida se separa con `tipoComida()`: súper (Jumbo, Líder, OXXO…), delivery/salir (Rappi, sushi, ≥ $15.000) y el resto oficina/café.

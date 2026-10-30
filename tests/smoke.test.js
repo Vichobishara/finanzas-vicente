@@ -267,11 +267,11 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['lo que debes: total, tarjetas, cuotas que faltan y deudas']=t('sheet').includes('Lo que debes')&&t('sheet').includes('Tus tarjetas de este mes')&&t('sheet').includes('Scotia')&&t('sheet').includes('PSA')&&t('sheet').includes('Prepago de cuotas');
  w.eval("closeSheet();renderMetas()");checks['lo que debes: fila en Plata']=t('metas').includes('Lo que debes');w.eval('S.aj.deudas=[]');
  // Hoy: el número es la semana, en bolsillos (súper, oficina, delivery, gustos); tocarlo abre tu plan
- w.eval("tab('hoy');render()");checks['hoy: la semana en 4 bolsillos']=d.querySelectorAll('#hero-w .bol button').length===4&&t('hero-w').includes('Súper')&&t('hero-w').includes('Delivery');
+ w.eval("tab('hoy');render()");checks['hoy: la semana en 4 bolsillos']=d.querySelectorAll('#hero-w .bol button').length===4&&t('hero-w').includes('Súper')&&t('hero-w').includes('Salir');
  d.querySelector('#hero-w .bol button').click();checks['hoy: tocar un bolsillo abre tu plan']=t('sheet').includes('Tu plan')&&t('sheet').includes('Esta semana')&&t('sheet').includes('Tu mes, en orden')&&t('sheet').includes('Cuotas')&&t('sheet').includes('Gustos');w.eval('closeSheet()');
  checks['plan: súper, delivery y oficina se reconocen']=w.eval("[tipoComida({descripcion:'Jumbo Oneclick',monto:30000}),tipoComida({descripcion:'NIU Sushi Rosario Sur',monto:12000}),tipoComida({descripcion:'Colombo Cafe',monto:6800}),tipoComida({descripcion:'Almuerzo',monto:35000})].join()")==='super,delivery,oficina,delivery';
  {const f=w.eval('S.V.semIni');w.eval(`S.gastos.push({id:7001,fecha:'${f}',descripcion:'Rappi',monto:15000,categoria_clave:'comida',tarjeta:'scotiabank',periodo:S.actual,pulldex:false},{id:7002,fecha:'${f}',descripcion:'Uber Eats',monto:16000,categoria_clave:'comida',tarjeta:'scotiabank',periodo:S.actual,pulldex:false});render()`);
-  checks['plan: segundo delivery avisa y el hábito queda pendiente']=w.eval('S.V.W.nDel')>=2&&w.eval("alertas()").some(a=>a.k.startsWith('del-'))&&w.eval("habitos()").some(h=>/delivery a la semana/.test(h.t)&&h.ok===false);
+  checks['plan: segundo delivery avisa y el hábito queda pendiente']=w.eval('S.V.W.nDel')>=2&&w.eval("alertas()").some(a=>a.k.startsWith('del-'))&&w.eval("habitos()").some(h=>/Salir a comer .* a la semana/.test(h.t)&&h.ok===false);
   w.eval('S.gastos=S.gastos.filter(x=>x.id<7000);render()');}
  w.eval('editPlan()');d.getElementById('pl-s').value='$30.000';w.CALLS=[];await w.eval('savePlan()');checks['plan: se ajusta y se guarda en ajustes.plan']=w.CALLS.some(c=>c.m==='POST'&&c.u.includes('ajustes')&&c.b.includes('"plan"')&&c.b.includes('30000'))&&w.eval('PLAN().super')===30000;
  // Pasado del mes: lo básico de la semana, nunca $0 solo
