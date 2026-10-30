@@ -278,7 +278,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval("S.pptoBak=S.ppto;S.ppto=100000;render()");checks['hoy: pasado del mes muestra lo básico de la semana']=t('hero-w').includes('solo lo básico')&&(t('hero-w').includes('esta semana')||t('hero-w').includes('Casa y metro'))&&!/\$0(?!\d|\.)/.test(t('hero-w'));
  w.eval('openPlan()');checks['hoy: pasado del mes, el plan dice cuánto vas pasado']=t('sheet').includes('Te pasaste del mes por');w.eval('closeSheet();S.ppto=S.pptoBak;render()');
  // Apple Pay sin link de iCloud: guía para armar el atajo a mano, con su código
- await w.eval("ATAJO_URL='';guiaAPInstalar()");await new Promise(r=>setTimeout(r,50));
+ await w.eval("ATAJO_URL='';guiaAPInstalar()");for(let i=0;i<40&&!t('sheet').includes('Entrada del atajo');i++)await new Promise(r=>setTimeout(r,50));
  checks['apple pay sin link: guía para armarlo con botones de copiar']=t('sheet').includes('Arma el atajo')&&t('sheet').includes('Copiar URL')&&t('sheet').includes('Copiar mi código')&&t('sheet').includes('Entrada del atajo');w.eval('closeSheet()');
  // Tarjeta pagada hasta una fecha: esas compras ya no vienen en la próxima factura (pero siguen en el presupuesto)
  {const c0=w.eval('caja().compras'),gast0=w.eval('S.V.gast');w.eval("S.aj.perfil={...S.aj.perfil,pagado:{scotiabank:'2099-01-01',bci:'2099-01-01',santander:'2099-01-01'}}");
