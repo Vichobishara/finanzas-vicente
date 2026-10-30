@@ -55,7 +55,7 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   `evitado`), `fondo` {que, meta, ahorrado, mensual} (fondo gadgets: lo comprado con el fondo queda como gasto `ignorado`).
   `deudas` [{id, que, monto, desde, nota}] (tarjeta "Por pagar" en Plata: deudas que no son cuotas, ej. PSA; no cuentan en el
   presupuesto, "La pagué" las quita). `cobrar` [{id, que, monto, desde, nota}] (tarjeta "Por cobrar" en Plata: plata que le
-  deben, ej. el IVA del iPhone; no cuenta hasta que llega; "Llegó" la quita y pregunta adónde va: casa, Fintual, fondo o tarjeta). Ingresos inciertos (comisiones que quizás llegan) **no** se anotan: Vicho no quiere contar con ellos.
+  deben, ej. el IVA del iPhone; no cuenta hasta que llega; "Llegó" la quita y pregunta adónde va: casa, Fintual, fondo o tarjeta). `negocio` {fijos:[{que, usd}], dolar}: planes que TCG Logs paga solos cada mes (JustTCG, Supabase, Vercel, Anthropic, Voyage); se ven en Gastos → Negocio (`negFijos()`), aparte del presupuesto personal. Ingresos inciertos (comisiones que quizás llegan) **no** se anotan: Vicho no quiere contar con ellos.
 - `ingresos` también tiene `ref_externa` (único, id del correo) y `fuente` (manual | app | toku_auto). El script importa
   los abonos de TOKU SPA y no duplica si ya hay uno manual con el mismo monto (±5 días).
 - `ahorros` (fecha, monto, destino fintual|apv|colchon, periodo): lo que Vicho **de verdad** transfirió. `periodo` = mes del sueldo.

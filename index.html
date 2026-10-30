@@ -1765,11 +1765,16 @@ function openCat(k){
   const info=k==='otros'?'Tócalos y elige la categoría. La app lo recuerda para la próxima.':`${fmt(s)}${t?' de '+fmt(t):''}${p?` · en ${V.pvL} fueron ${fmt(p)}`:''}${k==='casa'?'<br>🏠 Lo que compras aquí se descuenta de lo que te falta para amoblar (meta Independizarme).':''}`;
   openSheet(`<h3>${c.ic} ${c.n}</h3><p>${info}</p><div class="card">${porDia(it)||'<div class="empty">Nada por aquí 🎉</div>'}</div>`);
 }
+// ajustes.negocio {fijos:[{que,usd}], dolar}: planes que el negocio paga solos cada mes (en dólares). Aparte del presupuesto personal.
+function negFijos(){const N=S.aj.negocio||{},F=N.fijos||[];if(!F.length)return'';const usd=F.reduce((s,x)=>s+(+x.usd||0),0),clp=Math.round(usd*(N.dolar||950)/1000)*1000;
+  return`<div class="box"><div class="row"><span style="color:var(--text);font-weight:700">Se cobra solo cada mes</span><b>US$${usd.toLocaleString('es-CL')}</b></div>${F.map(x=>`<div class="row"><span>${esc(x.que)}</span><b>US$${(+x.usd).toLocaleString('es-CL')}</b></div>`).join('')}
+   <div class="row"><span>En pesos</span><b>≈ ${fmt(clp)} al mes · ${fmt(clp*12)} al año</b></div><small style="color:var(--sec);font-size:12px;display:block;padding-top:6px">Lo tienen que pagar las ventas. Si no vende, baja los planes a gratis.</small></div>`}
 async function openNeg(){const V=S.V,g=V.neg.filter(x=>x.monto>0).reduce((s,x)=>s+x.monto,0),v=-V.neg.filter(x=>x.monto<0).reduce((s,x)=>s+x.monto,0);
   const res=(a,b,l)=>`<div class="row"><span style="color:var(--text);font-weight:700">${l||(b>=a?'Vas ganando':'Falta recuperar')}</span><b style="color:${b>=a?'var(--green-d)':'var(--red-d)'}">${fmt(Math.abs(b-a))}</b></div>`;
   openSheet(`<h3>🧩 Negocio</h3><p>TCG Logs / PULLDEX. No cuenta en tu presupuesto, pero tiene que dar plata.</p>
   <div class="box"><div class="row"><span>Gastaste en ${V.mes}</span><b>${fmt(g)}</b></div><div class="row"><span>Vendiste en ${V.mes}</span><b style="color:var(--green-d)">${fmt(v)}</b></div>${res(g,v,v>=g?'Ganaste en '+V.mes:'Perdiste en '+V.mes)}</div>
   <div class="box" id="neg-tot"><div class="row"><span>Desde que anotas</span><b>…</b></div></div>
+  ${negFijos()}
   <button class="btn p" style="margin-top:0" onclick="openVenta()">💵 Anotar venta</button>
   <div class="card" style="margin-top:14px">${V.neg.map(txHtml).join('')||'<div class="empty">Sin movimientos este mes</div>'}</div>`);
   try{const all=await api('gastos?pulldex=eq.true&or=(estado.is.null,estado.neq.ignorado)&select=monto'),tg=all.filter(x=>x.monto>0).reduce((s,x)=>s+x.monto,0),tv=-all.filter(x=>x.monto<0).reduce((s,x)=>s+x.monto,0),el=$('neg-tot');

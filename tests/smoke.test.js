@@ -284,6 +284,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  {const c0=w.eval('caja().compras'),gast0=w.eval('S.V.gast');w.eval("S.aj.perfil={...S.aj.perfil,pagado:{scotiabank:'2099-01-01',bci:'2099-01-01',santander:'2099-01-01'}}");
   checks['tarjeta pagada: sale de la factura, no del presupuesto']=w.eval('caja().compras')===0&&c0>0&&w.eval('S.V.gast')===gast0;
   w.eval("delete S.aj.perfil.pagado");}
+ w.eval("S.aj.negocio={fijos:[{que:'JustTCG',usd:50},{que:'Vercel',usd:25}],dolar:1000}");checks['negocio: planes fijos en dólares y pesos']=w.eval('negFijos()').includes('US$75')&&w.eval('negFijos()').includes('$75.000');w.eval('delete S.aj.negocio');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();
