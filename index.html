@@ -799,7 +799,7 @@ const fechaL=f=>{const d=new Date(f+'T12:00:00');return d.toLocaleDateString('es
 const perL=p=>{const[y,m]=p.split('-');return MESL[+m-1]+' '+y};
 const mdiff=(a,b)=>{const[ay,am]=a.split('-').map(Number),[by,bm]=b.split('-').map(Number);return(by-ay)*12+(bm-am)};
 const addM=(p,n)=>{let[y,m]=p.split('-').map(Number);m+=n;while(m>12){m-=12;y++}while(m<1){m+=12;y--}return y+'-'+String(m).padStart(2,'0')};
-function periodoDe(fecha,t){const d=new Date(fecha+'T12:00:00');if(d.getDate()>(CORTE[t]||31))d.setMonth(d.getMonth()+1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function periodoDe(fecha,t){const d=new Date(fecha+'T12:00:00');if(d.getDate()>(CORTE[t]||31)){d.setDate(1);d.setMonth(d.getMonth()+1)}return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
 const hoyISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 function cuotasDe(per){return S.cuotas.map(c=>{if(c.recurrente)return{...c,label:'Todos los meses'};if(!c.primer_periodo)return null;const n=mdiff(c.primer_periodo,per)+1;if(n<1||n>c.total_cuotas)return null;return{...c,n,label:`Cuota ${n} de ${c.total_cuotas}`,restante:c.monto_cuota*(c.total_cuotas-n),fin:addM(c.primer_periodo,c.total_cuotas-1)}}).filter(Boolean)}
 function guess(desc){const d=(desc||'').toLowerCase();const r=S.reglas.find(x=>d.includes(x.palabra.toLowerCase()));return r?{cat:r.categoria_clave,neg:r.negocio}:{cat:'otros',neg:false}}

@@ -1,7 +1,7 @@
 // Prueba básica: carga index.html con datos falsos y revisa que las piezas clave rendericen.
 const {JSDOM}=require('jsdom');const fs=require('fs');const path=require('path');
 const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
-const hoy=new Date(),HOY=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-'+String(hoy.getDate()).padStart(2,'0');const per=(d=>{const x=new Date(d);if(x.getDate()>22)x.setMonth(x.getMonth()+1);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')})(hoy);
+const hoy=new Date(),HOY=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-'+String(hoy.getDate()).padStart(2,'0');const per=(d=>{const x=new Date(d);if(x.getDate()>22){x.setDate(1);x.setMonth(x.getMonth()+1)}return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')})(hoy);
 const DB={
  categorias:[{clave:'comida',techo:250000},{clave:'fijo',techo:200000},{clave:'tech',techo:100000},{clave:'coleccionables',techo:0}],
  periodos:[{periodo:per}],
@@ -285,6 +285,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
   checks['tarjeta pagada: sale de la factura, no del presupuesto']=w.eval('caja().compras')===0&&c0>0&&w.eval('S.V.gast')===gast0;
   w.eval("delete S.aj.perfil.pagado");}
  w.eval("S.aj.negocio={fijos:[{que:'JustTCG',usd:50},{que:'Vercel',usd:25}],dolar:1000}");checks['negocio: planes fijos en dólares y pesos']=w.eval('negFijos()').includes('US$75')&&w.eval('negFijos()').includes('$75.000');w.eval('delete S.aj.negocio');
+ checks['día 31: el mes es el siguiente, no el subsiguiente']=w.eval("[periodoDe('2026-10-31','scotiabank'),periodoDe('2026-01-30','scotiabank'),periodoDe('2026-08-31','bci'),periodoDe('2026-10-22','scotiabank')].join()")==='2026-11,2026-02,2026-09,2026-10';
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();
