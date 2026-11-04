@@ -807,7 +807,7 @@ const getEv=()=>((S.aj.evitado||{})[S.actual])||0;
 const addEv=x=>saveAj('evitado',{...(S.aj.evitado||{}),[S.actual]:getEv()+x});
 // Pausa de Fintual (ajustes.fintual_pausa.hasta): meses en que primero se pagan las tarjetas.
 const pausaFin=()=>{const p=S.aj&&S.aj.fintual_pausa;return!!(p&&p.hasta&&p.hasta>=hoyISO())};
-const apvOk=()=>!!(S.aj.apv&&S.aj.apv.abierto);
+const apvOk=()=>!!(S.aj.apv&&S.aj.apv.abierto),apvNo=()=>!!(S.aj.apv&&S.aj.apv.no&&!S.aj.apv.abierto); // apvNo: la persona decidió no usar APV (plata que no puede tocar): no se le insiste
 const $v=n=>n>0?'$'+Math.round(n).toLocaleString('es-CL'):'';
 // Pila de hojas: si desde una hoja tocas algo que abre otra (Todo el mes → Comida), aparece ‹ para volver.
 // Solo se apila al tocar dentro de la hoja; si se abre después de guardar, no (así ‹ nunca vuelve a un formulario viejo).
@@ -1450,7 +1450,7 @@ function renderMetas(){const el=$('metas');if(!el)return;const F=S.aj.fondo,D=DE
    +fila('fondo-c','🎧',F?F.que:'Fondo gadgets',F?`${fmt(F.ahorrado)} de ${fmt(F.meta)}`:'Junta para tu próximo gadget sin tocar el mes',
       F?`<span class="mini"><i style="width:${Math.min(100,F.ahorrado/F.meta*100)}%"></i></span>`:'')
    +'</div>'+`<button class="crow" style="margin-top:4px" onclick="openHerr()"><div class="ic">🧰</div><div class="cm"><b>Herramientas</b><small>Bono o comisión, sueldos, impuestos${dev>50000?` (el SII te debe ≈ ${fmt(dev)})`:''}, APV, Fintual</small></div><span class="chev">›</span></button>`;
-  S.herrExtra=fila('tax-c','🧾','Impuestos',!T?'Anota tus liquidaciones':dev>50000?`El SII te debe ≈ ${fmt(dev)}`:'Al día')+fila('apv-c','🎯',apvOk()?`APV ${new Date().getFullYear()}`:'APV (opcional)',apvOk()?`${fmt(a)} de ${fmt(APV_ANUAL)}`:'El Estado pone 15%, pero queda para la jubilación');
+  S.herrExtra=fila('tax-c','🧾','Impuestos',!T?'Anota tus liquidaciones':dev>50000?`El SII te debe ≈ ${fmt(dev)}`:'Al día')+(apvNo()?'':fila('apv-c','🎯',apvOk()?`APV ${new Date().getFullYear()}`:'APV (opcional)',apvOk()?`${fmt(a)} de ${fmt(APV_ANUAL)}`:'El Estado pone 15%, pero queda para la jubilación'));
   // Si la hoja de detalle está abierta, que muestre lo nuevo (ej: después de "La pagué")
   const v=document.querySelector('#sheet [data-vista]');if(v&&sheetOn())v.innerHTML=cardSin(v.dataset.vista)}
 
@@ -1460,7 +1460,7 @@ function openPlata(){
   const apv=apvOk(),P0=PAT(),pat=P0.fintual+P0.cartas+P0.eth,alt=Math.round((P0.cartas+P0.eth)/pat*100);
   openSheet(`<h3>📍 Dónde poner cada peso</h3><p>El orden importa: primero lo que más plata te da. Cuando uno está listo, pasas al siguiente.</p>
   <div class="card">
-    <div class="step"><div class="n ${apv?'ok':''}">${apv?'✓':'1'}</div><div><b>🎯 APV régimen A: ${fmt(APV_MES)} al mes</b><small>El Estado te pone 15% encima, hasta ${fmt(APV_BONO)} al año. Con tu sueldo normal pagas 4% de impuesto, así que el régimen A (15%) te conviene más que el B. Es para la pensión: si lo sacas antes, devuelves el bono.</small>${apv?`<small style="display:block;margin-top:6px;color:var(--text)">Este año llevas <b>${fmt(ahorradoAnio('apv'))}</b> de ${fmt(APV_ANUAL)} para el bono completo.</small>`:`<button class="chip on" style="margin-top:8px" onclick="saveAj('apv',{abierto:true,fecha:hoyISO()}).then(openPlata)">Ya lo abrí ✓</button>`}</div></div>
+    ${apvNo()?'':`<div class="step"><div class="n ${apv?'ok':''}">${apv?'✓':'1'}</div><div><b>🎯 APV régimen A: ${fmt(APV_MES)} al mes</b><small>El Estado te pone 15% encima, hasta ${fmt(APV_BONO)} al año. Con tu sueldo normal pagas 4% de impuesto, así que el régimen A (15%) te conviene más que el B. Es para la pensión: si lo sacas antes, devuelves el bono.</small>${apv?`<small style="display:block;margin-top:6px;color:var(--text)">Este año llevas <b>${fmt(ahorradoAnio('apv'))}</b> de ${fmt(APV_ANUAL)} para el bono completo.</small>`:`<button class="chip on" style="margin-top:8px" onclick="saveAj('apv',{abierto:true,fecha:hoyISO()}).then(openPlata)">Ya lo abrí ✓</button>`}</div></div>`}
     <div class="step"><div class="n ${colLleno()?'ok':''}">${colLleno()?'✓':'2'}</div><div><b>🛟 Colchón: 3 meses de gastos (~${fmtM(metaCol())})</b><small>Plata para emergencias, a la mano y sin riesgo. ${colLleno()?`Ya tienes ${fmtM(PAT().colchon||0)} en Moderate Pitt: está listo. No lo toques y la plata nueva va al largo plazo.`:`Tienes ${fmtM(PAT().colchon||0)} en Moderate Pitt: te faltan ${fmt(metaCol()-(PAT().colchon||0))}. Complétalo con el colchón de cada mes y no lo toques.`}</small></div></div>
     <div class="step"><div class="n">3</div><div><b>📈 Largo plazo: todo lo demás a Risky Norris</b><small>Lo que no va al APV ni al colchón, a tu fondo agresivo en Fintual. Plata que no vas a tocar en años.</small></div></div>
     <div class="step"><div class="n">4</div><div><b>🃏 Cartas y ETH: no sumar más por ahora</b><small>Ya son el ${alt}% de todo lo que tienes. Es harto en cosas que suben y bajan fuerte. Mientras no baje de ~20%, la plata nueva va a Fintual.</small></div></div>
@@ -1695,20 +1695,20 @@ async function copiarTxt(t,ok){try{await navigator.clipboard.writeText(t);toast(
 function guiaAPFin(){closeSheet();toast(apConectado()?'✅ Apple Pay conectado':'Cuando pagues con Apple Pay, el gasto aparece solo')}
 function openAvisos(){
   const y=new Date().getFullYear(),ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Finanzas Vicho//ES',
-    icsEvt('sueldo','20261030T090000','💰 Llegó el sueldo: APV + Fintual PRIMERO','1) '+fmt(APV_MES)+' al APV régimen A\\n2) El resto del ahorro a Fintual\\n3) Actualiza tu patrimonio en la app\\nhttps://finanzas-vicente.vercel.app','FREQ=MONTHLY;BYMONTHDAY=28,29,30;BYSETPOS=-1'),
+    icsEvt('sueldo','20261030T090000','💰 Llegó el sueldo: '+(apvNo()?'':'APV + ')+'Fintual PRIMERO',(apvNo()?'':'1) '+fmt(APV_MES)+' al APV régimen A\\n')+'El ahorro a Fintual (Risky Norris) ANTES de gastar\\n+ Actualiza tu patrimonio en la app\\nhttps://finanzas-vicente.vercel.app','FREQ=MONTHLY;BYMONTHDAY=28,29,30;BYSETPOS=-1'),
     icsEvt('lunes','20261005T090000','🧾 5 min: anota lo de Scotia en la app','https://finanzas-vicente.vercel.app','FREQ=WEEKLY;BYDAY=MO'),
     icsEvt('cierre','20261020T190000','⚠️ En 2 días cierra la tarjeta','Abre la app y revisa si vas en verde. https://finanzas-vicente.vercel.app','FREQ=MONTHLY;BYMONTHDAY=20'),
-    icsEvt('apv','20261218T100000','🎯 Completa tu APV del año (plazo 30 dic a mediodía)','Para sacar el bono completo del Estado necesitas '+fmt(APV_ANUAL)+' aportados en el año.','FREQ=YEARLY'),
+    ...(apvNo()?[]:[icsEvt('apv','20261218T100000','🎯 Completa tu APV del año (plazo 30 dic a mediodía)','Para sacar el bono completo del Estado necesitas '+fmt(APV_ANUAL)+' aportados en el año.','FREQ=YEARLY')]),
     icsEvt('renta','20270406T100000','🧾 Operación Renta: pide la reliquidación (art. 47)','sii.cl → Operación Renta → revisa la propuesta. Si no trae la devolución, marca la reliquidación anual del impuesto único.','FREQ=YEARLY'),
     'END:VCALENDAR'].join('\r\n');
   const href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics);
   openSheet(`<h3>🔔 Avisos</h3>${pushBox()}
   <h3 style="margin-top:22px">📅 Recordatorios en tu calendario</h3><p>Toca el botón y el iPhone te ofrece agregarlos a tu calendario.</p>
   <div class="card">
-   <div class="lever"><i style="font-style:normal">💰</i><div><b>Fin de cada mes · 9:00</b><br>Llegó el sueldo: APV y Fintual primero</div></div>
+   <div class="lever"><i style="font-style:normal">💰</i><div><b>Fin de cada mes · 9:00</b><br>Llegó el sueldo: ${apvNo()?'':'APV y '}Fintual primero</div></div>
    <div class="lever"><i style="font-style:normal">🧾</i><div><b>Todos los lunes · 9:00</b><br>5 minutos para anotar lo de Scotia</div></div>
    <div class="lever"><i style="font-style:normal">⚠️</i><div><b>Cada 20 · 19:00</b><br>En 2 días cierra la tarjeta: revisa cómo vas</div></div>
-   <div class="lever"><i style="font-style:normal">🎯</i><div><b>18 de diciembre</b><br>Completa el APV del año para el bono completo</div></div>
+   ${apvNo()?'':`<div class="lever"><i style="font-style:normal">🎯</i><div><b>18 de diciembre</b><br>Completa el APV del año para el bono completo</div></div>`}
    <div class="lever"><i style="font-style:normal">🧾</i><div><b>6 de abril</b><br>Operación Renta: pide tu devolución</div></div>
   </div>
   <a class="cal" href="${href}" download="avisos-finanzas.ics">📅 Agregar todos a mi calendario</a>

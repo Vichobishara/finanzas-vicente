@@ -50,7 +50,7 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - `presupuestos` (periodo, monto): presupuesto total del mes, **incluye cuotas y fijos**. Default $1.000.000.
 - `ingresos` (fecha, monto, tipo, descripcion, base_tributable, impuesto): liquidaciones Toku.
 - `ajustes` (clave, valor jsonb): `patrimonio` {fintual, colchon, cartas, eth, fecha} (colchon = parte de Fintual en
-  Moderate Pitt), `perfil` {nacimiento, meta, sueldo}, `apv` {abierto, fecha}, `evitado` {periodo: monto},
+  Moderate Pitt), `perfil` {nacimiento, meta, sueldo}, `apv` {abierto, fecha, no} (`no:true` = Vicho decidió no usar APV, 4-11-2026: "no quiero meter plata que no podré tocar"; `apvNo()` esconde la fila APV de Herramientas, el paso APV de "Dónde poner cada peso" y sus recordatorios), `evitado` {periodo: monto},
   `deseos` [{id, que, monto, desde, estado espera|aguantado|comprado}] (lista de deseos, regla de 72 horas: aguantarse suma a
   `evitado`), `fondo` {que, meta, ahorrado, mensual} (fondo gadgets: lo comprado con el fondo queda como gasto `ignorado`).
   `deudas` [{id, que, monto, desde, nota}] (tarjeta "Por pagar" en Plata: deudas que no son cuotas, ej. PSA; no cuentan en el

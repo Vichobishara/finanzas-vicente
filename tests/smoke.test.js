@@ -286,6 +286,7 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
   w.eval("delete S.aj.perfil.pagado");}
  w.eval("S.aj.negocio={fijos:[{que:'JustTCG',usd:50},{que:'Vercel',usd:25}],dolar:1000}");checks['negocio: planes fijos en dólares y pesos']=w.eval('negFijos()').includes('US$75')&&w.eval('negFijos()').includes('$75.000');w.eval('delete S.aj.negocio');
  checks['día 31: el mes es el siguiente, no el subsiguiente']=w.eval("[periodoDe('2026-10-31','scotiabank'),periodoDe('2026-01-30','scotiabank'),periodoDe('2026-08-31','bci'),periodoDe('2026-10-22','scotiabank')].join()")==='2026-11,2026-02,2026-09,2026-10';
+ w.eval("S.aj.apv={no:true}");w.eval('openPlata()');checks['sin APV: no se insiste con el APV']=!t('sheet').includes('APV régimen A')&&!w.eval('apvOk()')&&w.eval('apvNo()');w.eval('closeSheet();delete S.aj.apv');
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();
