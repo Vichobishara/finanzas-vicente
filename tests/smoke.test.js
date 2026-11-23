@@ -103,13 +103,13 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  // Cupo del día fijo: lo que gastas hoy lo baja; si te pasas, se reparte en los días que quedan
  {const V=w.eval('S.V');checks['cupo de hoy descuenta lo de hoy']=Math.round(V.cupoHoy-V.diario)===50000&&Math.round(V.cupoHoy*V.dias)===Math.round(V.queda+50000);
   w.eval("S.gastos.push({id:9,fecha:hoyISO(),descripcion:'Zapatillas',monto:Math.round(S.V.cupoHoy*10),categoria_clave:'otros',tarjeta:'scotiabank',periodo:S.actual,pulldex:false});render()");
-  checks['gasto grande: te pasaste de la semana y el lunes parte de nuevo']=w.eval('S.V.W.freno')?t('hero-w').includes('solo lo básico'):t('hero-w').includes('Esta semana te pasaste')&&t('hero-w').includes('El lunes tu semana parte con')&&d.querySelector('#hero-w .h-amt').textContent.includes(w.eval('fmt(S.V.W.prox)'));
-  checks['hero muestra la semana']=/[Ee]sta semana|solo lo básico/.test(t('hero-w'));
+  checks['gasto grande: te pasaste de la semana y el lunes parte de nuevo']=w.eval('S.V.W.freno')?t('sem-w').includes('solo lo básico'):t('sem-w').includes('Esta semana te pasaste')&&t('sem-w').includes('El lunes tu semana parte con');
+  checks['hoy muestra la semana']=/[Ee]sta semana|solo lo básico/.test(t('sem-w'));
   checks['hoy: botón No gasté cuando no hay nada anotado']=w.eval("S.gastos.some(g=>g.fecha===hoyISO()&&!g.pulldex)")||t('hoy-g').includes('No gasté');
   {const g=w.eval('S.gastos.find(x=>!x.pulldex&&x.monto>0)');w.eval(`S.gastos.push({...S.gastos.find(x=>x.id===${g.id}),id:99999,fecha:hoyISO()});S.gastos.push({...S.gastos.find(x=>x.id===${g.id}),id:99998,fecha:hoyISO()})`);
    checks['alertas: avisa cobro doble']=w.eval('alertas()').some(a=>a.k.startsWith('dup-'));w.eval('S.gastos=S.gastos.filter(x=>x.id<99998)');}
   w.eval('openCalendario()');await new Promise(r=>setTimeout(r,50));checks['cuotas: calendario de lo que se cobra solo']=t('sheet').includes('Lo que se cobra solo');w.eval('closeSheet()');
-  checks['hero corto: semana y hasta el 22, sin desglose']=(w.eval('S.V.queda<0')||t('hero-w').includes('Hasta el 22 ('))&&!t('hero-w').includes('Plata del mes');
+  checks['hoy: el recuadro dice lo gastado, lo que queda y lo que vas a ahorrar']=t('hero-w').includes('Llevas gastado')&&/Te quedan|Te pasaste/.test(t('hero-w'))&&t('hero-w').includes('Vas a ahorrar')&&t('hero-w').includes('Scotia');
   w.eval('S.gastos.pop();render()');}
  w.eval('openAdd()');checks['anotar: sugerencias']=d.querySelectorAll('#sheet .sugs button').length>=5;
  d.getElementById('a-monto').value='$5.000';w.CALLS=[];await w.eval('saveAdd()');await new Promise(r=>setTimeout(r,1400));
@@ -264,18 +264,18 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  checks['adelantar cuotas: termina este mes y anota lo que faltaba']=w.CALLS.some(c=>c.m==='PATCH'&&c.u.includes('cuotas?id=eq.7')&&/"total_cuotas":1/.test(c.b))&&w.CALLS.some(c=>c.m==='POST'&&c.u.includes('gastos')&&c.b.includes('Adelanto cuotas')&&/"monto":161600/.test(c.b));
  // Lo que debes: tarjetas por separado, cuotas que faltan y deudas
  w.eval("S.aj.deudas=[{id:1,que:'PSA',monto:490000}];openDebo()");
- checks['lo que debes: total, tarjetas, cuotas que faltan y deudas']=t('sheet').includes('Lo que debes')&&t('sheet').includes('Tus tarjetas de este mes')&&t('sheet').includes('Scotia')&&t('sheet').includes('PSA')&&t('sheet').includes('Prepago de cuotas');
+ checks['lo que debes: total, tarjetas, cuotas que faltan y deudas']=t('sheet').includes('Lo que debes')&&t('sheet').includes('Tus tarjetas (lo que no has pagado)')&&t('sheet').includes('Scotia')&&t('sheet').includes('PSA')&&t('sheet').includes('Prepago de cuotas');
  w.eval("closeSheet();renderMetas()");checks['lo que debes: fila en Plata']=t('metas').includes('Lo que debes');w.eval('S.aj.deudas=[]');
  // Hoy: el número es la semana, en bolsillos (súper, oficina, delivery, gustos); tocarlo abre tu plan
- w.eval("tab('hoy');render()");checks['hoy: la semana en 4 bolsillos']=d.querySelectorAll('#hero-w .bol button').length===4&&t('hero-w').includes('Súper')&&t('hero-w').includes('Salir');
- d.querySelector('#hero-w .bol button').click();checks['hoy: tocar un bolsillo abre tu plan']=t('sheet').includes('Tu plan')&&t('sheet').includes('Esta semana')&&t('sheet').includes('Tu mes, en orden')&&t('sheet').includes('Cuotas')&&t('sheet').includes('Gustos');w.eval('closeSheet()');
+ w.eval("tab('hoy');render()");checks['hoy: la semana en 4 bolsillos']=d.querySelectorAll('#sem-w .bol button').length===4&&t('sem-w').includes('Súper')&&t('sem-w').includes('Salir');
+ d.querySelector('#sem-w .bol button').click();checks['hoy: tocar un bolsillo abre tu plan']=t('sheet').includes('Tu plan')&&t('sheet').includes('Esta semana')&&t('sheet').includes('Tu mes, en orden')&&t('sheet').includes('Cuotas')&&t('sheet').includes('Gustos');w.eval('closeSheet()');
  checks['plan: súper, delivery y oficina se reconocen']=w.eval("[tipoComida({descripcion:'Jumbo Oneclick',monto:30000}),tipoComida({descripcion:'NIU Sushi Rosario Sur',monto:12000}),tipoComida({descripcion:'Colombo Cafe',monto:6800}),tipoComida({descripcion:'Almuerzo',monto:35000})].join()")==='super,delivery,oficina,delivery';
  {const f=w.eval('S.V.semIni');w.eval(`S.gastos.push({id:7001,fecha:'${f}',descripcion:'Rappi',monto:15000,categoria_clave:'comida',tarjeta:'scotiabank',periodo:S.actual,pulldex:false},{id:7002,fecha:'${f}',descripcion:'Uber Eats',monto:16000,categoria_clave:'comida',tarjeta:'scotiabank',periodo:S.actual,pulldex:false});render()`);
   checks['plan: segundo delivery avisa y el hábito queda pendiente']=w.eval('S.V.W.nDel')>=2&&w.eval("alertas()").some(a=>a.k.startsWith('del-'))&&w.eval("habitos()").some(h=>/Salir a comer .* a la semana/.test(h.t)&&h.ok===false);
   w.eval('S.gastos=S.gastos.filter(x=>x.id<7000);render()');}
  w.eval('editPlan()');d.getElementById('pl-s').value='$30.000';w.CALLS=[];await w.eval('savePlan()');checks['plan: se ajusta y se guarda en ajustes.plan']=w.CALLS.some(c=>c.m==='POST'&&c.u.includes('ajustes')&&c.b.includes('"plan"')&&c.b.includes('30000'))&&w.eval('PLAN().super')===30000;
  // Pasado del mes: lo básico de la semana, nunca $0 solo
- w.eval("S.pptoBak=S.ppto;S.ppto=100000;render()");checks['hoy: pasado del mes muestra lo básico de la semana']=t('hero-w').includes('solo lo básico')&&(t('hero-w').includes('esta semana')||t('hero-w').includes('Casa y metro'))&&!/\$0(?!\d|\.)/.test(t('hero-w'));
+ w.eval("S.pptoBak=S.ppto;S.ppto=100000;render()");checks['hoy: pasado del mes muestra lo básico de la semana']=t('sem-w').includes('solo lo básico')&&(t('sem-w').includes('esta semana')||t('sem-w').includes('Casa y metro'))&&!/\$0(?!\d|\.)/.test(t('hero-w'));
  w.eval('openPlan()');checks['hoy: pasado del mes, el plan dice cuánto vas pasado']=t('sheet').includes('Te pasaste del mes por');w.eval('closeSheet();S.ppto=S.pptoBak;render()');
  // Apple Pay sin link de iCloud: guía para armar el atajo a mano, con su código
  await w.eval("ATAJO_URL='';guiaAPInstalar()");for(let i=0;i<40&&!t('sheet').includes('Entrada del atajo');i++)await new Promise(r=>setTimeout(r,50));
@@ -287,6 +287,10 @@ function run(url,claveOk){return new Promise(res=>{const heads=[];
  w.eval("S.aj.negocio={fijos:[{que:'JustTCG',usd:50},{que:'Vercel',usd:25}],dolar:1000}");checks['negocio: planes fijos en dólares y pesos']=w.eval('negFijos()').includes('US$75')&&w.eval('negFijos()').includes('$75.000');w.eval('delete S.aj.negocio');
  checks['día 31: el mes es el siguiente, no el subsiguiente']=w.eval("[periodoDe('2026-10-31','scotiabank'),periodoDe('2026-01-30','scotiabank'),periodoDe('2026-08-31','bci'),periodoDe('2026-10-22','scotiabank')].join()")==='2026-11,2026-02,2026-09,2026-10';
  w.eval("S.aj.apv={no:true}");w.eval('openPlata()');checks['sin APV: no se insiste con el APV']=!t('sheet').includes('APV régimen A')&&!w.eval('apvOk()')&&w.eval('apvNo()');w.eval('closeSheet();delete S.aj.apv');
+ // Lo que debes: compras del mes pasado sin pagar siguen contando hasta que la tarjeta se marca pagada
+ w.eval("S.prevT=[{id:8001,fecha:'2000-01-01',monto:70000,tarjeta:'bci',categoria_clave:'comida',pulldex:false}];S.aj.perfil={...PERF(),pagado:{}}");
+ checks['lo que debes: cuenta lo del mes pasado sin pagar']=w.eval("debo().tarj.some(x=>x.k==='bci'&&x.compras>=70000)");
+ w.eval("S.aj.perfil={...PERF(),pagado:{bci:hoyISO()}}");checks['lo que debes: la tarjeta pagada sale']=w.eval("!debo().tarj.some(x=>x.k==='bci'&&x.compras>0)");w.eval("S.prevT=[]");
  let ok=true;for(const[k,v]of Object.entries(checks)){console.log((v?'✅':'❌')+' '+k);if(!v)ok=false}
  process.exit(ok?0:1);
 })();

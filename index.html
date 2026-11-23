@@ -66,6 +66,17 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .bol button span{opacity:.82;white-space:nowrap}.bol b{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}.bol i{font-style:normal;font-size:16px;line-height:18px}
 .bol .mal{background:rgba(0,0,0,.18)}.bol .mal b{opacity:.85}.bol .hoy{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.75)}.bol button:active{transform:scale(.95)}
 .plan-t{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}.plan-t td,.plan-t th{padding:7px 0;border-bottom:1px solid var(--border);text-align:right}.plan-t th{color:var(--sec);font-weight:600;font-size:12px}.plan-t td:first-child,.plan-t th:first-child{text-align:left}.plan-t tr:last-child td{border:none}
+.h-bar i{position:absolute;top:-3px;bottom:-3px;width:2px;background:rgba(255,255,255,.9);border-radius:2px}.h-bar{overflow:visible}
+.h-tiles{display:grid;grid-template-columns:1fr 1fr;position:relative;margin-bottom:12px}.h-tiles div{padding:0 12px;border-left:1px solid rgba(255,255,255,.25)}.h-tiles div:first-child{border:none;padding-left:0}
+.h-tiles small{display:block;font-size:12.5px;color:rgba(255,255,255,.8);font-weight:600}.h-tiles b{font-size:22px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.h-tarj{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:rgba(255,255,255,.8);position:relative;margin-bottom:12px}.h-tarj b{color:#fff;font-weight:700}
+.sem{margin:4px 0 26px}.sem-h{display:flex;align-items:center;gap:10px;width:100%;border:none;background:none;text-align:left;padding:4px 0;color:var(--text)}
+.sem-h>span:first-child{flex:1;min-width:0;font-size:15px;font-weight:700}.sem-h small{display:block;font-size:12.5px;color:var(--sec);font-weight:500;margin-top:2px}
+.sem-h b{font-size:24px;font-weight:800;letter-spacing:-.6px;font-variant-numeric:tabular-nums;white-space:nowrap}.sem-h b.ok{color:var(--green-d)}.sem-h b.warn{color:var(--amber-d)}.sem-h b.bad{color:var(--red-d)}
+.bol.plano button{color:var(--text)}.bol.plano i{background:var(--bg2);color:var(--text);box-shadow:0 1px 2px rgba(18,18,23,.06)}
+.bol.plano .mal i{background:color-mix(in srgb,var(--red) 14%,transparent);color:var(--red-d);box-shadow:none}.bol.plano .mal b{color:var(--red-d)}
+.bol.plano .hoy i{background:var(--text);color:var(--bg)}.bol.plano span{color:var(--sec)}
+.mision{font-size:13.5px;line-height:1.45;color:var(--sec)}.mision b{color:var(--text)}
 .h-msg svg.i{width:18px;height:18px;margin-top:1px}
 .h-msg{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.16);border:none;border-radius:18px;padding:11px 13px;font-size:13px;line-height:1.45;position:relative;z-index:1;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:16px 0}
@@ -616,8 +627,10 @@ body.ready .nav{display:flex}
     <button class="act p" onclick="openAdd()"><i><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></i>Anotar gasto</button>
     <button class="act s" onclick="openCheck()"><i><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></i>¿Me alcanza?</button>
   </div>
+  <div id="sem-w"></div>
   <div id="win"></div>
   <div id="nudges"></div>
+  <div id="cats-w"></div>
   <div id="hoy-g"></div>
   </section>
 
@@ -1094,7 +1107,7 @@ async function loadPeriodo(){
   const pv=addM(S.periodo,-1);
   const [todos,rev]=await Promise.all([api(`gastos?periodo=in.(${S.periodo},${pv})&order=fecha.desc,id.desc`),api('gastos?estado=eq.revisar&order=fecha.desc,id.desc')]);
   const all=todos.filter(g=>!g.estado||g.estado==='ok');S.revisar=rev||[];
-  S.gastos=all.filter(g=>g.periodo===S.periodo);S.prev=all.filter(g=>g.periodo===pv&&!g.pulldex);
+  S.gastos=all.filter(g=>g.periodo===S.periodo);S.prev=all.filter(g=>g.periodo===pv&&!g.pulldex);S.prevT=all.filter(g=>g.periodo===pv);
   S.ppto=S.pptos[S.periodo]||PERF().ppto||(Object.keys(S.pptos).filter(k=>k<S.periodo).sort().map(k=>S.pptos[k]).pop())||1000000;render();
 }
 
@@ -1124,12 +1137,12 @@ function semanaPlan(){const V=S.V,M=planMes(),P=M.P,f=V.Wd/7,freno=V.queda<0;
   const tot=Object.values(pl).reduce((s,v)=>s+v,0),gas=Object.values(g).reduce((s,v)=>s+v,0),q=k=>pl[k]-g[k];
   const prox=Math.round(P.super+P.ofi_n*P.ofi_p+P.del_n*P.del_p+M.tr/SEMS+Math.max(0,M.gustos-gAntes-g.gustos)*7/Math.max(7,V.D0-V.Wd));
   return{M,P,pl,g,tot,gas,queda:tot-gas,q,nDel,delN,ofiQ:Math.max(0,Math.floor(q('oficina')/P.ofi_p)),freno,prox,f}}
-function bolsillos(W){const dw=new Date().getDay(),B=[
+function bolsillos(W,plano){const dw=new Date().getDay(),B=[
   ['super','Súper',W.q('super')<0?'−'+kCLP(-W.q('super')):kCLP(W.q('super')),W.q('super')<0,dw===0],
   ['oficina','Oficina',`${W.ofiQ} de ${Math.round(W.P.ofi_n*W.f)||W.P.ofi_n}`,W.q('oficina')<0,OFI_DIAS.includes(dw)],
   ['delivery','Salir',W.freno?'No':`${Math.max(0,W.delN-W.nDel)} de ${W.delN}`,W.nDel>W.delN||W.q('delivery')<0,false],
   ['gustos','Gustos',W.freno?'No':W.q('gustos')<0?'−'+kCLP(-W.q('gustos')):kCLP(W.q('gustos')),W.q('gustos')<0||W.freno,false]];
-  return`<div class="bol">${B.map(([i,t,v,mal,hoy])=>`<button class="${mal?'mal':''} ${hoy?'hoy':''}" onclick="event.stopPropagation();openPlan()" aria-label="${t}: ${v}"><i>${SVG(ICO[i])}</i><b>${v}</b><span>${t}</span></button>`).join('')}</div>`}
+  return`<div class="bol${plano?' plano':''}">${B.map(([i,t,v,mal,hoy])=>`<button class="${mal?'mal':''} ${hoy?'hoy':''}" onclick="event.stopPropagation();openPlan()" aria-label="${t}: ${v}"><i>${SVG(ICO[i])}</i><b>${v}</b><span>${t}</span></button>`).join('')}</div>`}
 // La misión de hoy según el día (Vicho es indeciso: una sola cosa que hacer).
 function misionHoy(W){const dw=new Date().getDay(),P=W.P,del=Math.max(0,W.delN-W.nDel);let m;
   if(dw===0)m=`<b>Hoy toca:</b> súper (hasta ${fmt(Math.max(0,W.q('super'))||P.super)}) y cocinar 3 almuerzos para la semana.`;
@@ -1188,25 +1201,46 @@ function render(){const nm=NOMBRE();$('avatar').innerHTML=nm?esc(nm[0].toUpperCa
   const base=esActual?Math.max(total,S.ppto):total,libre=Math.max(0,SUELDO-base),fin=Math.round(libre/2);
   S.V={tot,items,ptot,nt,neg,mes,pvL,CQ,cuo,gast,total,queda,dias,esActual,diario,cupoHoy,gastHoy,manana,semana,semIni:ISO(w0),semFin:ISO(w1),Wd,D0,proy:{base,libre,fin,col:libre-fin,over:total>S.ppto}};
   const W=esActual?semanaPlan():null;S.V.W=W;
+  // Por tarjeta (lo que pasó por cada una este mes, solo personal): Vicho quiere ver el total de todas sus tarjetas.
+  const porT={};pers.forEach(g=>{const k=TARJ.includes(g.tarjeta)?g.tarjeta:'debito';porT[k]=(porT[k]||0)+g.monto});S.V.porT=porT;
 
   $('mes-t').textContent=mes;$('greet').textContent=esActual?`${nm?`Hola, ${nm} · `:''}${fechaHoy().replace(/^(\S{3})\S*/,'$1')}`:rangoL(S.periodo);
   $('viendo').innerHTML=esActual?'':`<div class="nudge"><div>👀 Estás viendo <b>${perL(S.periodo)}</b></div><button onclick="setPer(S.actual)">Volver a hoy</button></div>`;
 
-  let cls,lbl,amt,l1,msg,l2=`Incluye ${fmt(cuo)} de cuotas y fijos`;
-  if(!esActual){cls='';lbl=queda>=0?`Te sobró en ${mes}`:`Te pasaste en ${mes}`;amt=fmt(Math.abs(queda));l1=`Gastaste ${fmt(total)} de ${fmt(S.ppto)}`;msg=queda>=0?'<span>Mes cerrado en positivo.</span>':'<span>Mes cerrado en rojo. Que no se repita.</span>';}
-  // El número grande es lo que te queda ESTA SEMANA (nunca lo que te pasaste). Pasado del mes: lo básico de la semana.
-  else if(W.freno){cls='bad';lbl='Hasta el 22, solo lo básico';const bq=W.q('super')+W.q('oficina')+W.q('transporte');
-    amt=bq>0?`${fmt(bq)}<span style="font-size:.4em;font-weight:600;opacity:.8;letter-spacing:0"> esta semana</span>`:'<span style="font-size:.6em">Casa y metro</span>';l1=`Te pasaste del mes por ${fmt(-queda)}`;l2='Súper, oficina y metro. Sin salir a comer ni gustos hasta el 23.';
-    // Decir POR QUÉ se pasó: la categoría que más se pasó de su tope (Casa = lo de independizarse, no es "mal gasto").
-    const cul=Object.entries(tot).filter(([c])=>c!=='otros'&&S.techos[c]).map(([c,g])=>[c,g-S.techos[c]]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1])[0];
-    msg=cul?`<span>Más que nada por <b>${(CAT[cul[0]]||CAT.otros).n}</b> (+${kCLP(cul[1])})${cul[0]==='casa'?', lo de independizarte':''}. Lo que gastes ahora sale de tu ahorro.</span>`:'<span>Lo que gastes ahora sale de tu ahorro. Toca el número para ver tu plan.</span>';}
-  else if(W.queda<0){cls='bad';lbl='El lunes tu semana parte con';amt=fmt(W.prox);l1=`Esta semana te pasaste por ${fmt(-W.queda)}`;l2='Lo que queda de la semana: comida de la casa.';
-    msg=`<span>No se pierde el mes: lo que te pasaste en gustos se descuenta de las próximas semanas.</span>`;}
-  else{lbl='Esta semana puedes gastar';amt=fmt(W.queda);
-    cls=W.queda<W.tot*.2||W.q('super')<0||W.q('oficina')<0||W.nDel>W.delN?'warn':'ok';msg=misionHoy(W);}
-  const rch=esActual?racha():0,diasL=n=>`<small style="opacity:.75;font-weight:500;white-space:nowrap">(${n} día${n>1?'s':''})</small>`;
-  $('hero-w').innerHTML=`<div class="hero ${cls}" onclick="${esActual?'openPlan()':''}" style="${esActual?'cursor:pointer':''}"><div class="h-lbl">${lbl}${esActual?' <span style="opacity:.7;font-weight:500">ⓘ</span>':''}${rch>=2?`<span class="racha">🔥 ${rch} días</span>`:''}</div><div class="h-amt">${amt}</div>${esActual&&!W.freno&&W.queda>=0?`<div class="h-l2" style="margin:-6px 0 4px">${W.gas?`De ${fmt(W.tot)} para la semana, ya usaste ${fmt(W.gas)}`:`Tu semana: ${fmt(W.tot)}`} ${diasL(diasSem)}</div>`:esActual?`<div class="h-l1">${l1}</div><div class="h-l2">${l2}</div>`:`<div class="h-l1">${l1}</div><div class="h-l2">${l2}</div>`}${esActual?bolsillos(W):`<div class="h-bar"><div style="width:${p}%"></div></div>`}${esActual&&queda>=0?`<div class="h-sum"><div class="t" onclick="event.stopPropagation();tab('gastos')" style="cursor:pointer;margin:0 0 12px"><span>Hasta el 22 ${diasL(dias)}</span><span>${fmt(queda)}</span></div></div>`:''}<div class="h-msg">${HICO(cls,queda)}${msg}</div></div>`;
-  contar(lbl+S.periodo,esActual&&W&&!W.freno&&W.queda>=0?W.queda:null);
+  // Recuadro de Hoy (23-11-2026, Vicho: "no la uso; quiero ver cuánto he gastado en total, cuánto me queda y cuánto voy a ahorrar"):
+  // el número grande es lo gastado en el mes (todas las tarjetas + débito + cuotas), con la raya de dónde deberías ir, y abajo
+  // "Te quedan" y "Vas a ahorrar". La semana (bolsillos y misión) va justo debajo, en su propia sección.
+  const pas=esActual?Math.min(1,(Math.round((hoy-ini)/864e5)+1)/Math.max(1,Math.round((cierre-ini)/864e5)+1)):1;
+  const ideal=Math.min(100,Math.round((cuo+pas*Math.max(0,S.ppto-cuo))/S.ppto*100)),ahorro=Math.max(0,SUELDO-Math.max(total,S.ppto));
+  const cls=queda<0?'bad':esActual&&p>ideal+10?'warn':'ok';
+  let msg='';
+  if(queda<0){const cul=Object.entries(tot).filter(([c])=>c!=='otros'&&S.techos[c]).map(([c,g])=>[c,g-S.techos[c]]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1])[0];
+    msg=cul?`Más que nada por <b>${(CAT[cul[0]]||CAT.otros).n}</b> (+${kCLP(cul[1])})${cul[0]==='casa'?', lo de independizarte':''}. Lo que gastes ahora sale de tu ahorro.`:'Lo que gastes ahora sale de tu ahorro.';}
+  else if(esActual&&p>ideal+10)msg=`Vas más rápido que el mes: deberías ir en ${ideal}% y vas en ${p}%.`;
+  const TN={scotiabank:'Scotia',bci:'BCI',santander:'Santander',debito:'Débito y efectivo'},ts=Object.entries(porT).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
+  const lbl=esActual?`Llevas gastado en ${mes}`:`Gastaste en ${mes}`;
+  $('hero-w').innerHTML=`<div class="hero ${cls}" onclick="${esActual?'openPlan()':"tab('gastos')"}" style="cursor:pointer"><div class="h-lbl">${lbl} <span style="opacity:.7;font-weight:500">ⓘ</span></div>
+   <div class="h-amt">${fmt(total)}</div><div class="h-l2" style="margin:-6px 0 0">de ${fmt(S.ppto)}${esActual?` · quedan ${dias} día${dias>1?'s':''} (hasta el 22)`:''}</div>
+   <div class="h-bar">${'<div style="width:'+Math.min(100,p)+'%"></div>'}${esActual?`<i style="left:${ideal}%"></i>`:''}</div>
+   <div class="h-tiles"><div><small>${queda<0?'Te pasaste':esActual?'Te quedan':'Te sobró'}</small><b>${fmt(Math.abs(queda))}</b></div><div><small>${esActual?'Vas a ahorrar':'Ahorraste'}</small><b>${fmt(ahorro)}</b></div></div>
+   ${ts.length?`<div class="h-tarj">${ts.map(([k,v])=>`<span>${TN[k]} <b>${kCLP(v)}</b></span>`).join('')}${cuo?`<span>Cuotas <b>${kCLP(cuo)}</b></span>`:''}</div>`:''}
+   ${msg?`<div class="h-msg">${HICO(cls,queda)}<span>${msg}</span></div>`:''}</div>`;
+  contar('mes'+S.periodo,total);
+  // La semana: lo que puedes gastar de lunes a domingo, con sus bolsillos y la misión de hoy.
+  {let sl,sv,ss;
+   if(!esActual){$('sem-w').innerHTML='';}
+   else{if(W.freno){const bq=W.q('super')+W.q('oficina')+W.q('transporte');sl='Hasta el 22, solo lo básico';sv=bq>0?fmt(bq):'Casa y metro';ss='Súper, oficina y metro esta semana. Sin salir a comer ni gustos.';}
+     else if(W.queda<0){sl='Esta semana te pasaste por';sv=fmt(-W.queda);ss=`El lunes tu semana parte con ${fmt(W.prox)}. Lo que queda: comida de la casa.`;}
+     else{sl='Esta semana puedes gastar';sv=fmt(W.queda);ss=`${W.gas?`De ${fmt(W.tot)}, ya usaste ${fmt(W.gas)}`:`Tu semana: ${fmt(W.tot)}`} · hasta el domingo`;}
+     const wc=W.freno||W.queda<0?'bad':W.queda<W.tot*.2?'warn':'ok';
+     $('sem-w').innerHTML=`<div class="sem"><button class="sem-h" onclick="openPlan()"><span>${sl}<small>${ss}</small></span><b class="${wc}">${sv}</b><span class="chev"></span></button>${bolsillos(W,1)}${W.freno||W.queda<0?'':`<div class="mision">${misionHoy(W)}</div>`}</div>`;}}
+  // En qué se te va: las 4 categorías que más pesan este mes (con su tope), el resto en Gastos.
+  {const ord=Object.keys(tot).filter(k=>k!=='otros'&&tot[k]>0).sort((a,b)=>tot[b]-tot[a]),n=Object.keys(tot).filter(k=>tot[k]>0).length;
+   // Recién partido el mes (menos de 3 categorías con gastos) muestra en qué se fue el mes pasado, para no dejar el espacio vacío.
+   const pord=Object.keys(ptot).filter(k=>k!=='otros'&&ptot[k]>0).sort((a,b)=>ptot[b]-ptot[a]),ptt=Object.values(ptot).reduce((s,v)=>s+v,0);
+   const prow=k=>{const c=CAT[k]||CAT.otros,t=S.techos[k]||0,v=ptot[k];return`<button class="crow" onclick="setPer('${addM(S.periodo,-1)}');tab('gastos')">${icoCat(k)}<div class="cm"><b>${c.n}</b><small>${t?(v>t?`te pasaste por ${fmt(v-t)}`:`dentro del tope de ${kCLP(t)}`):`${Math.round(v/Math.max(1,ptt)*100)}% de lo que gastaste`}</small></div><div class="ca" style="color:${t&&v>t?'var(--red-d)':'var(--text)'}">${fmt(v)}</div></button>`};
+   $('cats-w').innerHTML=ord.length>=3||!esActual?(ord.length?`<div class="card"><div class="card-h"><h2>En qué se te va</h2><button onclick="tab('gastos')">Ver ${n>4?`las ${n}`:'todo'} ›</button></div>${ord.slice(0,4).map(catRow).join('')}</div>`:'')
+     :pord.length?`<div class="card"><div class="card-h"><h2>En ${pvL} se te fue en</h2><button onclick="setPer('${addM(S.periodo,-1)}');tab('gastos')">Ver ${pvL} ›</button></div>${pord.slice(0,4).map(prow).join('')}</div>`:'';}
 
   const ev=getEv();$('win').innerHTML=esActual&&ev?`<div class="win">💪 Este mes te aguantaste ${fmt(ev)} en compras</div>`:'';
 
@@ -2037,8 +2071,12 @@ const TARJ=['scotiabank','bci','santander'];
 // perfil.pagado {tarjeta: fecha}: hasta ese día la tarjeta quedó en cero (ej. la pagaste completa con una comisión).
 // Esas compras siguen contando en el presupuesto del mes, pero ya no vienen en la próxima factura.
 const pagadaHasta=x=>((PERF().pagado||{})[x.tarjeta]||'')>=x.fecha;
+// Compras con tarjeta que todavía no pagas: las de este mes y las del mes pasado hasta que marques la tarjeta como pagada.
+// (El 23 parte el mes nuevo pero la boleta del 22 se paga a principios del otro: antes "Lo que debes" quedaba en $0.)
+const porPagar=()=>S.periodo===S.actual?[...S.gastos,...(S.prevT||[])].filter(x=>TARJ.includes(x.tarjeta)&&!pagadaHasta(x)):[];
+async function tarjetaPagada(k){const P=PERF();await saveAj('perfil',{...P,pagado:{...(P.pagado||{}),[k]:hoyISO()}},true);toast(`✅ ${TJ[k]} en cero hasta hoy`);openDebo();render()}
 function caja(){const P=PERF(),cq=cuotasDe(S.actual).filter(c=>!c.recurrente&&TARJ.includes(c.tarjeta)),q=cq.reduce((s,c)=>s+c.monto_cuota,0);
-  const g=(S.periodo===S.actual?S.gastos:[]).filter(x=>!x.pulldex&&TARJ.includes(x.tarjeta)&&!pagadaHasta(x)).reduce((s,x)=>s+x.monto,0);
+  const g=porPagar().filter(x=>!x.pulldex).reduce((s,x)=>s+x.monto,0);
   const desp=cuotasDe(S.actual).filter(c=>!c.recurrente).reduce((s,c)=>s+(c.restante||0),0);
   const fin=cq.map(c=>c.fin).filter(Boolean).sort().pop()||null;
   return{monto:typeof P.caja==='number'?P.caja:null,fecha:P.caja_fecha||null,min:P.caja_min||300000,compras:g,cuotas:q,factura:g+q,desp,fin,cq}}
@@ -2057,9 +2095,9 @@ function openCaja(){const C=caja(),sobra=C.monto===null?0:C.monto-C.min,dd=C.fec
   <button class="btn p" onclick="saveCaja()">Guardar</button>`)}
 // ---------- Lo que debes: todo junto y por tarjeta (compras del mes + cuotas del mes), las cuotas que faltan y las deudas ----------
 // Para no enredarse con los números de la tarjeta: qué parte es de este mes y qué parte es de compras viejas.
-function debo(){const per=S.actual,G=(S.periodo===per?S.gastos:[]),CQ=cuotasDe(per).filter(c=>!c.recurrente),FJ=cuotasDe(per).filter(c=>c.recurrente);
+function debo(){const per=S.actual,CQ=cuotasDe(per).filter(c=>!c.recurrente),FJ=cuotasDe(per).filter(c=>c.recurrente);
   const T={};const t=k=>T[k]=T[k]||{compras:0,neg:0,cuotas:0,fijos:0,lista:[]};
-  G.filter(g=>TARJ.includes(g.tarjeta)&&!pagadaHasta(g)).forEach(g=>{const x=t(g.tarjeta);x.compras+=g.monto;if(g.pulldex)x.neg+=g.monto});
+  porPagar().forEach(g=>{const x=t(g.tarjeta);x.compras+=g.monto;if(g.pulldex)x.neg+=g.monto});
   CQ.forEach(c=>{const k=TARJ.includes(c.tarjeta)?c.tarjeta:'otro';const x=t(k);x.cuotas+=c.monto_cuota;x.lista.push(c)});
   FJ.filter(c=>TARJ.includes(c.tarjeta)).forEach(c=>{t(c.tarjeta).fijos+=c.monto_cuota});
   const tarj=Object.entries(T).map(([k,x])=>({k,...x,total:x.compras+x.cuotas+x.fijos})).filter(x=>x.total>0).sort((a,b)=>b.total-a.total);
@@ -2070,10 +2108,11 @@ function openDebo(){const D=debo(),cie=k=>CORTE[k]?` · cierra el ${CORTE[k]}`:'
   openSheet(`<h3>🧾 Lo que debes</h3><p>Todo junto: tus tarjetas de este mes, las cuotas que faltan y tus deudas. Pagando esto quedas en cero.</p>
   <div class="card sum"><div class="k">Total para quedar en cero</div><div class="v">${fmt(D.total)}</div>
    ${tiles([['1. Tarjetas',kCLP(D.tt)],['2. Cuotas',kCLP(D.tf)],['3. Deudas',kCLP(D.td)]])}</div>
-  <div class="sec-t" style="margin-left:2px">1. Tus tarjetas de este mes</div>
+  <div class="sec-t" style="margin-left:2px">1. Tus tarjetas (lo que no has pagado)</div>
   <div class="card">${D.tarj.map(x=>`<div class="cq" style="cursor:default"><div class="t"><b>${TJ[x.k]||'Otras'}</b><span>${fmt(x.total)}</span></div>
-    <small>${x.compras?`Compras de este mes ${fmt(x.compras)}${x.neg?` (incluye ${fmt(x.neg)} del negocio)`:''}`:'Sin compras este mes'}${x.cuotas?` · cuotas de compras viejas ${fmt(x.cuotas)}`:''}${x.fijos?` · fijos ${fmt(x.fijos)}`:''}${cie(x.k)}</small>
-    ${x.lista.length?`<small style="margin-top:4px">${x.lista.map(c=>`${esc(c.nombre)} ${c.n}/${c.total_cuotas}`).join(' · ')}</small>`:''}</div>`).join('')||'<div class="empty">Nada en tarjetas este mes</div>'}</div>
+    <small>${x.compras?`Compras sin pagar ${fmt(x.compras)}${x.neg?` (incluye ${fmt(x.neg)} del negocio)`:''}`:'Sin compras este mes'}${x.cuotas?` · cuotas de compras viejas ${fmt(x.cuotas)}`:''}${x.fijos?` · fijos ${fmt(x.fijos)}`:''}${cie(x.k)}</small>
+    ${x.lista.length?`<small style="margin-top:4px">${x.lista.map(c=>`${esc(c.nombre)} ${c.n}/${c.total_cuotas}`).join(' · ')}</small>`:''}
+    ${x.compras&&TARJ.includes(x.k)?`<button class="chip" style="margin-top:8px" onclick="tarjetaPagada('${x.k}')">La pagué completa hoy</button>`:''}</div>`).join('')||'<div class="empty">Nada en tarjetas este mes</div>'}</div>
   <div class="lead" style="padding:0 4px 4px">Esto lo pagas con el sueldo de fin de mes. Va a subir con lo que gastes con tarjeta hasta el cierre.</div>
   ${D.fut.length?`<div class="sec-t" style="margin-left:2px">2. Cuotas que faltan después de este mes</div><div class="card">${D.fut.map(c=>`<button class="crow" onclick="openCuota(${c.id})"><div class="cm"><b>${esc(c.nombre)}</b><small>${c.quedan} cuota${c.quedan>1?'s':''} de ${fmt(c.monto_cuota)} · ${TJ[c.tarjeta]||''}</small></div><div class="ca">${fmt(c.restante)}</div></button>`).join('')}</div>
     <div class="lead" style="padding:0 4px 4px">Para adelantarlas: en la app del banco busca "Prepago de cuotas" (pagar de más la tarjeta no las adelanta). Después toca la cuota aquí → "La adelanté".</div>`:''}
