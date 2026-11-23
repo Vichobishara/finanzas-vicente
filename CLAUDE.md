@@ -127,6 +127,9 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
   `03 Áreas/Finanzas - cómo voy.md` (secreto `FINANZAS_TOKEN`). Si cambias columnas que usa, actualiza esa función.
 - Coach → **Widget en tu inicio**: script de Scriptable (`widgetJS`) con el código personal → `rpc/widget(token)`.
 
+- **Compras sin pagar** (`porPagar()`): las con tarjeta de este mes y del mes pasado que no están cubiertas por `perfil.pagado[tarjeta]`
+  (fecha hasta la que la tarjeta quedó en cero). Así el 23 "Lo que debes" y "Tu caja" no se van a $0 mientras la boleta del 22 sigue
+  sin pagar. En Lo que debes cada tarjeta tiene **La pagué completa hoy** (`tarjetaPagada(k)`), que guarda esa fecha.
 - Plata → **Lo que debes** (`debo()`, `openDebo()`; también desde la pestaña Cuotas): total para quedar en cero = tarjetas de
   este mes por separado (compras del mes, cuotas de compras viejas y fijos de esa tarjeta, cuándo cierra) + cuotas que faltan
   después de este mes + deudas. Explica que pagar de más la tarjeta no adelanta cuotas (hay que pedir "prepago").
@@ -171,7 +174,14 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
 - Para cambiar la clave: recalcular el hash en `privado.autorizado()` y actualizar `secretos.app_key`.
 
 ## Lógica de negocio clave
-- **El número de Hoy es la SEMANA, no el día** (19-10-2026: el cupo diario no le funcionaba a Vicho, el gasto viene a saltos).
+- **Hoy (23-11-2026, Vicho: "no la uso; quiero ver cuánto he gastado en total y cuánto voy a ahorrar")**: el recuadro dice
+  "Llevas gastado en <mes>" = todas las tarjetas + débito + cuotas del mes, "de $presupuesto · quedan N días", barra con la raya de
+  dónde deberías ir, y dos casillas: **Te quedan** (o Te pasaste) y **Vas a ahorrar** (= sueldo − máx(gastado, presupuesto)); debajo,
+  chico, lo de cada tarjeta (`S.V.porT`: Scotia, BCI, Santander, Débito y efectivo) y las cuotas. Color = semáforo (rojo si te pasaste,
+  amarillo si vas > 10 puntos sobre la raya). Bajo los botones va **la semana** (`#sem-w`, abre `openPlan()`): lo que puedes gastar esta
+  semana, sus bolsillos (`bolsillos(W,1)`, versión plana) y la misión de hoy. Después **En qué se te va** (`#cats-w`, 4 categorías con
+  `catRow`); los primeros días del mes (menos de 3 categorías con gastos) muestra "En <mes pasado> se te fue en".
+- **La semana** (19-10-2026: el cupo diario no le funcionaba a Vicho, el gasto viene a saltos).
   "Esta semana puedes gastar $X" = bolsillos de la semana (lun–dom, sin pasar del 22, prorrateados si la semana es corta) − lo gastado
   en ellos esta semana (los gastos `fijo` no cuentan, se pagan solos). Plan en `ajustes.plan` {super, ofi_n, ofi_p, del_n, del_p, fijos}
   (default súper $40k/semana, oficina 2 × $7k, 1 salida a comer de $35k, suscripciones $60k/mes; `PLAN()`, se ajusta en `editPlan()`).
@@ -220,7 +230,7 @@ Esta app usa SOLO Supabase `finanzas-vicho` y Vercel `finanzas-vicente`.
    negocio, meses, presupuesto), **Plata** (camino a la meta, próximo movimiento, plan de ahorro del mes; fondo gadgets, por pagar, APV e
    impuestos como filas cortas que abren su detalle en una hoja; bono, sueldos y patrimonio en hojas) y **Coach** (hábitos del mes con puntaje y botón para
    resolver cada uno, Pregúntale a Claude, consejos con acción, avisos). Nada importante bajo el scroll de Hoy.
-2. El número principal es "esta semana puedes gastar" (con sus bolsillos), y su color (verde, amarillo, rojo) ES el semáforo.
+2. El número principal es lo gastado en el mes con "Te quedan" y "Vas a ahorrar"; justo debajo, "esta semana puedes gastar" con sus bolsillos. El color del recuadro (verde, amarillo, rojo) ES el semáforo.
 3. Lenguaje chileno simple. Nada de jerga ("periodo", "cierre" → "hasta el 22").
 4. Anotar un gasto debe tomar menos de 3 segundos. La categoría es automática.
 5. Premiar el autocontrol ("te aguantaste $X") y mostrar el costo en 10 años de cada compra.
